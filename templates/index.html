@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Awesome-pyecharts</title>
+    <title>FMSS</title>
     <script src="https://cdn.bootcss.com/jquery/3.0.0/jquery.min.js"></script>
 
     <script type="text/javascript" src="https://assets.pyecharts.org/assets/echarts.min.js"></script>
@@ -11,7 +11,7 @@
 </head>
 
 <body>
-    <div id="bar" style="width:600px; height:300px;"></div>
+    <div id="bar" style="width:600; height:300px;"></div>
     <div id="step_chart" style="width:600px; height:300px;"></div>
     <script>
         function getVirtulData(year) {
@@ -41,6 +41,7 @@
                     },
                     calendar: {
                         range: '2019'
+                        // cellSize: ['auto', 13]
                     },
                     series: {
                         type: 'heatmap',
@@ -132,13 +133,13 @@
                     ],
                     yAxis: [
                         {
-                            name: '流量(m^3/s)',
+                            name: '步数',
                             type: 'value'
                         }
                     ],
                     series: [
                         {
-                            name: '流量',
+                            name: '步数',
                             type: 'line',
                             animation: false,
                             areaStyle: {
