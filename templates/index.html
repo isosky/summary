@@ -13,6 +13,7 @@
 <body>
     <div id="bar" style="width:600; height:300px;"></div>
     <div id="step_chart" style="width:600px; height:300px;"></div>
+    <div id="weight_chart" style="width:600px; height:300px;"></div>
     <script>
         function getVirtulData(year) {
             year = year || '2019';
@@ -48,7 +49,7 @@
                         data: getVirtulData(2019)
                     }
                 };
-                time_chart.setOption(time_option);
+                // time_chart.setOption(time_option);
 
                 var step_chart = echarts.init(document.getElementById('step_chart'), 'white', { renderer: 'canvas' });
                 var step_option = {
@@ -56,14 +57,14 @@
                         {
                             show: true,
                             realtime: true,
-                            start: 65,
-                            end: 85
+                            start: 50,
+                            end: 100
                         },
                         {
                             type: 'inside',
                             realtime: true,
-                            start: 65,
-                            end: 85
+                            start: 50,
+                            end: 100
                         }
                     ],
                     xAxis: [
@@ -88,13 +89,54 @@
                             },
                             lineStyle: {
                                 width: 1
+                            },
+                            label: {
+                                show: true
+                            },
+                            markLine: {
+                                data: [
+                                    {
+                                        name: '平均线',
+                                        // 支持 'average', 'min', 'max'
+                                        type: 'average'
+                                    }]
                             }
                         }
                     ]
                 };
+                $.ajax({
+                    type: "GET",
+                    url: "http://127.0.0.1:5000/getstep",
+                    dataType: 'json',
+                    success: function (result) {
+                        console.log(result);
+                        step_option['xAxis'][0]['data'] = result['time'];
+                        step_option['series'][0]['data'] = result['value'];
+                        step_chart.setOption(step_option);
+                        console.log(step_option);
+                    }
+                });
 
 
-                step_chart.setOption(step_option);
+
+                var weight_chart = echarts.init(document.getElementById('weight_chart'), 'white', { renderer: 'canvas' });
+                var weight_option = JSON.parse(JSON.stringify(step_option));;
+                
+                weight_option['yAxis'][0]['name']='体重';
+                weight_option['series'][0]['name']='体重';
+                $.ajax({
+                    type: "GET",
+                    url: "http://127.0.0.1:5000/getweight",
+                    dataType: 'json',
+                    success: function (result) {
+                        console.log(result);
+                        weight_option['xAxis'][0]['data'] = result['time'];
+                        weight_option['series'][0]['data'] = result['value'];
+                        weight_chart.setOption(weight_option);
+                        console.log(weight_option);
+                    }
+                });
+
 
             }
         )

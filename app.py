@@ -16,17 +16,42 @@ def data_add():
     return render_template("data_add.html")
 
 
-@app.route('/step_add')
-def step_add():
+@app.route('/data_add_v')
+def data_add_v():
     arg_data = request.args.get('data')
-    if arg_data:
-        temp = arg_data.split(';')
-        # result = []
-        for i in temp:
-            ttt = i.split(',')
-            dboo.step_add_one(ttt[0], ttt[1])
+    arg_type = request.args.get('type')
+    if arg_type == '1':
+        if arg_data:
+            temp = arg_data.split(';')
+            # result = []
+            for i in temp:
+                ttt = i.split(',')
+                print(ttt)
+                if len(ttt) > 1:
+                    dboo.step_add_one(ttt[0], ttt[1])
+        return json.dumps({"result": dboo.getstep()})
+    if arg_type == '2':
+        if arg_data:
+            temp = arg_data.split(';')
+            # result = []
+            for i in temp:
+                ttt = i.split(',')
+                print(ttt)
+                if len(ttt) > 1:
+                    dboo.weight_add_one(ttt[0], ttt[1])
+        return json.dumps({"result": dboo.getweight()})
 
-    return json.dumps({"result": dboo.getstep()})
+
+@app.route('/getstep')
+def getstep():
+    temp = dboo.getstep(False)
+    return json.dumps(temp)
+
+
+@app.route('/getweight')
+def getweight():
+    temp = dboo.getweight(False)
+    return json.dumps(temp)
 
 
 if __name__ == '__main__':

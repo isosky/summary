@@ -16,6 +16,16 @@ if not os.path.exists("tmss.db"):
     conn.close()
 
 
+def init():
+    conn = sqlite3.connect('tmss.db')
+    c = conn.cursor()
+    # create table steps
+    c.execute('''CREATE TABLE my_weights(weight_time TEXT NOT NULL,weight INT );''')
+    print("success create table my_weights")
+    conn.commit()
+    conn.close()
+
+
 def step_add(time, step):
     conn = sqlite3.connect('tmss.db')
     c = conn.cursor()
@@ -48,8 +58,33 @@ def getstep(forchart=True):
     conn.close()
     if not forchart:
         time = [x[0] for x in result]
-        step = [x[0] for x in result]
-        return {'time': time, 'step': step}
+        step = [x[1] for x in result]
+        return {'time': time, 'value': step}
+    return result
+
+
+def weight_add_one(time, step):
+    conn = sqlite3.connect('tmss.db')
+    c = conn.cursor()
+    c.execute("delete FROM my_weights where weight_time = ?", [time])
+    c.execute("insert into my_weights values(?,?)", [time, step])
+    conn.commit()
+    conn.close()
+
+
+def getweight(forchart=True):
+    conn = sqlite3.connect('tmss.db')
+    c = conn.cursor()
+    cursor = c.execute("select * from my_weights order by 1")
+    result = []
+    for row in cursor:
+        result.append(row)
+    conn.commit()
+    conn.close()
+    if not forchart:
+        time = [x[0] for x in result]
+        step = [x[1] for x in result]
+        return {'time': time, 'value': step}
     return result
 
 
@@ -58,4 +93,5 @@ if __name__ == '__main__':
     step = [random.randint(7000, 10000) for x in range(len(time))]
     # step_add_one('20190729', 4)
     # step_add(time, step)
-    getstep()
+    # getstep()
+    # init()
