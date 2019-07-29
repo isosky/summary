@@ -26,7 +26,7 @@ def step_add():
             ttt = i.split(',')
             dboo.step_add_one(ttt[0], ttt[1])
 
-    return json.dumps({"result": True})
+    return json.dumps({"result": dboo.getstep()})
 
 
 if __name__ == '__main__':

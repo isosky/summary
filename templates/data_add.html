@@ -22,20 +22,37 @@
 </head>
 
 <body>
-    <input id="t_step" type="text" class="form-control" placeholder="Username" aria-label="Username"
+    <input id="t_step" type="text" class="form-control" placeholder="20190801,10000;20190802,7000;"
         aria-describedby="basic-addon1"></input>
     <button id="b_step_add" type="button" class="btn btn-primary">提交</button>
+    <button id="b_step_clear" type="button" class="btn btn-primary">清空表格</button>
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">date</th>
+                <th scope="col">step</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
     <script>
+        $("#b_step_clear").click(function () {
+            $("tbody tr").empty("");
+        });
         $("#b_step_add").click(function () {
-            console.log('val', $("#t_step").val());
-            // console.log('text',$("#t_step").text());
             $.ajax({
                 type: "GET",
                 url: "http://127.0.0.1:5000/step_add",
                 data: { "data": $("#t_step").val() },
                 dataType: 'json',
                 success: function (result) {
-                    console.log(result);
+                    temp = result["result"];
+                    $("tbody tr").empty("");
+                    for (var i = 0; i < temp.length; i++) {
+                        console.log(temp[i]);
+                        $("tbody").append($("<tr><td>" + temp[i][0] + "</td><td>" + temp[i][1] + "</td></tr>"));
+                    }
                 }
             });
         });

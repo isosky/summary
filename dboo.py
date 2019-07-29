@@ -1,6 +1,7 @@
 import sqlite3
 import os
-
+import random
+import json
 
 if not os.path.exists("tmss.db"):
     conn = sqlite3.connect('tmss.db')
@@ -15,8 +16,16 @@ if not os.path.exists("tmss.db"):
     conn.close()
 
 
-def step_add(data):
-    pass
+def step_add(time, step):
+    conn = sqlite3.connect('tmss.db')
+    c = conn.cursor()
+    times = "','".join(time)
+    # print("delete FROM my_steps where step_time in (%s) " % times)
+    c.execute("delete FROM my_steps where step_time in ('%s') " % times)
+    data = zip(time, step)
+    c.executemany("insert into my_steps values(?,?)", data)
+    conn.commit()
+    conn.close()
 
 
 def step_add_one(time, step):
@@ -28,5 +37,25 @@ def step_add_one(time, step):
     conn.close()
 
 
+def getstep(forchart=True):
+    conn = sqlite3.connect('tmss.db')
+    c = conn.cursor()
+    cursor = c.execute("select * from my_steps order by 1")
+    result = []
+    for row in cursor:
+        result.append(row)
+    conn.commit()
+    conn.close()
+    if not forchart:
+        time = [x[0] for x in result]
+        step = [x[0] for x in result]
+        return {'time': time, 'step': step}
+    return result
+
+
 if __name__ == '__main__':
-    step_add_one('20190729', 4)
+    time = [str(x) for x in range(20190701, 20190720)]
+    step = [random.randint(7000, 10000) for x in range(len(time))]
+    # step_add_one('20190729', 4)
+    # step_add(time, step)
+    getstep()
