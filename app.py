@@ -18,11 +18,14 @@ def data_add():
     return render_template("data_add.html")
 
 
-@app.route('/data_add_v')
+@app.route('/data_add_v', methods=['POST'])
 def data_add_v():
-    arg_data = request.args.get('data')
-    arg_type = request.args.get('type')
-    if arg_type == '1':
+    print(request.get_data())
+    json_data = json.loads(request.get_data())
+    arg_data = json_data['data']
+    arg_type = json_data['type']
+    print(arg_data, arg_type)
+    if arg_type == 'step':
         if arg_data:
             temp = arg_data.split(';')
             # result = []
@@ -32,7 +35,7 @@ def data_add_v():
                 if len(ttt) > 1:
                     dboo.step_add_one(ttt[0], ttt[1])
         return json.dumps({"result": dboo.getstep()})
-    if arg_type == '2':
+    if arg_type == 'weight':
         if arg_data:
             temp = arg_data.split(';')
             # result = []
