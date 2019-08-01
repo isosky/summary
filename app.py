@@ -59,5 +59,22 @@ def getweight():
     return json.dumps(temp)
 
 
+@app.route('/addtask', methods=['POST'])
+def addtask():
+    print(request.get_data())
+    json_data = json.loads(request.get_data())
+    arg_subject = json_data['subject']
+    arg_title = json_data['title']
+    arg_edate = json_data['edate']
+    print(arg_subject, arg_title, arg_edate)
+    temp = dboo.addtask(arg_subject, arg_title, arg_edate)
+    return json.dumps({'arrays': temp})
+
+
+@app.route('/gettasknow')
+def gettasknow():
+    return json.dumps({'arrays': dboo.gettasknow()})
+
+
 if __name__ == '__main__':
     app.run()

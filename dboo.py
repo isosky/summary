@@ -20,8 +20,19 @@ def init():
     conn = sqlite3.connect('tmss.db')
     c = conn.cursor()
     # create table steps
-    c.execute('''CREATE TABLE my_weights(weight_time TEXT NOT NULL,weight INT );''')
-    print("success create table my_weights")
+    # c.execute('''CREATE TABLE my_weights(weight_time TEXT NOT NULL,weight INT );''')
+    # print("success create table my_weights")
+    c.execute('''create table task (
+    task_id            integer PRIMARY KEY autoincrement,                -- 设置主键
+    subject       varchar(20),
+    title         varchar (100),
+    content      varchar(400),
+    stime   datetime default (datetime('now', 'localtime')),
+    etime   datetime ,
+    times int,
+    isfinish int default 0,
+    isabandon int default 0
+    );''')
     conn.commit()
     conn.close()
 
@@ -88,6 +99,38 @@ def getweight(forchart=True):
     return result
 
 
+def addtask(subject, title, etime):
+    conn = sqlite3.connect('tmss.db')
+    c = conn.cursor()
+    c.execute("insert into task (subject,title,etime) values (?,?,?)", [
+              subject, title, etime])
+    conn.commit()
+    conn.close()
+    return gettasknow()
+
+
+def gettasknow():
+    conn = sqlite3.connect('tmss.db')
+    c = conn.cursor()
+    cursor = c.execute(
+        "select task_id,subject,title,etime,stime from task where isfinish=0 and isabandon=0 ")
+    result = []
+    for row in cursor:
+        temp = {'task_id': row[0], 'subject': row[1],
+                'title': row[2], 'etime': row[3], 'stime': row[4]}
+        result.append(temp)
+    # temp = cursor
+    conn.close()
+    return result
+
+
+def parsetime(timestring, timeformat):
+    if timeformat == 'yyyymmdd':
+        if type(timestring)== int:
+            timestring =str(timestring)
+        return '-'.join([timestring[0:4], timestring[4:6], timestring[6:8]])
+
+
 if __name__ == '__main__':
     time = [str(x) for x in range(20190701, 20190720)]
     step = [random.randint(7000, 10000) for x in range(len(time))]
@@ -95,3 +138,6 @@ if __name__ == '__main__':
     # step_add(time, step)
     # getstep()
     # init()
+    # addtask('工作','规则引擎调优','20190909')
+    # print(gettasknow())
+    # print(parsetime('20190707', 'yyyymmdd'))

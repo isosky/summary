@@ -44,16 +44,14 @@
 
 <body>
     <div id="app">
-        <!-- <el-button @click="setbar">数据更新</el-button> -->
-        <el-select v-model="select_value" style="width: 150px" placeholder="请选择">
-            <el-option v-for="item in select_option" :key="item.value" :label="item.label" :value="item.value">
-            </el-option>
-        </el-select>
-        <el-input v-model="datainput" style="width: 300px" placeholder="请输入内容"></el-input>
-        <el-button @click="updatedata">数据提交</el-button>
-        <!-- <div id="bar" style="width:600; height:300px;"></div> -->
         <el-row :gutter="20">
             <el-col :span="12">
+                <el-select v-model="first_select" style="width: 150px" placeholder="请选择">
+                    <el-option v-for="item in select_option" :key="item.value" :label="item.label" :value="item.value">
+                    </el-option>
+                </el-select>
+                <el-input v-model="first_input" style="width: 300px" placeholder="请输入内容"></el-input>
+                <el-button @click="updatedata">数据提交</el-button>
                 <el-row :gutter="20">
                     <div id="b_task" style="height: 200px"></div>
                 </el-row>
@@ -67,10 +65,22 @@
                 </el-row>
             </el-col>
             <el-col :span="11">
+                <el-row :gutter="20">
+                    <el-select v-model="task_select" style="width: 80px" placeholder="请选择">
+                        <el-option v-for="item in task_option" :key="item.value" :label="item.label"
+                            :value="item.value">
+                        </el-option>
+                    </el-select>
+                    <el-date-picker v-model="new_edate" value-format="yyyy-MM-dd" type="date" style="width:150px" placeholder="ddl">
+                    </el-date-picker>
+                    <el-input v-model="taks_title" style="width: 300px" placeholder="请输入内容"></el-input>
+                    <el-button @click="addtask">任务提交</el-button>
+
+                </el-row>
                 <div class="grid-content bg-purple">
                     <el-table :data="tableData" border style="width: 100%"
                         :default-sort="{prop: 'date', order: 'descending'}">
-                        <el-table-column fixed prop="edate" label="结束日期" width="100">
+                        <el-table-column fixed prop="etime" label="结束日期" width="100">
                         </el-table-column>
                         <el-table-column prop="subject" label="分类" width="80">
                         </el-table-column>
@@ -154,7 +164,57 @@
                         }
                     ]
                 },
-                // weight_option: JSON.parse(JSON.stringify(this.step_option)),
+                weight_option: {
+                    dataZoom: [
+                        {
+                            show: true,
+                            realtime: true,
+                            start: 50,
+                            end: 100
+                        },
+                        {
+                            type: 'inside',
+                            realtime: true,
+                            start: 50,
+                            end: 100
+                        }
+                    ],
+                    xAxis: [
+                        {
+                            type: 'category',
+                            boundaryGap: false,
+                            axisLine: { onZero: false }
+                        }
+                    ],
+                    yAxis: [
+                        {
+                            name: '体重',
+                            type: 'value',
+                            min: 90
+                        }
+                    ],
+                    series: [
+                        {
+                            name: '体重',
+                            type: 'line',
+                            animation: false,
+                            areaStyle: {
+                            },
+                            lineStyle: {
+                                width: 1
+                            },
+                            markLine: {
+                                data: [
+                                    {
+                                        name: '平均线',
+                                        // 支持 'average', 'min', 'max'
+                                        type: 'average'
+                                    }]
+                            }
+                        }
+                    ]
+                },
+                // left input
                 select_option: [{
                     value: 'step',
                     label: '步数'
@@ -162,23 +222,48 @@
                     value: 'weight',
                     label: '体重'
                 }],
-                select_value: '',
-                datainput: '',
-                tableData: [{
-                    id :111,
-                    edate: '2016-05-08',
-                    subject: '测试',
-                    title: '上海市普陀区金沙江路 1516 弄'
-                }]
+
+                first_select: '',
+                first_input: '',
+                // right input
+
+                task_select: '工作',
+                new_edate: '',
+                taks_title: '',
+                task_option: [{
+                    value: '工作',
+                    label: '工作'
+                }, {
+                    value: '学习',
+                    label: '学习'
+                }],
+                // table
+                tableData: []
             }
         },
         mounted: function () {
             console.log('asdasdasda');
+            console.log(this.tableData);
             this.setbar();
+            this.settable();
         },
         methods: {
+            settable: function (event) {
+                axios.get("http://127.0.0.1:5000/gettasknow").then(response => {
+                    // console.log(response);
+                    if (response.status == 200) {
+                        temp = response.data.arrays;
+                        this.tableData = [];
+                        for (row in temp) {
+                            // console.log(row);
+                            this.tableData.push(temp[row]);
+                        }
+                        // console.log(this.tableData);
+                    }
+                })
+            },
             setbar: function (event) {
-                console.log('setbar')
+                console.log('setbar');
                 let step_chart = echarts.init(document.getElementById('b_step'), 'white', { renderer: 'canvas' });
                 axios.get("http://127.0.0.1:5000/getstep")
                     .then(response => {
@@ -189,17 +274,42 @@
                             step_chart.setOption(this.step_option);
                         }
                     });
+                let weight_chart = echarts.init(document.getElementById('b_weight'), 'white', { renderer: 'canvas' });
+                axios.get("http://127.0.0.1:5000/getweight")
+                    .then(response => {
+                        console.log(response);
+                        if (response.status == 200) {
+                            this.weight_option.xAxis[0].data = response.data.time;
+                            this.weight_option.series[0].data = response.data.value;
+                            weight_chart.setOption(this.weight_option);
+                        }
+                    });
+
             },
             updatedata: function (event) {
-                console.log(this.select_value);
-                console.log(this.datainput);
+                console.log(this.first_select);
+                console.log(this.first_input);
+                console.log(this.select_option);
                 axios.post('http://127.0.0.1:5000/data_add_v', {
                     type: this.select_value,
-                    data: this.datainput
-                }
-                ).then(response => {
+                    data: this.first_input
+                }).then(response => {
                     console.log(response);
                     this.setbar();
+                })
+
+            },
+            addtask: function (event) {
+                console.log(this.task_select);
+                console.log(this.taks_title);
+                console.log(this.new_edate);
+                axios.post('http://127.0.0.1:5000/addtask', {
+                    subject: this.task_select,
+                    title: this.taks_title,
+                    edate: this.new_edate
+                }).then(response => {
+                    console.log(response);
+                    this.settable();
                 })
 
             },
