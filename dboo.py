@@ -29,7 +29,8 @@ def init():
     content      varchar(400),
     stime   datetime default (datetime('now', 'localtime')),
     etime   datetime ,
-    times int,
+    ftime  datetime,
+    times int default 1,
     isfinish int default 0,
     isabandon int default 0
     );''')
@@ -126,9 +127,22 @@ def gettasknow():
 
 def parsetime(timestring, timeformat):
     if timeformat == 'yyyymmdd':
-        if type(timestring)== int:
-            timestring =str(timestring)
+        if type(timestring) == int:
+            timestring = str(timestring)
         return '-'.join([timestring[0:4], timestring[4:6], timestring[6:8]])
+
+
+def gettimedata():
+    conn = sqlite3.connect('tmss.db')
+    c = conn.cursor()
+    cursor = c.execute(
+        "select ftime,sum(times) from task where isfinish =1 and isabandon=0 group by ftime")
+    result = []
+    for row in cursor:
+        result.append(row)
+    conn.commit()
+    conn.close()
+    return {'result': result}
 
 
 if __name__ == '__main__':
@@ -138,6 +152,7 @@ if __name__ == '__main__':
     # step_add(time, step)
     # getstep()
     # init()
-    # addtask('工作','规则引擎调优','20190909')
+    # addtask('工作', '规则引擎调优', '2019-09-09')
     # print(gettasknow())
     # print(parsetime('20190707', 'yyyymmdd'))
+    print(gettimedata())

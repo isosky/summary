@@ -27,7 +27,6 @@
                     Math.floor(Math.random() * 10000)
                 ]);
             }
-            console.log(data);
             return data;
         }
 
@@ -41,15 +40,17 @@
                         max: 10000
                     },
                     calendar: {
-                        range: '2019'
+                        range: '2019',
+                        cell:['5','5']
                     },
                     series: {
                         type: 'heatmap',
                         coordinateSystem: 'calendar',
+
                         data: getVirtulData(2019)
                     }
                 };
-                // time_chart.setOption(time_option);
+                time_chart.setOption(time_option);
 
                 var step_chart = echarts.init(document.getElementById('step_chart'), 'white', { renderer: 'canvas' });
                 var step_option = {

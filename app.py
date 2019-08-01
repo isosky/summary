@@ -76,5 +76,10 @@ def gettasknow():
     return json.dumps({'arrays': dboo.gettasknow()})
 
 
+@app.route('/gettimedata')
+def gettimedata():
+    return json.dumps(dboo.gettimedata())
+
+
 if __name__ == '__main__':
     app.run()
