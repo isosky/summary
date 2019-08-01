@@ -2,6 +2,8 @@ import sqlite3
 import os
 import random
 import json
+import time
+
 
 if not os.path.exists("tmss.db"):
     conn = sqlite3.connect('tmss.db')
@@ -118,7 +120,7 @@ def gettasknow():
     result = []
     for row in cursor:
         temp = {'task_id': row[0], 'subject': row[1],
-                'title': row[2], 'etime': row[3], 'stime': row[4]}
+                'title': row[2], 'etime': row[3][5:], 'stime': row[4]}
         result.append(temp)
     # temp = cursor
     conn.close()
@@ -145,6 +147,27 @@ def gettimedata():
     return {'result': result}
 
 
+def finishtask(task_id, task_numbers):
+    conn = sqlite3.connect('tmss.db')
+    # 格式化成2016-03-20 11:45:39形式
+    etime = time.strftime("%Y-%m-%d", time.localtime())
+    c = conn.cursor()
+    c.execute('''update task set ftime=? ,isfinish=1 ,times=? where task_id =? ''', [
+              etime, task_numbers, task_id])
+    conn.commit()
+    conn.close()
+
+
+def deletetask(task_id):
+    conn = sqlite3.connect('tmss.db')
+    # 格式化成2016-03-20 11:45:39形式
+    etime = time.strftime("%Y-%m-%d", time.localtime())
+    c = conn.cursor()
+    c.execute('''update task set isabandon=1 where task_id =? ''', [task_id])
+    conn.commit()
+    conn.close()
+
+
 if __name__ == '__main__':
     time = [str(x) for x in range(20190701, 20190720)]
     step = [random.randint(7000, 10000) for x in range(len(time))]
@@ -155,4 +178,4 @@ if __name__ == '__main__':
     # addtask('工作', '规则引擎调优', '2019-09-09')
     # print(gettasknow())
     # print(parsetime('20190707', 'yyyymmdd'))
-    print(gettimedata())
+    # print(gettimedata())

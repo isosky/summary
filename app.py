@@ -81,5 +81,23 @@ def gettimedata():
     return json.dumps(dboo.gettimedata())
 
 
+@app.route('/finishtask', methods=['POST'])
+def finishtask():
+    print(request.get_data())
+    json_data = json.loads(request.get_data())
+    task_id = json_data['task_id']
+    input_numbers = json_data['input_numbers']
+    dboo.finishtask(task_id, input_numbers)
+    return json.dumps({'result': True})
+
+
+@app.route('/deletetask', methods=['POST'])
+def deletetask():
+    print(request.get_data())
+    json_data = json.loads(request.get_data())
+    task_id = json_data['task_id']
+    dboo.deletetask(task_id)
+    return json.dumps({'result': True})
+
 if __name__ == '__main__':
     app.run()
