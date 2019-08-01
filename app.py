@@ -1,9 +1,11 @@
 from flask import Flask, render_template, request
+from flask_cors import CORS
 import json
 import dboo as dboo
 
 
 app = Flask(__name__)
+CORS(app, supports_credentials=True)
 
 
 @app.route('/')
@@ -16,11 +18,14 @@ def data_add():
     return render_template("data_add.html")
 
 
-@app.route('/data_add_v')
+@app.route('/data_add_v', methods=['POST'])
 def data_add_v():
-    arg_data = request.args.get('data')
-    arg_type = request.args.get('type')
-    if arg_type == '1':
+    print(request.get_data())
+    json_data = json.loads(request.get_data())
+    arg_data = json_data['data']
+    arg_type = json_data['type']
+    print(arg_data, arg_type)
+    if arg_type == 'step':
         if arg_data:
             temp = arg_data.split(';')
             # result = []
@@ -30,7 +35,7 @@ def data_add_v():
                 if len(ttt) > 1:
                     dboo.step_add_one(ttt[0], ttt[1])
         return json.dumps({"result": dboo.getstep()})
-    if arg_type == '2':
+    if arg_type == 'weight':
         if arg_data:
             temp = arg_data.split(';')
             # result = []
@@ -53,6 +58,46 @@ def getweight():
     temp = dboo.getweight(False)
     return json.dumps(temp)
 
+
+@app.route('/addtask', methods=['POST'])
+def addtask():
+    print(request.get_data())
+    json_data = json.loads(request.get_data())
+    arg_subject = json_data['subject']
+    arg_title = json_data['title']
+    arg_edate = json_data['edate']
+    print(arg_subject, arg_title, arg_edate)
+    temp = dboo.addtask(arg_subject, arg_title, arg_edate)
+    return json.dumps({'arrays': temp})
+
+
+@app.route('/gettasknow')
+def gettasknow():
+    return json.dumps({'arrays': dboo.gettasknow()})
+
+
+@app.route('/gettimedata')
+def gettimedata():
+    return json.dumps(dboo.gettimedata())
+
+
+@app.route('/finishtask', methods=['POST'])
+def finishtask():
+    print(request.get_data())
+    json_data = json.loads(request.get_data())
+    task_id = json_data['task_id']
+    input_numbers = json_data['input_numbers']
+    dboo.finishtask(task_id, input_numbers)
+    return json.dumps({'result': True})
+
+
+@app.route('/deletetask', methods=['POST'])
+def deletetask():
+    print(request.get_data())
+    json_data = json.loads(request.get_data())
+    task_id = json_data['task_id']
+    dboo.deletetask(task_id)
+    return json.dumps({'result': True})
 
 if __name__ == '__main__':
     app.run()

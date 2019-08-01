@@ -3,56 +3,155 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>FMSS</title>
-    <script src="https://cdn.bootcss.com/jquery/3.0.0/jquery.min.js"></script>
-
-    <script type="text/javascript" src="https://assets.pyecharts.org/assets/echarts.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/echarts/4.2.1/echarts.js"></script>
+    <!-- import CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
 </head>
+<style>
+    .el-row {
+        margin-bottom: 20px;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    .el-col {
+        border-radius: 4px;
+    }
+
+    .bg-purple-dark {
+        background: #99a9bf;
+    }
+
+    .bg-purple {
+        background: #d3dce6;
+    }
+
+    .bg-purple-light {
+        background: #e5e9f2;
+    }
+
+    .grid-content {
+        border-radius: 4px;
+        min-height: 36px;
+    }
+
+    .row-bg {
+        padding: 10px 0;
+        background-color: #f9fafc;
+    }
+</style>
 
 <body>
-    <div id="bar" style="width:600; height:300px;"></div>
-    <div id="step_chart" style="width:600px; height:300px;"></div>
-    <div id="weight_chart" style="width:600px; height:300px;"></div>
-    <script>
-        function getVirtulData(year) {
-            year = year || '2019';
-            var date = +echarts.number.parseDate(year + '-01-01');
-            var end = +echarts.number.parseDate(year + '-12-31');
-            var dayTime = 3600 * 24 * 1000;
-            var data = [];
-            for (var time = date; time <= end; time += dayTime) {
-                data.push([
-                    echarts.format.formatTime('yyyy-MM-dd', time),
-                    Math.floor(Math.random() * 10000)
-                ]);
-            }
-            console.log(data);
-            return data;
-        }
+    <div id="app">
+        <el-row :gutter="20">
+            <el-col :span="12">
+                <el-select v-model="first_select" style="width: 150px" placeholder="请选择">
+                    <el-option v-for="item in select_option" :key="item.value" :label="item.label" :value="item.value">
+                    </el-option>
+                </el-select>
+                <el-input v-model="first_input" style="width: 300px" placeholder="请输入内容"></el-input>
+                <el-button @click="updatedata">提交数据</el-button>
+                <el-row :gutter="20">
+                    <div id="b_task" style="height: 200px"></div>
+                </el-row>
+                <el-row :gutter="20">
+                    <el-col :span="12">
+                        <div id="b_step" style="height: 200px"></div>
+                    </el-col>
+                    <el-col :span="12">
+                        <div id="b_weight" style="height: 200px"></div>
+                    </el-col>
+                </el-row>
+            </el-col>
+            <el-col :span="11">
+                <el-row :gutter="20">
+                    <el-select v-model="task_select" style="width: 80px" placeholder="请选择">
+                        <el-option v-for="item in task_select_option" :key="item.value" :label="item.label"
+                            :value="item.value">
+                        </el-option>
+                    </el-select>
+                    <el-date-picker v-model="new_edate" value-format="yyyy-MM-dd" type="date" style="width:150px"
+                        placeholder="ddl">
+                    </el-date-picker>
+                    <el-input v-model="taks_title" style="width: 300px" placeholder="请输入内容"></el-input>
+                    <el-button @click="addtask">提交任务</el-button>
 
-        $(
-            function () {
-                var time_chart = echarts.init(document.getElementById('bar'), 'white', { renderer: 'canvas' });
-                time_option = {
+                </el-row>
+                <div class="grid-content bg-purple">
+                    <el-table :data="tableData" border style="width: 100%"
+                        :default-sort="{prop: 'date', order: 'descending'}">
+                        <el-table-column fixed prop="etime" label="DDL" width="60">
+                        </el-table-column>
+                        <el-table-column prop="subject" label="分类" width="60">
+                        </el-table-column>
+                        <el-table-column prop="title" label="标题">
+                        </el-table-column>
+                        <el-table-column label="操作" width="90">
+                            <template slot-scope="scope">
+                                <el-button @click="finishtask(scope.row)" type="text" size="small">完成</el-button>
+                                <el-button @click="deletetask(scope.row)" type="text" size="small">删除</el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </div>
+            </el-col>
+        </el-row>
+        <el-dialog title="提示" :visible.sync="dialogsVisible" width="30%">
+            请输入次数：<el-input v-model="input_numbers" style="width: 300px" placeholder="请输入次数"></el-input>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="dialogsVisible = false">取 消</el-button>
+                <el-button type="primary" @click="dialogcommit">确 定</el-button>
+            </span>
+        </el-dialog>
+
+        <el-dialog title="提示" :visible.sync="dialogcVisible" width="30%">
+            确认删除任务？？
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="dialogcVisible = false">取 消</el-button>
+                <el-button type="primary" @click="dialogdelete">确 定</el-button>
+            </span>
+        </el-dialog>
+
+    </div>
+
+
+
+</body>
+<!-- import Vue before Element -->
+<script src="../static_js/vue.js"></script>
+<!-- import JavaScript -->
+<script src="../static_js/index.js"></script>
+<!-- import axios-->
+<script src="../static_js/axios.min.js"></script>
+<!-- import echarts-->
+<script src="../static_js/echarts.js"></script>
+<script>
+    // import qs from 'qs';
+    new Vue({
+        el: '#app',
+        data: function () {
+            return {
+                task_option: {
+                    tooltip: {},
                     visualMap: {
                         show: false,
                         min: 0,
-                        max: 10000
+                        max: 10,
+                        inRange: {
+                            color: ['#ebedf0', '#c6e48b', '#7bc96f', '#239a3b', '#196127']
+                        }
                     },
                     calendar: {
-                        range: '2019'
+                        range: ['2019-07', '2020-01']
                     },
                     series: {
                         type: 'heatmap',
                         coordinateSystem: 'calendar',
-                        data: getVirtulData(2019)
+                        data: []
                     }
-                };
-                // time_chart.setOption(time_option);
-
-                var step_chart = echarts.init(document.getElementById('step_chart'), 'white', { renderer: 'canvas' });
-                var step_option = {
+                },
+                step_option: {
                     dataZoom: [
                         {
                             show: true,
@@ -90,8 +189,55 @@
                             lineStyle: {
                                 width: 1
                             },
-                            label: {
-                                show: true
+                            markLine: {
+                                data: [
+                                    {
+                                        name: '平均线',
+                                        // 支持 'average', 'min', 'max'
+                                        type: 'average'
+                                    }]
+                            }
+                        }
+                    ]
+                },
+                weight_option: {
+                    dataZoom: [
+                        {
+                            show: true,
+                            realtime: true,
+                            start: 50,
+                            end: 100
+                        },
+                        {
+                            type: 'inside',
+                            realtime: true,
+                            start: 50,
+                            end: 100
+                        }
+                    ],
+                    xAxis: [
+                        {
+                            type: 'category',
+                            boundaryGap: false,
+                            axisLine: { onZero: false }
+                        }
+                    ],
+                    yAxis: [
+                        {
+                            name: '体重',
+                            type: 'value',
+                            min: 90
+                        }
+                    ],
+                    series: [
+                        {
+                            name: '体重',
+                            type: 'line',
+                            animation: false,
+                            areaStyle: {
+                            },
+                            lineStyle: {
+                                width: 1
                             },
                             markLine: {
                                 data: [
@@ -103,44 +249,158 @@
                             }
                         }
                     ]
-                };
-                $.ajax({
-                    type: "GET",
-                    url: "http://127.0.0.1:5000/getstep",
-                    dataType: 'json',
-                    success: function (result) {
-                        console.log(result);
-                        step_option['xAxis'][0]['data'] = result['time'];
-                        step_option['series'][0]['data'] = result['value'];
-                        step_chart.setOption(step_option);
-                        console.log(step_option);
-                    }
-                });
+                },
+                // left input
+                select_option: [{
+                    value: 'step',
+                    label: '步数'
+                }, {
+                    value: 'weight',
+                    label: '体重'
+                }],
 
+                first_select: '',
+                first_input: '',
+                // right input
 
+                task_select: '工作',
+                new_edate: '',
+                taks_title: '',
+                task_select_option: [{
+                    value: '工作',
+                    label: '工作'
+                }, {
+                    value: '学习',
+                    label: '学习'
+                }],
+                // table
+                tableData: [],
 
-                var weight_chart = echarts.init(document.getElementById('weight_chart'), 'white', { renderer: 'canvas' });
-                var weight_option = JSON.parse(JSON.stringify(step_option));;
-                
-                weight_option['yAxis'][0]['name']='体重';
-                weight_option['series'][0]['name']='体重';
-                $.ajax({
-                    type: "GET",
-                    url: "http://127.0.0.1:5000/getweight",
-                    dataType: 'json',
-                    success: function (result) {
-                        console.log(result);
-                        weight_option['xAxis'][0]['data'] = result['time'];
-                        weight_option['series'][0]['data'] = result['value'];
-                        weight_chart.setOption(weight_option);
-                        console.log(weight_option);
-                    }
-                });
+                // dialog
+                dialogsVisible: false,
+                s_task_id: '',
+                input_numbers: 1,
 
-
+                // dialog delete
+                dialogcVisible: false
             }
-        )
-    </script>
-</body>
+        },
+        mounted: function () {
+            console.log('asdasdasda');
+            console.log(this.tableData);
+            this.setbar();
+            this.settable();
+        },
+        methods: {
+            settable: function (event) {
+                axios.get("http://127.0.0.1:5000/gettasknow").then(response => {
+                    // console.log(response);
+                    if (response.status == 200) {
+                        temp = response.data.arrays;
+                        this.tableData = [];
+                        for (row in temp) {
+                            // console.log(row);
+                            this.tableData.push(temp[row]);
+                        }
+                        // console.log(this.tableData);
+                    }
+                })
+            },
+            setbar: function (event) {
+                console.log('setbar');
+                let step_chart = echarts.init(document.getElementById('b_step'), 'white', { renderer: 'canvas' });
+                axios.get("http://127.0.0.1:5000/getstep")
+                    .then(response => {
+                        console.log(response);
+                        if (response.status == 200) {
+                            this.step_option.xAxis[0].data = response.data.time;
+                            this.step_option.series[0].data = response.data.value;
+                            step_chart.setOption(this.step_option);
+                        }
+                    });
+                let weight_chart = echarts.init(document.getElementById('b_weight'), 'white', { renderer: 'canvas' });
+                axios.get("http://127.0.0.1:5000/getweight")
+                    .then(response => {
+                        console.log(response);
+                        if (response.status == 200) {
+                            this.weight_option.xAxis[0].data = response.data.time;
+                            this.weight_option.series[0].data = response.data.value;
+                            weight_chart.setOption(this.weight_option);
+                        }
+                    });
+                let task_chart = echarts.init(document.getElementById('b_task'), 'white', { renderer: 'canvas' });
+                axios.get("http://127.0.0.1:5000/gettimedata")
+                    .then(response => {
+                        console.log(response.data.result);
+                        if (response.status == 200) {
+                            console.log(response.data.result);
+                            console.log(this.task_option);
+                            this.task_option.series.data = response.data.result;
+                            task_chart.setOption(this.task_option);
+                        }
+                    });
+
+            },
+            updatedata: function (event) {
+                console.log(this.first_select);
+                console.log(this.first_input);
+                console.log(this.select_option);
+                axios.post('http://127.0.0.1:5000/data_add_v', {
+                    type: this.select_value,
+                    data: this.first_input
+                }).then(response => {
+                    console.log(response);
+                    this.setbar();
+                })
+
+            },
+            addtask: function (event) {
+                console.log(this.task_select);
+                console.log(this.taks_title);
+                console.log(this.new_edate);
+                axios.post('http://127.0.0.1:5000/addtask', {
+                    subject: this.task_select,
+                    title: this.taks_title,
+                    edate: this.new_edate
+                }).then(response => {
+                    console.log(response);
+                    this.settable();
+                })
+
+            },
+            finishtask: function (event) {
+                console.log(event.task_id);
+                this.dialogsVisible = true;
+                this.s_task_id = event.task_id;
+            },
+            dialogcommit: function (event) {
+                console.log(this.s_task_id);
+                this.dialogsVisible = false;
+                axios.post('http://127.0.0.1:5000/finishtask', {
+                    task_id: this.s_task_id,
+                    input_numbers: this.input_numbers
+                }).then(response => {
+                    console.log(response);
+                    this.settable();
+                })
+            },
+            deletetask: function (event) {
+                console.log(event.task_id);
+                this.dialogcVisible = true;
+                this.s_task_id = event.task_id;
+            },
+            dialogdelete: function (event) {
+                console.log(this.s_task_id);
+                this.dialogcVisible = false;
+                axios.post('http://127.0.0.1:5000/deletetask', {
+                    task_id: this.s_task_id
+                }).then(response => {
+                    console.log(response);
+                    this.settable();
+                })
+            }
+        }
+    })
+</script>
 
 </html>
