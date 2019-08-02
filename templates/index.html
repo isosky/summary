@@ -56,10 +56,10 @@
                     <div id="b_task" style="height:200px"></div>
                 </el-row>
                 <el-row :gutter="10">
-                        <div id="b_step" style="height:190px"></div>
+                    <div id="b_step" style="height:190px"></div>
                 </el-row>
                 <el-row :gutter="10">
-                        <div id="b_weight" style="height:190px"></div>
+                    <div id="b_weight" style="height:190px"></div>
                 </el-row>
             </el-col>
             <el-col :span="13">
@@ -77,6 +77,10 @@
                     <el-button @click="settable">刷新</el-button>
 
                 </el-row>
+                <el-row :gutter="10">
+
+                </el-row>
+
                 <div class="grid-content bg-purple">
                     <el-table :data="tableData" border height="600" :row-style="{height:'10px'}" style="width: 100%"
                         :default-sort="{prop: 'etime', order: 'ascending'}">
@@ -134,8 +138,8 @@
             return {
                 task_option: {
                     tooltip: {},
-                    grid:{
-                        top:30
+                    grid: {
+                        top: 30
                     },
                     visualMap: {
                         show: false,
@@ -182,8 +186,8 @@
                             type: 'value'
                         }
                     ],
-                    grid:{
-                        top:30
+                    grid: {
+                        top: 30
                     },
                     series: [
                         {
@@ -235,8 +239,8 @@
                             min: 90
                         }
                     ],
-                    grid:{
-                        top:30
+                    grid: {
+                        top: 30
                     },
                     series: [
                         {
