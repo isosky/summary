@@ -80,8 +80,8 @@
                 </el-row>
                 <div class="grid-content bg-purple">
                     <el-table :data="tableData" border style="width: 100%"
-                        :default-sort="{prop: 'date', order: 'descending'}">
-                        <el-table-column fixed prop="etime" label="DDL" width="60">
+                        :default-sort="{prop: 'etime', order: 'ascending'}">
+                        <el-table-column fixed prop="etime" sortable label="DDL" width="80">
                         </el-table-column>
                         <el-table-column prop="subject" label="分类" width="60">
                         </el-table-column>
