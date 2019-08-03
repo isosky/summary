@@ -99,5 +99,19 @@ def deletetask():
     dboo.deletetask(task_id)
     return json.dumps({'result': True})
 
+
+@app.route('/gettasksummary')
+def gettasksummary():
+    return dboo.gettasksummary()
+
+
+@app.route('/querytask', methods=['POST'])
+def querytask():
+    json_data = json.loads(request.get_data())
+    query = json_data['query']
+    return json.dumps({'arrays': dboo.querytask(query)})
+
+
+
 if __name__ == '__main__':
     app.run()
