@@ -192,7 +192,6 @@ def querytask(query):
     conn = sqlite3.connect('tmss.db')
     c = conn.cursor()
     query ='%'+query+'%'
-    print(query)
     cursor = c.execute(
         "select task_id,subject,title,etime,stime from task where isfinish=0 and isabandon=0 and title like ?", [query])
     result = []

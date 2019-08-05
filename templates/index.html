@@ -395,16 +395,17 @@
 
             },
             addtask: function (event) {
-                axios.post('http://127.0.0.1:5000/addtask', {
-                    subject: this.task_select,
-                    title: this.task_title,
-                    edate: this.new_edate
-                }).then(response => {
-                    // console.log(response);
-                    this.settable();
-                    this.task_title = '';
-                })
-
+                if (this.new_edate != '' && this.task_title) {
+                    axios.post('http://127.0.0.1:5000/addtask', {
+                        subject: this.task_select,
+                        title: this.task_title,
+                        edate: this.new_edate
+                    }).then(response => {
+                        // console.log(response);
+                        this.settable();
+                        this.task_title = '';
+                    })
+                }
             },
             finishtask: function (event) {
                 // console.log(event.task_id);
