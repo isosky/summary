@@ -3,6 +3,7 @@ import os
 import random
 import json
 import time
+import datetime
 
 
 if not os.path.exists("tmss.db"):
@@ -191,7 +192,7 @@ def gettasksummary():
 def querytask(query):
     conn = sqlite3.connect('tmss.db')
     c = conn.cursor()
-    query ='%'+query+'%'
+    query = '%'+query+'%'
     cursor = c.execute(
         "select task_id,subject,title,etime,stime from task where isfinish=0 and isabandon=0 and title like ?", [query])
     result = []
@@ -204,10 +205,23 @@ def querytask(query):
     return result
 
 
+def getcount():
+    conn = sqlite3.connect("tmss.db")
+    c =conn.cursor()
+    e,s=calday()
+
+
+def calday():
+    today = datetime.date.today()
+    return [(today - datetime.timedelta(days=today.weekday())).strftime('%Y%m%d'),(today - datetime.timedelta(days=today.weekday()-6)).strftime('%Y%m%d')]
+
+
 if __name__ == '__main__':
     s_time = [str(x) for x in range(20190701, 20190720)]
     step = [random.randint(7000, 10000) for x in range(len(s_time))]
-    querytask('规则')
+    # querytask('规则')
+    s,e=calday()
+    print (s,e)
 
     # step_add_one('20190729', 4)
     # step_add(time, step)
