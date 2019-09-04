@@ -59,12 +59,6 @@
                 <el-row :gutter="5">
                     <div id="b_task" style="height:200px"></div>
                 </el-row>
-                <el-row :gutter="5">
-                    <div id="b_step" style="height:190px"></div>
-                </el-row>
-                <el-row :gutter="5">
-                    <div id="b_weight" style="height:190px"></div>
-                </el-row>
             </el-col>
             <el-col :span="13">
                 <el-row :gutter="5">
@@ -171,111 +165,6 @@
                         data: []
                     }
                 },
-                step_option: {
-                    dataZoom: [
-                        {
-                            show: true,
-                            realtime: true,
-                            start: 50,
-                            end: 100
-                        },
-                        {
-                            type: 'inside',
-                            realtime: true,
-                            start: 50,
-                            end: 100
-                        }
-                    ],
-                    xAxis: [
-                        {
-                            type: 'category',
-                            boundaryGap: false,
-                            axisLine: { onZero: false }
-                        }
-                    ],
-                    yAxis: [
-                        {
-                            name: '步数',
-                            type: 'value'
-                        }
-                    ],
-                    grid: {
-                        top: 30
-                    },
-                    series: [
-                        {
-                            name: '步数',
-                            type: 'line',
-                            animation: false,
-                            areaStyle: {
-                            },
-                            lineStyle: {
-                                width: 1
-                            },
-                            markLine: {
-                                data: [
-                                    {
-                                        name: '平均线',
-                                        // 支持 'average', 'min', 'max'
-                                        type: 'average'
-                                    }]
-                            }
-                        }
-                    ]
-                },
-                weight_option: {
-                    dataZoom: [
-                        {
-                            show: true,
-                            realtime: true,
-                            start: 50,
-                            end: 100
-                        },
-                        {
-                            type: 'inside',
-                            realtime: true,
-                            start: 50,
-                            end: 100
-                        }
-                    ],
-                    xAxis: [
-                        {
-                            type: 'category',
-                            boundaryGap: false,
-                            axisLine: { onZero: false }
-                        }
-                    ],
-                    yAxis: [
-                        {
-                            name: '体重',
-                            type: 'value',
-                            min: 90
-                        }
-                    ],
-                    grid: {
-                        top: 30
-                    },
-                    series: [
-                        {
-                            name: '体重',
-                            type: 'line',
-                            animation: false,
-                            areaStyle: {
-                            },
-                            lineStyle: {
-                                width: 1
-                            },
-                            markLine: {
-                                data: [
-                                    {
-                                        name: '平均线',
-                                        // 支持 'average', 'min', 'max'
-                                        type: 'average'
-                                    }]
-                            }
-                        }
-                    ]
-                },
                 // left input
                 select_option: [{
                     value: 'step',
@@ -357,26 +246,6 @@
             },
             setbar: function (event) {
                 // console.log('setbar');
-                let step_chart = echarts.init(document.getElementById('b_step'), 'white', { renderer: 'canvas' });
-                axios.get("http://127.0.0.1:5000/getstep")
-                    .then(response => {
-                        console.log(response);
-                        if (response.status == 200) {
-                            this.step_option.xAxis[0].data = response.data.time;
-                            this.step_option.series[0].data = response.data.value;
-                            step_chart.setOption(this.step_option);
-                        }
-                    });
-                let weight_chart = echarts.init(document.getElementById('b_weight'), 'white', { renderer: 'canvas' });
-                axios.get("http://127.0.0.1:5000/getweight")
-                    .then(response => {
-                        console.log(response);
-                        if (response.status == 200) {
-                            this.weight_option.xAxis[0].data = response.data.time;
-                            this.weight_option.series[0].data = response.data.value;
-                            weight_chart.setOption(this.weight_option);
-                        }
-                    });
                 let task_chart = echarts.init(document.getElementById('b_task'), 'white', { renderer: 'canvas' });
                 axios.get("http://127.0.0.1:5000/gettimedata")
                     .then(response => {
@@ -388,7 +257,6 @@
                             task_chart.setOption(this.task_option);
                         }
                     });
-
             },
             updatedata: function (event) {
                 axios.post('http://127.0.0.1:5000/data_add_v', {
