@@ -151,7 +151,7 @@ def gettimedata():
 def finishtask(task_id, task_numbers):
     conn = sqlite3.connect('C:/Users/fengy/OneDrive/文档/tmss.db')
     # 格式化成2016-03-20 11:45:39形式
-    etime = time.strftime("%Y-%m-%d", time.localtime())
+    etime = time.strftime("%Y-%m-%d %M:%H:%S", time.localtime())
     c = conn.cursor()
     c.execute('''update task set ftime=? ,isfinish=1 ,times=? where task_id =? ''', [
               etime, task_numbers, task_id])
