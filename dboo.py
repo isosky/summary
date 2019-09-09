@@ -204,11 +204,11 @@ def querytask(query):
     c = conn.cursor()
     query = '%'+query+'%'
     cursor = c.execute(
-        "select task_id,subject,title,etime,stime from task where isfinish=0 and isabandon=0 and title like ?", [query])
+        "select task_id,subject,subsub,title,etime,stime from task where isfinish=0 and isabandon=0 and title like ?", [query])
     result = []
     for row in cursor:
-        temp = {'task_id': row[0], 'subject': row[1],
-                'title': row[2], 'etime': row[3][5:], 'stime': row[4]}
+        temp = {'task_id': row[0], 'subject': row[1], 'subsub': row[2],
+                'title': row[3], 'etime': row[4][5:], 'stime': row[5], 'tetime': row[4]}
         result.append(temp)
     # temp = cursor
     conn.close()
