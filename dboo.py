@@ -103,11 +103,11 @@ def getweight(forchart=True):
     return result
 
 
-def addtask(subject, title, etime):
+def addtask(subject, subsub, title, etime):
     conn = sqlite3.connect('C:/Users/fengy/OneDrive/文档/tmss.db')
     c = conn.cursor()
-    c.execute("insert into task (subject,title,etime) values (?,?,?)", [
-              subject, title, etime])
+    c.execute("insert into task (subject,subsub,title,etime) values (?,?,?,?)", [
+              subject, subsub, title, etime])
     conn.commit()
     conn.close()
     return gettasknow()
@@ -120,8 +120,8 @@ def gettasknow():
         "select task_id,subject,subsub,title,etime,stime from task where isfinish=0 and isabandon=0 ")
     result = []
     for row in cursor:
-        temp = {'task_id': row[0], 'subject': row[1],'subsub':row[2],
-                'title': row[3], 'etime': row[4][5:], 'stime': row[5]}
+        temp = {'task_id': row[0], 'subject': row[1], 'subsub': row[2],
+                'title': row[3], 'etime': row[4][5:], 'stime': row[5], 'tetime': row[4]}
         result.append(temp)
     # temp = cursor
     conn.close()
@@ -168,6 +168,16 @@ def deletetask(task_id):
     conn.close()
 
 
+def updatetask(task_id, subsub, title, etime):
+    conn = sqlite3.connect('C:/Users/fengy/OneDrive/文档/tmss.db')
+    # print(task_id, subsub, title, etime)
+    c = conn.cursor()
+    c.execute('''update task set subsub=? , title=? , etime=? where task_id =? ''', [
+              subsub, title, etime, task_id])
+    conn.commit()
+    conn.close()
+
+
 def gettasksummary():
     conn = sqlite3.connect('C:/Users/fengy/OneDrive/文档/tmss.db')
     c = conn.cursor()
@@ -207,21 +217,21 @@ def querytask(query):
 
 def getcount():
     conn = sqlite3.connect("C:/Users/fengy/OneDrive/文档/tmss.db")
-    c =conn.cursor()
-    e,s=calday()
+    c = conn.cursor()
+    e, s = calday()
 
 
 def calday():
     today = datetime.date.today()
-    return [(today - datetime.timedelta(days=today.weekday())).strftime('%Y%m%d'),(today - datetime.timedelta(days=today.weekday()-6)).strftime('%Y%m%d')]
+    return [(today - datetime.timedelta(days=today.weekday())).strftime('%Y%m%d'), (today - datetime.timedelta(days=today.weekday()-6)).strftime('%Y%m%d')]
 
 
 if __name__ == '__main__':
     s_time = [str(x) for x in range(20190701, 20190720)]
     step = [random.randint(7000, 10000) for x in range(len(s_time))]
     # querytask('规则')
-    s,e=calday()
-    print (s,e)
+    s, e = calday()
+    print(s, e)
 
     # step_add_one('20190729', 4)
     # step_add(time, step)

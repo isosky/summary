@@ -67,6 +67,7 @@
                             :value="item.value">
                         </el-option>
                     </el-select>
+                    <el-input v-model="taks_subsub" style="width: 100px" placeholder="二级分类"></el-input>
                     <el-date-picker v-model="new_edate" value-format="yyyy-MM-dd" type="date" style="width:150px"
                         placeholder="ddl">
                     </el-date-picker>
@@ -116,6 +117,17 @@
                 <el-button @click="dialogsVisible = false">取 消</el-button>
                 <el-button type="primary" @click="dialogcommit">确 定</el-button>
             </span>
+        </el-dialog>
+
+        <el-dialog title="提示" :visible.sync="dialoguVisible" width="40%">
+            确认修改任务？？
+            <el-date-picker v-model="duetime" value-format="yyyy-MM-dd" type="date" style="width:150px"> </el-date-picker>
+                <el-input v-model="dusubsub" style="width: 60px"></el-input>
+                <el-input v-model="dutitle" style="width: 300px"></el-input>
+                <span slot="footer" class="dialog-footer">
+                    <el-button @click="dialoguVisible = false">取 消</el-button>
+                    <el-button type="primary" @click="dialogupdate">确 定</el-button>
+                </span>
         </el-dialog>
 
         <el-dialog title="提示" :visible.sync="dialogcVisible" width="30%">
@@ -181,6 +193,7 @@
                 // right input
 
                 task_select: '工作',
+                taks_subsub: '',
                 new_edate: '',
                 task_title: '',
                 task_select_option: [{
@@ -199,13 +212,20 @@
                 // table
                 tableData: [],
 
-                // dialog
+                // dialog commit
                 dialogsVisible: false,
                 s_task_id: '',
                 input_numbers: 1,
 
+                // dialog update
+                dialoguVisible: false,
+                dusubsub: '',
+                dutitle: '',
+                duetime: '',
+
                 // dialog delete
                 dialogcVisible: false,
+
                 // badge
                 badge_todo: 0,
                 badge_today: 0,
@@ -270,16 +290,20 @@
                 })
 
             },
+            // task 任务维护
             addtask: function (event) {
                 if (this.new_edate != '' && this.task_title) {
                     axios.post('http://127.0.0.1:5000/addtask', {
                         subject: this.task_select,
+                        subsub: this.taks_subsub,
                         title: this.task_title,
                         edate: this.new_edate
                     }).then(response => {
                         // console.log(response);
                         this.settable();
                         this.task_title = '';
+                        this.taks_subsub = '';
+                        this.new_edate = '';
                     })
                 }
             },
@@ -301,7 +325,6 @@
                     }
                 })
             },
-
             dialogcommit: function (event) {
                 // console.log(this.s_task_id);
                 this.dialogsVisible = false;
@@ -314,6 +337,32 @@
                     this.setbar();
                 })
             },
+
+            modifytask: function (event) {
+                this.dialoguVisible = true;
+                console.log(event);
+                this.dusubsub = event.subsub;
+                this.dutitle = event.title;
+                this.s_task_id = event.task_id;
+                this.duetime = event.tetime;
+            },
+
+            dialogupdate: function (event) {
+                this.dialoguVisible = false;
+                axios.post('http://127.0.0.1:5000/updatetask', {
+                    task_id: this.s_task_id,
+                    subsub: this.dusubsub,
+                    title: this.dutitle,
+                    etime: this.duetime
+                }).then(response => {
+                    console.log(response);
+                    this.settable();
+                    this.setbar();
+                })
+            },
+
+
+
             deletetask: function (event) {
                 // console.log(event.task_id);
                 this.dialogcVisible = true;

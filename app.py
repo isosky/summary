@@ -64,10 +64,11 @@ def addtask():
     print(request.get_data())
     json_data = json.loads(request.get_data())
     arg_subject = json_data['subject']
+    arg_subsub = json_data['subsub']
     arg_title = json_data['title']
     arg_edate = json_data['edate']
     print(arg_subject, arg_title, arg_edate)
-    temp = dboo.addtask(arg_subject, arg_title, arg_edate)
+    temp = dboo.addtask(arg_subject, arg_subsub, arg_title, arg_edate)
     return json.dumps({'arrays': temp})
 
 
@@ -111,6 +112,17 @@ def querytask():
     query = json_data['query']
     return json.dumps({'arrays': dboo.querytask(query)})
 
+
+@app.route('/updatetask', methods=['POST'])
+def updatetask():
+    print(request.get_data())
+    json_data = json.loads(request.get_data())
+    task_id = json_data['task_id']
+    subsub = json_data['subsub']
+    title = json_data['title']
+    etime = json_data['etime']
+    dboo.updatetask(task_id, subsub, title, etime)
+    return json.dumps({'result': True})
 
 
 if __name__ == '__main__':
