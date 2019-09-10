@@ -5,22 +5,14 @@ import json
 import time
 import datetime
 
-
 if not os.path.exists("C:/Users/fengy/OneDrive/文档/tmss.db"):
-    conn = sqlite3.connect('C:/Users/fengy/OneDrive/文档/tmss.db')
-    c = conn.cursor()
-    # create table steps
-    c.execute('''CREATE TABLE my_steps(step_time TEXT NOT NULL,steps INT );''')
-    print("success create table steps")
-    # create table task
-    c.execute('''CREATE TABLE my_task(id  NOT NULL,steps INT );''')
-    print("success create table steps")
-    conn.commit()
-    conn.close()
+    dbf = "C:/Users/isowang/OneDrive/文档/tmss.db"
+else:
+    dbf = "C:/Users/fengy/OneDrive/文档/tmss.db"
 
 
 def init():
-    conn = sqlite3.connect('C:/Users/fengy/OneDrive/文档/tmss.db')
+    conn = sqlite3.connect(dbf)
     c = conn.cursor()
     # create table steps
     # c.execute('''CREATE TABLE my_weights(weight_time TEXT NOT NULL,weight INT );''')
@@ -42,7 +34,7 @@ def init():
 
 
 def step_add(time, step):
-    conn = sqlite3.connect('C:/Users/fengy/OneDrive/文档/tmss.db')
+    conn = sqlite3.connect(dbf)
     c = conn.cursor()
     times = "','".join(time)
     # print("delete FROM my_steps where step_time in (%s) " % times)
@@ -54,7 +46,7 @@ def step_add(time, step):
 
 
 def step_add_one(time, step):
-    conn = sqlite3.connect('C:/Users/fengy/OneDrive/文档/tmss.db')
+    conn = sqlite3.connect(dbf)
     c = conn.cursor()
     c.execute("delete FROM my_steps where step_time = ?", [time])
     c.execute("insert into my_steps values(?,?)", [time, step])
@@ -63,7 +55,7 @@ def step_add_one(time, step):
 
 
 def getstep(forchart=True):
-    conn = sqlite3.connect('C:/Users/fengy/OneDrive/文档/tmss.db')
+    conn = sqlite3.connect(dbf)
     c = conn.cursor()
     cursor = c.execute("select * from my_steps order by 1")
     result = []
@@ -79,7 +71,7 @@ def getstep(forchart=True):
 
 
 def weight_add_one(time, step):
-    conn = sqlite3.connect('C:/Users/fengy/OneDrive/文档/tmss.db')
+    conn = sqlite3.connect(dbf)
     c = conn.cursor()
     c.execute("delete FROM my_weights where weight_time = ?", [time])
     c.execute("insert into my_weights values(?,?)", [time, step])
@@ -88,7 +80,7 @@ def weight_add_one(time, step):
 
 
 def getweight(forchart=True):
-    conn = sqlite3.connect('C:/Users/fengy/OneDrive/文档/tmss.db')
+    conn = sqlite3.connect(dbf)
     c = conn.cursor()
     cursor = c.execute("select * from my_weights order by 1")
     result = []
@@ -104,7 +96,7 @@ def getweight(forchart=True):
 
 
 def addtask(subject, subsub, title, etime):
-    conn = sqlite3.connect('C:/Users/fengy/OneDrive/文档/tmss.db')
+    conn = sqlite3.connect(dbf)
     c = conn.cursor()
     c.execute("insert into task (subject,subsub,title,etime) values (?,?,?,?)", [
               subject, subsub, title, etime])
@@ -114,7 +106,7 @@ def addtask(subject, subsub, title, etime):
 
 
 def gettasknow():
-    conn = sqlite3.connect('C:/Users/fengy/OneDrive/文档/tmss.db')
+    conn = sqlite3.connect(dbf)
     c = conn.cursor()
     cursor = c.execute(
         "select task_id,subject,subsub,title,etime,stime from task where isfinish=0 and isabandon=0 ")
@@ -136,7 +128,7 @@ def parsetime(timestring, timeformat):
 
 
 def gettimedata():
-    conn = sqlite3.connect('C:/Users/fengy/OneDrive/文档/tmss.db')
+    conn = sqlite3.connect(dbf)
     c = conn.cursor()
     cursor = c.execute(
         "select ftime,sum(times) from task where isfinish =1 and isabandon=0 group by ftime")
@@ -149,7 +141,7 @@ def gettimedata():
 
 
 def finishtask(task_id, task_numbers):
-    conn = sqlite3.connect('C:/Users/fengy/OneDrive/文档/tmss.db')
+    conn = sqlite3.connect(dbf)
     # 格式化成2016-03-20 11:45:39形式
     etime = time.strftime("%Y-%m-%d %M:%H:%S", time.localtime())
     c = conn.cursor()
@@ -160,7 +152,7 @@ def finishtask(task_id, task_numbers):
 
 
 def deletetask(task_id):
-    conn = sqlite3.connect('C:/Users/fengy/OneDrive/文档/tmss.db')
+    conn = sqlite3.connect(dbf)
     # 格式化成2016-03-20 11:45:39形式
     c = conn.cursor()
     c.execute('''update task set isabandon=1 where task_id =? ''', [task_id])
@@ -169,7 +161,7 @@ def deletetask(task_id):
 
 
 def updatetask(task_id, subsub, title, etime):
-    conn = sqlite3.connect('C:/Users/fengy/OneDrive/文档/tmss.db')
+    conn = sqlite3.connect(dbf)
     # print(task_id, subsub, title, etime)
     c = conn.cursor()
     c.execute('''update task set subsub=? , title=? , etime=? where task_id =? ''', [
@@ -179,7 +171,7 @@ def updatetask(task_id, subsub, title, etime):
 
 
 def gettasksummary():
-    conn = sqlite3.connect('C:/Users/fengy/OneDrive/文档/tmss.db')
+    conn = sqlite3.connect(dbf)
     c = conn.cursor()
     etime = time.strftime("%Y-%m-%d", time.localtime())
     print(etime)
@@ -200,7 +192,7 @@ def gettasksummary():
 
 
 def querytask(query):
-    conn = sqlite3.connect('C:/Users/fengy/OneDrive/文档/tmss.db')
+    conn = sqlite3.connect(dbf)
     c = conn.cursor()
     query = '%'+query+'%'
     cursor = c.execute(
