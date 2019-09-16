@@ -33,6 +33,19 @@ def init():
     conn.close()
 
 
+def initoption():
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    cursor = c.execute(
+        "select subject,subsub from task where isabandon=0 group by subject,subsub")
+    result = {}
+    for row in cursor:
+        if row[0] not in result.keys():
+            result[row[0]] = []
+        result[row[0]].append(row[1])
+    return result
+
+
 def step_add(time, step):
     conn = sqlite3.connect(dbf)
     c = conn.cursor()

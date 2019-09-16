@@ -71,6 +71,10 @@ def addtask():
     temp = dboo.addtask(arg_subject, arg_subsub, arg_title, arg_edate)
     return json.dumps({'arrays': temp})
 
+@app.route('/initoption')
+def initoption():
+    return json.dumps({'task_sub_all_option':dboo.initoption()})
+
 
 @app.route('/gettasknow')
 def gettasknow():
