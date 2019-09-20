@@ -129,5 +129,9 @@ def updatetask():
     return json.dumps({'result': True})
 
 
+@app.route('/removetask')
+def removetask():
+    return json.dumps({'message':'已从任务中移除'+dboo.removetask()+'条删除的数据'})
+
 if __name__ == '__main__':
     app.run()
