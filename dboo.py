@@ -122,7 +122,7 @@ def gettasknow():
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
     cursor = c.execute(
-        "select task_id,subject,subsub,title,etime,stime from task where isfinish=0 and isabandon=0 ")
+        "select task_id,subject,subsub,title,etime,stime from task where isfinish=0 and isabandon=0 order by etime,task_id")
     result = []
     for row in cursor:
         temp = {'task_id': row[0], 'subject': row[1], 'subsub': row[2],
@@ -221,7 +221,7 @@ def querytask(query):
 
 
 def getcount():
-    conn = sqlite3.connect("C:/Users/fengy/OneDrive/文档/tmss.db")
+    conn = sqlite3.connect(dbf)
     c = conn.cursor()
     e, s = calday()
 
@@ -231,13 +231,24 @@ def calday():
     return [(today - datetime.timedelta(days=today.weekday())).strftime('%Y%m%d'), (today - datetime.timedelta(days=today.weekday()-6)).strftime('%Y%m%d')]
 
 
+def removetask():
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    cursor = c.execute("select count(*) from task where isabandon=1")
+    for i in cursor:
+        result = i[0]
+    print(result)
+    cursor = c.execute("delete from task where isabandon=1")
+    conn.close()
+    return str(result)
+
+
 if __name__ == '__main__':
     s_time = [str(x) for x in range(20190701, 20190720)]
     step = [random.randint(7000, 10000) for x in range(len(s_time))]
     # querytask('规则')
-    s, e = calday()
-    print(s, e)
-
+    # s, e = calday()
+    removetask()
     # step_add_one('20190729', 4)
     # step_add(time, step)
     # getstep()
