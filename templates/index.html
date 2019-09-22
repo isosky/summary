@@ -115,7 +115,7 @@
                         <el-table-column label="操作" width="130">
                             <template slot-scope="scope">
                                 <el-button @click="finishtask(scope.row)" type="text" size="small">完成</el-button>
-                                <el-button @click="modifytask(scope.row)" type="text" size="small">修改</el-button>
+                                <el-button @click="updatetask(scope.row)" type="text" size="small">修改</el-button>
                                 <el-button @click="deletetask(scope.row)" type="text" size="small">删除</el-button>
                             </template>
                         </el-table-column>
@@ -157,7 +157,8 @@
             </el-col>
         </el-row>
         <!-- 各种弹出框 -->
-        <el-dialog title="提示" :visible.sync="dialogsVisible" width="30%">
+        <!-- 完成 -->
+        <el-dialog @close='closedialog' title="提示" :visible.sync="dialogsVisible" width="30%">
             请输入次数：<el-input v-model="input_numbers" style="width: 300px" placeholder="请输入次数"></el-input>
             <span slot="footer" class="dialog-footer">
                 <el-button @click="dialogsVisible = false">取 消</el-button>
@@ -165,11 +166,22 @@
             </span>
         </el-dialog>
 
-        <el-dialog title="提示" :visible.sync="dialoguVisible" width="40%">
-            确认修改任务？？
+        <!-- 修改 -->
+        <el-dialog @close='closedialog' title="确认修改任务？？" :visible.sync="dialoguVisible" width="40%">
             <el-date-picker v-model="duetime" value-format="yyyy-MM-dd" type="date" style="width:150px">
             </el-date-picker>
-            <el-input v-model="dusubsub" style="width: 60px"></el-input>
+            <!-- 修改任务面板里面的一级分类 -->
+            <el-select @change='updatesuboption' clearable v-model="task_select" style="width: 120px" placeholder="请选择">
+                <el-option v-for="item in task_select_option" :key="item.value" :label="item.label" :value="item.value">
+                </el-option>
+            </el-select>
+            <!-- 修改任务面板里面的二级分类 -->
+            <el-select v-model="task_sub_select" filterable clearable allow-create style="width: 120px"
+                placeholder="请选择">
+                <el-option v-for="item in task_sub_select_option" :key="item.value" :label="item.label"
+                    :value="item.value">
+                </el-option>
+            </el-select>
             <el-input v-model="dutitle" style="width: 300px"></el-input>
             <span slot="footer" class="dialog-footer">
                 <el-button @click="dialoguVisible = false">取 消</el-button>
@@ -177,8 +189,8 @@
             </span>
         </el-dialog>
 
-        <el-dialog title="提示" :visible.sync="dialogcVisible" width="30%">
-            确认删除任务？？
+        <!-- 删除 -->
+        <el-dialog @close='closedialog' title="确认删除任务？？" :visible.sync="dialogcVisible" width="30%">
             <span slot="footer" class="dialog-footer">
                 <el-button @click="dialogcVisible = false">取 消</el-button>
                 <el-button type="primary" @click="dialogdelete">确 定</el-button>
@@ -405,7 +417,6 @@
 
                 // dialog update
                 dialoguVisible: false,
-                dusubsub: '',
                 dutitle: '',
                 duetime: '',
 
@@ -519,8 +530,8 @@
                         this.tab_pie_option.series[0].data = response.data.piedata;
                         tasksummary_pie_chart.setOption(this.tab_pie_option);
 
-                        this.v_step_avg=response.data.step_avg;
-                        this.v_step_date=response.data.step_date;
+                        this.v_step_avg = response.data.step_avg;
+                        this.v_step_date = response.data.step_date;
 
                     }
                 })
@@ -584,14 +595,18 @@
                 })
             },
 
-            modifytask: function (event) {
+            // 展示修改任务面板
+            updatetask: function (event) {
                 this.dialoguVisible = true;
                 console.log(event);
-                this.dusubsub = event.subsub;
+                this.task_select = event.subject;
+                this.task_sub_select = event.subsub;
                 this.dutitle = event.title;
                 this.s_task_id = event.task_id;
                 this.duetime = event.tetime;
             },
+
+            // 调用修改任务接口
             dialogupdate: function (event) {
                 this.dialoguVisible = false;
                 axios.post('http://127.0.0.1:5000/updatetask', {
@@ -603,6 +618,7 @@
                     console.log(response);
                     this.settable();
                     this.setbar();
+
                 })
             },
             removetask: function (event) {
@@ -615,6 +631,7 @@
                 this.dialogcVisible = true;
                 this.s_task_id = event.task_id;
             },
+
             dialogdelete: function (event) {
                 // console.log(this.s_task_id);
                 this.dialogcVisible = false;
@@ -637,6 +654,10 @@
             test: function (event) {
                 console.log('this is test');
                 console.log(event);
+            },
+            closedialog: function (event) {
+                this.task_select = '';
+                this.task_sub_select = '';
             }
         }
     })
