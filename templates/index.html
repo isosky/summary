@@ -433,12 +433,16 @@
         mounted: function () {
             // console.log('asdasdasda');
             // console.log(this.tableData);
-            this.setbar();
-            this.settasksummary_bar();
-            this.settable();
-            this.initoption();
+            this.freshright();
         },
         methods: {
+            freshright: function (event) {
+                this.initoption();
+                this.setbar()
+                this.settasksummary_bar()
+                this.settable()
+            },
+            // 初始化分类的下拉列表
             initoption: function (event) {
                 axios.get("http://127.0.0.1:5000/initoption").then(response => {
                     if (response.status == 200) {
@@ -450,6 +454,7 @@
                     }
                 });
             },
+            // 更新二级下拉列表
             updatesuboption: function (event) {
                 // console.log('update option');
                 this.task_sub_select = '';
@@ -465,16 +470,11 @@
                         }
                     }
                 }
-                // else {
-                // console.log('update option');
-                // console.log(this.task_select);
-                // console.log(this.task_sub_all_option);
-                // }
             },
             gettasksummary: function (event) {
                 axios.get("http://127.0.0.1:5000/gettasksummary").then(response => {
                     if (response.status == 200) {
-                        console.log(response);
+                        // console.log(response);
                         this.badge_todo = response.data.res_todo;
                         this.badge_today = response.data.res_today;
                         this.badge_delay = response.data.res_delay;
@@ -492,7 +492,7 @@
                             // console.log(temp[row].tetime);
                             this.tableData.push(temp[row]);
                         }
-                        this.gettasksummary();
+                        // this.gettasksummary();
                         // console.log(this.tableData);
                     }
                 })
@@ -542,10 +542,11 @@
                     data: this.first_input
                 }).then(response => {
                     // console.log(response);
-                    this.setbar();
+                    // this.setbar();
+                    this.freshright();
                 })
             },
-            // task 任务维护
+            // 添加任务
             addtask: function (event) {
                 if (this.new_edate != '' && this.task_title) {
                     axios.post('http://127.0.0.1:5000/addtask', {
@@ -555,10 +556,9 @@
                         edate: this.new_edate
                     }).then(response => {
                         // console.log(response);
-                        this.settable();
                         this.task_title = '';
                         this.new_edate = '';
-                        this.initoption();
+                        this.freshright();
                     })
                 }
             },
@@ -573,7 +573,7 @@
                 axios.post('http://127.0.0.1:5000/querytask', {
                     query: this.task_title
                 }).then(response => {
-                    console.log(response);
+                    // console.log(response);
                     temp = response.data.arrays;
                     this.tableData = [];
                     for (row in temp) {
@@ -589,9 +589,8 @@
                     task_id: this.s_task_id,
                     input_numbers: this.input_numbers
                 }).then(response => {
-                    console.log(response);
-                    this.settable();
-                    this.setbar();
+                    // console.log(response);
+                    this.freshright();
                 })
             },
 
@@ -615,10 +614,7 @@
                     title: this.dutitle,
                     etime: this.duetime
                 }).then(response => {
-                    console.log(response);
-                    this.settable();
-                    this.setbar();
-
+                    this.freshright();
                 })
             },
             removetask: function (event) {
@@ -638,8 +634,8 @@
                 axios.post('http://127.0.0.1:5000/deletetask', {
                     task_id: this.s_task_id
                 }).then(response => {
-                    console.log(response);
-                    this.settable();
+                    // console.log(response);
+                    this.freshright();
                 })
             },
             isoverdate: function ({ row, column, rowIndex, columnIndex }) {
@@ -650,10 +646,6 @@
                         return 'background-color:red'
                     }
                 }
-            },
-            test: function (event) {
-                console.log('this is test');
-                console.log(event);
             },
             closedialog: function (event) {
                 this.task_select = '';
