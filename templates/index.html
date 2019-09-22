@@ -548,6 +548,7 @@
                         let tasksummary_pie_chart = echarts.init(document.getElementById('task_pie_summary'), 'white', { renderer: 'canvas' });
                         this.tab_pie_option.series[0].data = response.data.piedata;
                         this.tab_pie_option.title.text='任务逾期率:'+response.data.overdue_percent+'%';
+                        this.tab_pie_option.title.subtext='总统计数:'+response.data.sum_task+'个';
                         tasksummary_pie_chart.setOption(this.tab_pie_option);
 
                         this.v_step_avg = response.data.step_avg;

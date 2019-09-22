@@ -322,13 +322,14 @@ def gettasksummary_bar():
     sum_overdue = sum(yAxisoverdue_list)
     sum_todoovredue = sum(yAxistodooverdue_list)
 
-    overdue_percent = round((sum_overdue+sum_todoovredue) /
-                            (sum_todo + sum_normal + sum_overdue + sum_todoovredue)*100, 2)
+    sum_task = sum_todo + sum_normal + sum_overdue + sum_todoovredue
+
+    overdue_percent = round((sum_overdue+sum_todoovredue) / sum_task * 100, 2)
 
     piedata = [{'value': sum_overdue, 'name': '逾期'}, {'value': sum_todoovredue, 'name': '待做逾期'}, {'value': sum_todo, 'name': '待做'}, {
         'value': sum_normal, 'name': '正常完成'}]
 
-    result = {'overdue_percent': overdue_percent, 'yAxisdata': yAxisdata, 'yAxistodo_list': yAxistodo_list,
+    result = {'sum_task': sum_task, 'overdue_percent': overdue_percent, 'yAxisdata': yAxisdata, 'yAxistodo_list': yAxistodo_list,
               'yAxisnormal_list': yAxisnormal_list, 'yAxisoverdue_list': yAxisoverdue_list, 'yAxistodooverdue_list': yAxistodooverdue_list, 'piedata': piedata, 'step_avg': step_avg, 'step_date': step_date}
     # print('tongji')
     return result
