@@ -253,33 +253,48 @@ def gettasksummary_bar():
     yAxisdata = []
     for i in cursor:
         yAxisdata.append(i[0])
+
+    etime = time.strftime("%Y-%m-%d", time.localtime())
+    # todo
     cursor = c.execute(
-        "select subsub,count(*) from task where isabandon=0 and isfinish=0 group by subsub")
+        "select subsub,count(*) from task where etime>=? and isabandon=0 and isfinish=0 group by subsub", [etime])
     yAxistodo = {}
     for i in cursor:
         yAxistodo[i[0]] = i[1]
+
+    # unfinish and delay
+    cursor = c.execute(
+        "select subsub,count(*) from task where etime<? and isfinish=0 and isabandon=0 group by subsub", [etime])
+    yAxistodooverdue = {}
+    for i in cursor:
+        yAxistodooverdue[i[0]] = i[1]
+
+    # normal
     cursor = c.execute(
         "select subsub,count(*) from task where ftime<date(etime,'+1 day') group by subsub")
     yAxisnormal = {}
     for i in cursor:
         yAxisnormal[i[0]] = i[1]
+
+    # overdue
     cursor = c.execute(
         "select subsub,count(*) from task where ftime>=date(etime,'+1 day') group by subsub")
     yAxisoverdue = {}
     for i in cursor:
         yAxisoverdue[i[0]] = i[1]
 
+    # step
     cursor = c.execute("select max(step_time),avg(steps) from my_steps")
     for i in cursor:
         step_date = i[0]
         step_avg = round(i[1], 2)
 
-    step_date=parsetime(step_date,'yyyymmdd')
-
+    step_date = parsetime(step_date, 'yyyymmdd')
 
     yAxistodo_list = []
     yAxisnormal_list = []
     yAxisoverdue_list = []
+    yAxistodooverdue_list = []
 
     for subsub in yAxisdata:
         if subsub not in yAxistodo.keys():
@@ -297,16 +312,25 @@ def gettasksummary_bar():
         else:
             yAxisoverdue_list.append(yAxisoverdue[subsub])
 
+        if subsub not in yAxistodooverdue.keys():
+            yAxistodooverdue_list.append(0)
+        else:
+            yAxistodooverdue_list.append(yAxistodooverdue[subsub])
+
     sum_todo = sum(yAxistodo_list)
     sum_normal = sum(yAxisnormal_list)
     sum_overdue = sum(yAxisoverdue_list)
+    sum_todoovredue = sum(yAxistodooverdue_list)
 
-    piedata = [{'value': sum_overdue, 'name': '逾期'}, {'value': sum_todo, 'name': '待做'}, {
+    overdue_percent = round((sum_overdue+sum_todoovredue) /
+                            (sum_todo + sum_normal + sum_overdue + sum_todoovredue)*100, 2)
+
+    piedata = [{'value': sum_overdue, 'name': '逾期'}, {'value': sum_todoovredue, 'name': '待做逾期'}, {'value': sum_todo, 'name': '待做'}, {
         'value': sum_normal, 'name': '正常完成'}]
 
-    result = {'yAxisdata': yAxisdata, 'yAxistodo_list': yAxistodo_list,
-              'yAxisnormal_list': yAxisnormal_list, 'yAxisoverdue_list': yAxisoverdue_list, 'piedata': piedata, 'step_avg': step_avg, 'step_date': step_date}
-    print('tongji')
+    result = {'overdue_percent': overdue_percent, 'yAxisdata': yAxisdata, 'yAxistodo_list': yAxistodo_list,
+              'yAxisnormal_list': yAxisnormal_list, 'yAxisoverdue_list': yAxisoverdue_list, 'yAxistodooverdue_list': yAxistodooverdue_list, 'piedata': piedata, 'step_avg': step_avg, 'step_date': step_date}
+    # print('tongji')
     return result
 
 

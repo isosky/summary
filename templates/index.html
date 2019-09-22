@@ -248,9 +248,9 @@
                             type: 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
                         }
                     },
-                    color: ['red', 'Orange', 'green'],
+                    color: ['black','red', 'Orange', 'green'],
                     legend: {
-                        data: ['逾期', '待做', '正常完成']
+                        data: ['逾期','待做逾期', '待做', '正常完成']
                     },
                     grid: {
                         left: 60
@@ -265,6 +265,23 @@
                     series: [
                         {
                             name: '逾期',
+                            type: 'bar',
+                            stack: '总量',
+                            label: {
+                                normal: {
+                                    show: true,
+                                    position: 'insideRight',
+                                    formatter: function (num) {
+                                        if (num.value == 0) {
+                                            return '';
+                                        }
+                                    }
+                                }
+                            },
+                            data: []
+                        },
+                        {
+                            name: '待做逾期',
                             type: 'bar',
                             stack: '总量',
                             label: {
@@ -322,7 +339,7 @@
                         text: '任务统计',
                         x: 'center'
                     },
-                    color: ['red', 'Orange', 'green'],
+                    color: ['black','red', 'Orange', 'green'],
                     tooltip: {
                         trigger: 'item',
                         formatter: "{a} <br/>{b} : {c} ({d}%)"
@@ -438,18 +455,19 @@
         methods: {
             freshright: function (event) {
                 this.initoption();
-                this.setbar()
-                this.settasksummary_bar()
-                this.settable()
+                this.setbar();
+                this.settasksummary_bar();
+                this.settable();
+                this.gettasksummary();
             },
             // 初始化分类的下拉列表
             initoption: function (event) {
                 axios.get("http://127.0.0.1:5000/initoption").then(response => {
                     if (response.status == 200) {
-                        console.log(response);
+                        // console.log(response);
                         this.task_sub_all_option = [];
                         this.task_sub_all_option = response.data.task_sub_all_option;
-                        console.log(this.task_sub_all_option);
+                        // console.log(this.task_sub_all_option);
                         this.updatesuboption();
                     }
                 });
@@ -505,7 +523,7 @@
                     .then(response => {
                         // console.log(response.data.result);
                         if (response.status == 200) {
-                            console.log(response.data.result);
+                            // console.log(response.data.result);
                             this.task_option.series.data = response.data.result;
                             // console.log(this.task_option);
                             task_chart.setOption(this.task_option);
@@ -517,17 +535,19 @@
                     if (response.status == 200) {
                         // 柱形图
                         let tasksummary_chart = echarts.init(document.getElementById('task_summary'), 'white', { renderer: 'canvas' });
-                        // console.log(response.data);
+                        console.log(response.data);
                         this.task_summary_option.yAxis.data = response.data.yAxisdata;
                         this.task_summary_option.series[0].data = response.data.yAxisoverdue_list;
-                        this.task_summary_option.series[1].data = response.data.yAxistodo_list;
-                        this.task_summary_option.series[2].data = response.data.yAxisnormal_list;
+                        this.task_summary_option.series[1].data = response.data.yAxistodooverdue_list;
+                        this.task_summary_option.series[2].data = response.data.yAxistodo_list;
+                        this.task_summary_option.series[3].data = response.data.yAxisnormal_list;
                         tasksummary_chart.setOption(this.task_summary_option);
                         // console.log(this.task_summary_option);
 
                         // 饼图
                         let tasksummary_pie_chart = echarts.init(document.getElementById('task_pie_summary'), 'white', { renderer: 'canvas' });
                         this.tab_pie_option.series[0].data = response.data.piedata;
+                        this.tab_pie_option.title.text='任务逾期率:'+response.data.overdue_percent+'%';
                         tasksummary_pie_chart.setOption(this.tab_pie_option);
 
                         this.v_step_avg = response.data.step_avg;
