@@ -49,16 +49,19 @@
 <body>
     <div id="app">
         <el-row :gutter="5">
+            <!-- 左侧面板 -->
             <el-col :span="13">
                 <!-- 任务管理条 -->
                 <el-row :gutter="5">
-                    <el-select @change='updatesuboption' v-model="task_select" style="width: 80px" placeholder="请选择">
+                    <el-select @change='updatesuboption' clearable v-model="task_select" style="width: 120px"
+                        placeholder="请选择">
                         <el-option v-for="item in task_select_option" :key="item.value" :label="item.label"
                             :value="item.value">
                         </el-option>
                     </el-select>
                     <!-- <el-input v-model="task_sub_select" style="width: 100px" placeholder="二级分类"></el-input> -->
-                    <el-select v-model="task_sub_select" filterable allow-create style="width: 120px" placeholder="请选择">
+                    <el-select v-model="task_sub_select" filterable clearable allow-create style="width: 120px"
+                        placeholder="请选择">
                         <el-option v-for="item in task_sub_select_option" :key="item.value" :label="item.label"
                             :value="item.value">
                         </el-option>
@@ -113,6 +116,7 @@
                     </el-table>
                 </div>
             </el-col>
+            <!-- 右侧面板 -->
             <el-col :span="11">
                 <el-select v-model="first_select" style="width: 150px" placeholder="请选择">
                     <el-option v-for="item in select_option" :key="item.value" :label="item.label" :value="item.value">
@@ -123,9 +127,13 @@
                 <el-row :gutter="5">
                     <div id="b_task" style="height:200px"></div>
                 </el-row>
+                <el-tabs type="border-card" @tab-click="test">
+                    <el-tab-pane label="统计"></el-tab-pane>
+                    <el-tab-pane label="任务进展"></el-tab-pane>
+                </el-tabs>
             </el-col>
-
         </el-row>
+        <!-- 各种弹出框 -->
         <el-dialog title="提示" :visible.sync="dialogsVisible" width="30%">
             请输入次数：<el-input v-model="input_numbers" style="width: 300px" placeholder="请输入次数"></el-input>
             <span slot="footer" class="dialog-footer">
@@ -207,9 +215,10 @@
                 first_input: '',
                 // right input
 
-                task_select: '工作',
+                task_select: '',
                 new_edate: '',
                 task_title: '',
+                // TODO 从数据库获得
                 task_select_option: [{
                     value: '工作',
                     label: '工作'
@@ -217,8 +226,8 @@
                     value: '自己',
                     label: '自己'
                 }, {
-                    value: '读书',
-                    label: '读书'
+                    value: '学习',
+                    label: '学习'
                 }, {
                     value: '游戏',
                     label: '游戏'
@@ -344,6 +353,7 @@
             },
             setbar: function (event) {
                 // console.log('setbar');
+                // TODO 判断对象是否存在，避免重复刷新
                 let task_chart = echarts.init(document.getElementById('b_task'), 'white', { renderer: 'canvas' });
                 axios.get("http://127.0.0.1:5000/gettimedata")
                     .then(response => {
@@ -459,11 +469,15 @@
             isoverdate: function ({ row, column, rowIndex, columnIndex }) {
                 if (columnIndex == 0) {
                     temp = new Date(row.tetime + ' 23:59:59').getTime();
-                    console.log(row);
+                    // console.log(row);
                     if (temp < this.now_time) {
                         return 'background-color:red'
                     }
                 }
+            },
+            test:function(event){
+                console.log('this is test');
+                console.log(event);
             }
         }
     })

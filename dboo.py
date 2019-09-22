@@ -204,6 +204,7 @@ def gettasksummary():
     return json.dumps({'res_delay': res_delay, 'res_today': res_today, 'res_todo': res_todo})
 
 
+# FIXME 查询目前有bug，返回的时候顺序不对
 def querytask(query):
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
@@ -243,12 +244,63 @@ def removetask():
     return str(result)
 
 
+# 统计的柱形图
+def countbar():
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    cursor = c.execute(
+        "select subsub,count(*) from task where isabandon=0 group by subsub order by 2 desc")
+    xAxisdata = []
+    for i in cursor:
+        xAxisdata.append(i[0])
+    cursor = c.execute(
+        "select subsub,count(*) from task where isabandon=0 and isfinish=0 group by subsub")
+    xAxistodo = {}
+    for i in cursor:
+        xAxistodo[i[0]] = i[1]
+    cursor = c.execute(
+        "select subsub,count(*) from task where ftime<date(etime,'+1 day') group by subsub")
+    xAxisnormal = {}
+    for i in cursor:
+        xAxisnormal[i[0]] = i[1]
+    cursor = c.execute(
+        "select subsub,count(*) from task where ftime>=date(etime,'+1 day') group by subsub")
+    xAxisoverdue = {}
+    for i in cursor:
+        xAxisoverdue[i[0]] = i[1]
+
+    xAxistodo_list = []
+    xAxisnormal_list = []
+    xAxisoverdue_list = []
+
+    for subsub in xAxisdata:
+        if subsub not in xAxistodo.keys():
+            xAxistodo_list.append(0)
+        else:
+            xAxistodo_list.append(xAxistodo[subsub])
+
+        if subsub not in xAxisnormal.keys():
+            xAxisnormal_list.append(0)
+        else:
+            xAxisnormal_list.append(xAxisnormal[subsub])
+
+        if subsub not in xAxisoverdue.keys():
+            xAxisoverdue_list.append(0)
+        else:
+            xAxisoverdue_list.append(xAxisoverdue[subsub])
+    result = {'xAxisdata': xAxisdata, 'xAxistodo_list': xAxistodo_list,
+              'xAxisnormal_list': xAxisnormal_list, 'xAxisoverdue_list': xAxisoverdue_list}
+    print('tongji')
+    return result
+
+
 if __name__ == '__main__':
-    s_time = [str(x) for x in range(20190701, 20190720)]
-    step = [random.randint(7000, 10000) for x in range(len(s_time))]
+    countbar()
+    # s_time = [str(x) for x in range(20190701, 20190720)]
+    # step = [random.randint(7000, 10000) for x in range(len(s_time))]
     # querytask('规则')
     # s, e = calday()
-    removetask()
+    # removetask()
     # step_add_one('20190729', 4)
     # step_add(time, step)
     # getstep()
