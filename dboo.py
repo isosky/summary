@@ -269,6 +269,14 @@ def gettasksummary_bar():
     for i in cursor:
         yAxisoverdue[i[0]] = i[1]
 
+    cursor = c.execute("select max(step_time),avg(steps) from my_steps")
+    for i in cursor:
+        step_date = i[0]
+        step_avg = round(i[1], 2)
+
+    step_date=parsetime(step_date,'yyyymmdd')
+
+
     yAxistodo_list = []
     yAxisnormal_list = []
     yAxisoverdue_list = []
@@ -288,8 +296,16 @@ def gettasksummary_bar():
             yAxisoverdue_list.append(0)
         else:
             yAxisoverdue_list.append(yAxisoverdue[subsub])
+
+    sum_todo = sum(yAxistodo_list)
+    sum_normal = sum(yAxisnormal_list)
+    sum_overdue = sum(yAxisoverdue_list)
+
+    piedata = [{'value': sum_overdue, 'name': '逾期'}, {'value': sum_todo, 'name': '待做'}, {
+        'value': sum_normal, 'name': '正常完成'}]
+
     result = {'yAxisdata': yAxisdata, 'yAxistodo_list': yAxistodo_list,
-              'yAxisnormal_list': yAxisnormal_list, 'yAxisoverdue_list': yAxisoverdue_list}
+              'yAxisnormal_list': yAxisnormal_list, 'yAxisoverdue_list': yAxisoverdue_list, 'piedata': piedata, 'step_avg': step_avg, 'step_date': step_date}
     print('tongji')
     return result
 

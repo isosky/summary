@@ -44,6 +44,12 @@
     .item {
         margin-right: 40px;
     }
+
+    #step_avg {
+        font-size: 60px;
+        text-align: center;
+        line-height: 100px;
+    }
 </style>
 
 <body>
@@ -128,12 +134,24 @@
                     <div id="b_task" style="height:200px"></div>
                 </el-row>
                 <el-tabs :lazy=true type="border-card">
-                    <el-tab-pane label="用户管理">
+                    <el-tab-pane label="统计">
                         <el-col :span="13">
                             <div id="task_summary" style="height:500px"></div>
                         </el-col>
+                        <el-col :span="11">
+                            <el-row :gutter="5">
+                                <div id="task_pie_summary" style="height:300px"></div>
+                            </el-row>
+                            <el-row :gutter="5">
+                                <div id="step_date">{{v_step_date}}</div>
+                            </el-row>
+                            <el-row :gutter="5">
+                                <div id="step_avg">{{v_step_avg}}</div>
+                            </el-row>
+
+                        </el-col>
                     </el-tab-pane>
-                    <el-tab-pane label="配置管理"></el-tab-pane>
+                    <el-tab-pane label="进展"></el-tab-pane>
                 </el-tabs>
 
             </el-col>
@@ -185,6 +203,8 @@
         el: '#app',
         data: function () {
             return {
+                v_step_date: '',
+                v_step_avg: '',
                 // 日历表
                 task_option: {
                     tooltip: {},
@@ -216,8 +236,9 @@
                             type: 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
                         }
                     },
+                    color: ['red', 'Orange', 'green'],
                     legend: {
-                        data: ['待做', '逾期', '正常完成']
+                        data: ['逾期', '待做', '正常完成']
                     },
                     grid: {
                         left: 60
@@ -231,7 +252,7 @@
                     },
                     series: [
                         {
-                            name: '待做',
+                            name: '逾期',
                             type: 'bar',
                             stack: '总量',
                             label: {
@@ -248,7 +269,7 @@
                             data: []
                         },
                         {
-                            name: '逾期',
+                            name: '待做',
                             type: 'bar',
                             stack: '总量',
                             label: {
@@ -281,6 +302,37 @@
                             },
                             data: []
                         },
+                    ]
+                },
+                // pie图
+                tab_pie_option: {
+                    title: {
+                        text: '任务统计',
+                        x: 'center'
+                    },
+                    color: ['red', 'Orange', 'green'],
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: "{a} <br/>{b} : {c} ({d}%)"
+                    },
+                    // legend: {
+                    //     data: ['逾期', '待做', '正常完成']
+                    // },
+                    series: [
+                        {
+                            name: '任务情况',
+                            type: 'pie',
+                            radius: '55%',
+                            center: ['50%', '60%'],
+                            data: [],
+                            label: {
+                                normal: {
+                                    show: true,
+                                    position: 'insideRight',
+                                    formatter: '{b}：{c}'
+                                }
+                            },
+                        }
                     ]
                 },
                 // left input
@@ -452,14 +504,24 @@
             settasksummary_bar: function (event) {
                 axios.get("http://127.0.0.1:5000/gettasksummary_bar").then(response => {
                     if (response.status == 200) {
+                        // 柱形图
                         let tasksummary_chart = echarts.init(document.getElementById('task_summary'), 'white', { renderer: 'canvas' });
-                        console.log(response.data);
+                        // console.log(response.data);
                         this.task_summary_option.yAxis.data = response.data.yAxisdata;
-                        this.task_summary_option.series[0].data = response.data.yAxistodo_list;
-                        this.task_summary_option.series[1].data = response.data.yAxisoverdue_list;
+                        this.task_summary_option.series[0].data = response.data.yAxisoverdue_list;
+                        this.task_summary_option.series[1].data = response.data.yAxistodo_list;
                         this.task_summary_option.series[2].data = response.data.yAxisnormal_list;
                         tasksummary_chart.setOption(this.task_summary_option);
-                        console.log(this.task_summary_option);
+                        // console.log(this.task_summary_option);
+
+                        // 饼图
+                        let tasksummary_pie_chart = echarts.init(document.getElementById('task_pie_summary'), 'white', { renderer: 'canvas' });
+                        this.tab_pie_option.series[0].data = response.data.piedata;
+                        tasksummary_pie_chart.setOption(this.tab_pie_option);
+
+                        this.v_step_avg=response.data.step_avg;
+                        this.v_step_date=response.data.step_date;
+
                     }
                 })
             },
