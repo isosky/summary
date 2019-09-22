@@ -103,7 +103,7 @@
 
                 <div class="grid-content bg-purple">
                     <el-table :data="tableData" border height="700" :cell-style="isoverdate" style="width: 100%"
-                        :default-sort="{prop: 'tetime', order: 'ascending'}">
+                        :default-sort="{prop: 'tetime', order: 'ascending'}" @row-click='showprocess'>
                         <el-table-column fixed prop="etime" sortable label="DDL" width="95">
                         </el-table-column>
                         <el-table-column prop="subject" label="分类" width="60">
@@ -112,8 +112,9 @@
                         </el-table-column>
                         <el-table-column prop="title" label="标题">
                         </el-table-column>
-                        <el-table-column label="操作" width="130">
+                        <el-table-column label="操作" width="170">
                             <template slot-scope="scope">
+                                <el-button @click="updateprocess(scope.row)" type="text" size="small">更新</el-button>
                                 <el-button @click="finishtask(scope.row)" type="text" size="small">完成</el-button>
                                 <el-button @click="updatetask(scope.row)" type="text" size="small">修改</el-button>
                                 <el-button @click="deletetask(scope.row)" type="text" size="small">删除</el-button>
@@ -133,8 +134,8 @@
                 <el-row :gutter="5">
                     <div id="b_task" style="height:200px"></div>
                 </el-row>
-                <el-tabs :lazy=true type="border-card">
-                    <el-tab-pane label="统计">
+                <el-tabs v-model='tabs_select' :lazy=true type="border-card">
+                    <el-tab-pane name="summary" label="统计">
                         <el-col :span="13">
                             <div id="task_summary" style="height:500px"></div>
                         </el-col>
@@ -151,12 +152,24 @@
 
                         </el-col>
                     </el-tab-pane>
-                    <el-tab-pane label="进展"></el-tab-pane>
+                    <el-tab-pane name="process" label="进展"></el-tab-pane>
                 </el-tabs>
 
             </el-col>
         </el-row>
         <!-- 各种弹出框 -->
+        <!-- 更新 -->
+        <el-dialog @close='closedialog' title="提示" :visible.sync="dialogpVisible" width="30%">{{v_process_content}}
+            <br></br>
+            <el-input v-model="input_process" type='textarea' style="width: 500px" :autosize="{ minRows: 5}"
+                placeholder="请输入进展"></el-input>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="dialogpVisible = false">取 消</el-button>
+                <el-button type="primary" @click="dialogprocess">确 定</el-button>
+            </span>
+        </el-dialog>
+
+
         <!-- 完成 -->
         <el-dialog @close='closedialog' title="提示" :visible.sync="dialogsVisible" width="30%">
             请输入次数：<el-input v-model="input_numbers" style="width: 300px" placeholder="请输入次数"></el-input>
@@ -215,6 +228,7 @@
         el: '#app',
         data: function () {
             return {
+                tabs_select:'summary',
                 v_step_date: '',
                 v_step_avg: '',
                 // 日历表
@@ -248,9 +262,9 @@
                             type: 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
                         }
                     },
-                    color: ['black','red', 'Orange', 'green'],
+                    color: ['black', 'red', 'Orange', 'green'],
                     legend: {
-                        data: ['逾期','待做逾期', '待做', '正常完成']
+                        data: ['逾期', '待做逾期', '待做', '正常完成']
                     },
                     grid: {
                         left: 60
@@ -339,7 +353,7 @@
                         text: '任务统计',
                         x: 'center'
                     },
-                    color: ['black','red', 'Orange', 'green'],
+                    color: ['black', 'red', 'Orange', 'green'],
                     tooltip: {
                         trigger: 'item',
                         formatter: "{a} <br/>{b} : {c} ({d}%)"
@@ -425,6 +439,11 @@
                 },
                 querytimerange: '',
                 isqueryall: true,
+
+                // dialog process
+                dialogpVisible: false,
+                v_process_content: '',
+                input_process: '',
 
 
                 // dialog commit
@@ -547,8 +566,8 @@
                         // 饼图
                         let tasksummary_pie_chart = echarts.init(document.getElementById('task_pie_summary'), 'white', { renderer: 'canvas' });
                         this.tab_pie_option.series[0].data = response.data.piedata;
-                        this.tab_pie_option.title.text='任务逾期率:'+response.data.overdue_percent+'%';
-                        this.tab_pie_option.title.subtext='总统计数:'+response.data.sum_task+'个';
+                        this.tab_pie_option.title.text = '任务逾期率:' + response.data.overdue_percent + '%';
+                        this.tab_pie_option.title.subtext = '总统计数:' + response.data.sum_task + '个';
                         tasksummary_pie_chart.setOption(this.tab_pie_option);
 
                         this.v_step_avg = response.data.step_avg;
@@ -557,6 +576,27 @@
                     }
                 })
             },
+            // 展示进展面板
+            updateprocess: function (event) {
+                this.dialogpVisible = true;
+                this.v_process_content = event.title;
+                this.s_task_id = event.task_id;
+            },
+
+            // 调用进展接口
+            dialogprocess: function (event) {
+                axios.post('http://127.0.0.1:5000/updateprocess', {
+                    task_id: this.s_task_id,
+                    content: this.input_process
+                }).then(response => {
+                    this.$message({
+                        message: '更新成功',
+                        type: 'success'
+                    });
+                    this.dialogsVisible = false;
+                })
+            },
+
             updatedata: function (event) {
                 axios.post('http://127.0.0.1:5000/data_add_v', {
                     type: this.first_select,
@@ -671,6 +711,10 @@
             closedialog: function (event) {
                 this.task_select = '';
                 this.task_sub_select = '';
+            },
+            showprocess: function (event) {
+                console.log(event);
+                this.tabs_select='process';
             }
         }
     })

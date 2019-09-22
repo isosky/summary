@@ -71,9 +71,10 @@ def addtask():
     temp = dboo.addtask(arg_subject, arg_subsub, arg_title, arg_edate)
     return json.dumps({'arrays': temp})
 
+
 @app.route('/initoption')
 def initoption():
-    return json.dumps({'task_sub_all_option':dboo.initoption()})
+    return json.dumps({'task_sub_all_option': dboo.initoption()})
 
 
 @app.route('/gettasknow')
@@ -131,12 +132,24 @@ def updatetask():
 
 @app.route('/removetask')
 def removetask():
-    return json.dumps({'message':'已从任务中移除'+dboo.removetask()+'条删除的数据'})
+    return json.dumps({'message': '已从任务中移除'+dboo.removetask()+'条删除的数据'})
 
 
 @app.route('/gettasksummary_bar')
 def gettasksummary_bar():
     return json.dumps(dboo.gettasksummary_bar())
+
+
+# 更新
+@app.route('/updateprocess', methods=['POST'])
+def updateprocess():
+    print(request.get_data())
+    json_data = json.loads(request.get_data())
+    task_id = json_data['task_id']
+    content = json_data['content']
+    if dboo.updateprocess(task_id, content):
+        return json.dumps({'result': True})
+
 
 if __name__ == '__main__':
     app.run()

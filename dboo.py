@@ -164,6 +164,15 @@ def finishtask(task_id, task_numbers):
     conn.close()
 
 
+def updateprocess(task_id, content):
+    conn = sqlite3.connect(dbf)
+    # etime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    c = conn.cursor()
+    c.execute("insert into task_process (task_id,content) values (?,?)",[task_id,content])
+    conn.commit()
+    conn.close()
+    return True
+
 def deletetask(task_id):
     conn = sqlite3.connect(dbf)
     # 格式化成2016-03-20 11:45:39形式
