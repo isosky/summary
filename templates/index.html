@@ -127,10 +127,15 @@
                 <el-row :gutter="5">
                     <div id="b_task" style="height:200px"></div>
                 </el-row>
-                <el-tabs type="border-card" @tab-click="test">
-                    <el-tab-pane label="统计"></el-tab-pane>
-                    <el-tab-pane label="任务进展"></el-tab-pane>
+                <el-tabs :lazy=true type="border-card">
+                    <el-tab-pane label="用户管理">
+                        <el-col :span="13">
+                            <div id="task_summary" style="height:500px"></div>
+                        </el-col>
+                    </el-tab-pane>
+                    <el-tab-pane label="配置管理"></el-tab-pane>
                 </el-tabs>
+
             </el-col>
         </el-row>
         <!-- 各种弹出框 -->
@@ -180,6 +185,7 @@
         el: '#app',
         data: function () {
             return {
+                // 日历表
                 task_option: {
                     tooltip: {},
                     grid: {
@@ -201,6 +207,81 @@
                         coordinateSystem: 'calendar',
                         data: []
                     }
+                },
+                // 统计柱形图
+                task_summary_option: {
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {            // 坐标轴指示器，坐标轴触发有效
+                            type: 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
+                        }
+                    },
+                    legend: {
+                        data: ['待做', '逾期', '正常完成']
+                    },
+                    grid: {
+                        left: 60
+                    },
+                    xAxis: {
+                        type: 'value'
+                    },
+                    yAxis: {
+                        type: 'category',
+                        data: []
+                    },
+                    series: [
+                        {
+                            name: '待做',
+                            type: 'bar',
+                            stack: '总量',
+                            label: {
+                                normal: {
+                                    show: true,
+                                    position: 'insideRight',
+                                    formatter: function (num) {
+                                        if (num.value == 0) {
+                                            return '';
+                                        }
+                                    }
+                                }
+                            },
+                            data: []
+                        },
+                        {
+                            name: '逾期',
+                            type: 'bar',
+                            stack: '总量',
+                            label: {
+                                normal: {
+                                    show: true,
+                                    position: 'insideRight',
+                                    formatter: function (num) {
+                                        if (num.value == 0) {
+                                            return '';
+                                        }
+                                    }
+                                }
+                            },
+                            data: []
+                        },
+                        {
+                            name: '正常完成',
+                            type: 'bar',
+                            stack: '总量',
+                            label: {
+                                normal: {
+                                    show: true,
+                                    position: 'insideRight',
+                                    formatter: function (num) {
+                                        if (num.value == 0) {
+                                            return '';
+                                        }
+                                    }
+                                }
+                            },
+                            data: []
+                        },
+                    ]
                 },
                 // left input
                 select_option: [{
@@ -290,6 +371,7 @@
             // console.log('asdasdasda');
             // console.log(this.tableData);
             this.setbar();
+            this.settasksummary_bar();
             this.settable();
             this.initoption();
         },
@@ -306,7 +388,7 @@
                 });
             },
             updatesuboption: function (event) {
-                console.log('update option');
+                // console.log('update option');
                 this.task_sub_select = '';
                 if (this.task_select != '' && this.task_sub_all_option != []) {
                     this.task_sub_select_option = [];
@@ -319,11 +401,12 @@
                             this.task_sub_select_option.push({ value: temp[i], label: temp[i] });
                         }
                     }
-                } else {
-                    console.log('update option');
-                    console.log(this.task_select);
-                    console.log(this.task_sub_all_option);
                 }
+                // else {
+                // console.log('update option');
+                // console.log(this.task_select);
+                // console.log(this.task_sub_all_option);
+                // }
             },
             gettasksummary: function (event) {
                 axios.get("http://127.0.0.1:5000/gettasksummary").then(response => {
@@ -343,11 +426,11 @@
                         this.tableData = [];
                         for (row in temp) {
                             // console.log(row);
-                            console.log(temp[row].tetime);
+                            // console.log(temp[row].tetime);
                             this.tableData.push(temp[row]);
                         }
                         this.gettasksummary();
-                        console.log(this.tableData);
+                        // console.log(this.tableData);
                     }
                 })
             },
@@ -361,10 +444,24 @@
                         if (response.status == 200) {
                             console.log(response.data.result);
                             this.task_option.series.data = response.data.result;
-                            console.log(this.task_option);
+                            // console.log(this.task_option);
                             task_chart.setOption(this.task_option);
                         }
                     });
+            },
+            settasksummary_bar: function (event) {
+                axios.get("http://127.0.0.1:5000/gettasksummary_bar").then(response => {
+                    if (response.status == 200) {
+                        let tasksummary_chart = echarts.init(document.getElementById('task_summary'), 'white', { renderer: 'canvas' });
+                        console.log(response.data);
+                        this.task_summary_option.yAxis.data = response.data.yAxisdata;
+                        this.task_summary_option.series[0].data = response.data.yAxistodo_list;
+                        this.task_summary_option.series[1].data = response.data.yAxisoverdue_list;
+                        this.task_summary_option.series[2].data = response.data.yAxisnormal_list;
+                        tasksummary_chart.setOption(this.task_summary_option);
+                        console.log(this.task_summary_option);
+                    }
+                })
             },
             updatedata: function (event) {
                 axios.post('http://127.0.0.1:5000/data_add_v', {
@@ -475,7 +572,7 @@
                     }
                 }
             },
-            test:function(event){
+            test: function (event) {
                 console.log('this is test');
                 console.log(event);
             }

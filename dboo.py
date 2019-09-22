@@ -245,57 +245,57 @@ def removetask():
 
 
 # 统计的柱形图
-def countbar():
+def gettasksummary_bar():
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
     cursor = c.execute(
-        "select subsub,count(*) from task where isabandon=0 group by subsub order by 2 desc")
-    xAxisdata = []
+        "select subsub,count(*) from task where isabandon=0 group by subsub order by 2")
+    yAxisdata = []
     for i in cursor:
-        xAxisdata.append(i[0])
+        yAxisdata.append(i[0])
     cursor = c.execute(
         "select subsub,count(*) from task where isabandon=0 and isfinish=0 group by subsub")
-    xAxistodo = {}
+    yAxistodo = {}
     for i in cursor:
-        xAxistodo[i[0]] = i[1]
+        yAxistodo[i[0]] = i[1]
     cursor = c.execute(
         "select subsub,count(*) from task where ftime<date(etime,'+1 day') group by subsub")
-    xAxisnormal = {}
+    yAxisnormal = {}
     for i in cursor:
-        xAxisnormal[i[0]] = i[1]
+        yAxisnormal[i[0]] = i[1]
     cursor = c.execute(
         "select subsub,count(*) from task where ftime>=date(etime,'+1 day') group by subsub")
-    xAxisoverdue = {}
+    yAxisoverdue = {}
     for i in cursor:
-        xAxisoverdue[i[0]] = i[1]
+        yAxisoverdue[i[0]] = i[1]
 
-    xAxistodo_list = []
-    xAxisnormal_list = []
-    xAxisoverdue_list = []
+    yAxistodo_list = []
+    yAxisnormal_list = []
+    yAxisoverdue_list = []
 
-    for subsub in xAxisdata:
-        if subsub not in xAxistodo.keys():
-            xAxistodo_list.append(0)
+    for subsub in yAxisdata:
+        if subsub not in yAxistodo.keys():
+            yAxistodo_list.append(0)
         else:
-            xAxistodo_list.append(xAxistodo[subsub])
+            yAxistodo_list.append(yAxistodo[subsub])
 
-        if subsub not in xAxisnormal.keys():
-            xAxisnormal_list.append(0)
+        if subsub not in yAxisnormal.keys():
+            yAxisnormal_list.append(0)
         else:
-            xAxisnormal_list.append(xAxisnormal[subsub])
+            yAxisnormal_list.append(yAxisnormal[subsub])
 
-        if subsub not in xAxisoverdue.keys():
-            xAxisoverdue_list.append(0)
+        if subsub not in yAxisoverdue.keys():
+            yAxisoverdue_list.append(0)
         else:
-            xAxisoverdue_list.append(xAxisoverdue[subsub])
-    result = {'xAxisdata': xAxisdata, 'xAxistodo_list': xAxistodo_list,
-              'xAxisnormal_list': xAxisnormal_list, 'xAxisoverdue_list': xAxisoverdue_list}
+            yAxisoverdue_list.append(yAxisoverdue[subsub])
+    result = {'yAxisdata': yAxisdata, 'yAxistodo_list': yAxistodo_list,
+              'yAxisnormal_list': yAxisnormal_list, 'yAxisoverdue_list': yAxisoverdue_list}
     print('tongji')
     return result
 
 
 if __name__ == '__main__':
-    countbar()
+    gettasksummary_bar()
     # s_time = [str(x) for x in range(20190701, 20190720)]
     # step = [random.randint(7000, 10000) for x in range(len(s_time))]
     # querytask('规则')

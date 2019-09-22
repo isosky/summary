@@ -133,5 +133,10 @@ def updatetask():
 def removetask():
     return json.dumps({'message':'已从任务中移除'+dboo.removetask()+'条删除的数据'})
 
+
+@app.route('/gettasksummary_bar')
+def gettasksummary_bar():
+    return json.dumps(dboo.gettasksummary_bar())
+
 if __name__ == '__main__':
     app.run()
