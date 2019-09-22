@@ -103,7 +103,7 @@
 
                 <div class="grid-content bg-purple">
                     <el-table :data="tableData" border height="700" :cell-style="isoverdate" style="width: 100%"
-                        :default-sort="{prop: 'tetime', order: 'ascending'}" @row-click='showprocess'>
+                        :default-sort="{prop: 'tetime', order: 'ascending'}" @cell-click='showprocess'>
                         <el-table-column fixed prop="etime" sortable label="DDL" width="95">
                         </el-table-column>
                         <el-table-column prop="subject" label="分类" width="60">
@@ -152,7 +152,12 @@
 
                         </el-col>
                     </el-tab-pane>
-                    <el-tab-pane name="process" label="进展"></el-tab-pane>
+                    <el-tab-pane name="process" label="进展">
+                        <el-table :data="tableprocess" border height="500" style="width: 100%">
+                            <el-table-column prop="stime" label="日期" width="180"> </el-table-column>
+                            <el-table-column prop="content" label="内容" width="400"> </el-table-column>
+                        </el-table>
+                    </el-tab-pane>
                 </el-tabs>
 
             </el-col>
@@ -228,7 +233,7 @@
         el: '#app',
         data: function () {
             return {
-                tabs_select:'summary',
+                tabs_select: 'summary',
                 v_step_date: '',
                 v_step_avg: '',
                 // 日历表
@@ -412,8 +417,10 @@
                 task_sub_select: '',
                 task_sub_select_option: [],
                 task_sub_all_option: [],
+
                 // table
                 tableData: [],
+                tableprocess: [],
 
                 // 查询
                 pickerOptions: {
@@ -585,6 +592,7 @@
 
             // 调用进展接口
             dialogprocess: function (event) {
+                console.log(this.s_task_id);
                 axios.post('http://127.0.0.1:5000/updateprocess', {
                     task_id: this.s_task_id,
                     content: this.input_process
@@ -593,7 +601,8 @@
                         message: '更新成功',
                         type: 'success'
                     });
-                    this.dialogsVisible = false;
+                    this.dialogpVisible = false;
+                    this.showprocess();
                 })
             },
 
@@ -711,10 +720,26 @@
             closedialog: function (event) {
                 this.task_select = '';
                 this.task_sub_select = '';
+                // this.s_task_id = '';
             },
-            showprocess: function (event) {
-                console.log(event);
-                this.tabs_select='process';
+            showprocess: function (row, column, cell, event) {
+                if ((column !== undefined && column.label == '标题') || (this.s_task_id != '' && !this.dialogpVisible)) {
+                    if (row !== undefined) {
+                        this.s_task_id = row.task_id;
+                    }
+                    this.tabs_select = 'process';
+                    axios.post('http://127.0.0.1:5000/getprocess', {
+                        task_id: this.s_task_id
+                    }).then(response => {
+                        temp = response.data.arrays;
+                        this.tableprocess = [];
+                        this.s_task_id = '';
+                        for (row in temp) {
+                            // console.log(row);
+                            this.tableprocess.push(temp[row]);
+                        }
+                    })
+                }
             }
         }
     })

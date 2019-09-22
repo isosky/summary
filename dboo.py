@@ -133,6 +133,18 @@ def gettasknow():
     return result
 
 
+def getprocess(task_id):
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    cursor = c.execute(
+        "select stime,content from task_process where task_id=? order by 1 desc", [task_id])
+    result = []
+    for row in cursor:
+        result.append({'stime': row[0][0:10], 'content': row[1]})
+    conn.close()
+    return result
+
+
 def parsetime(timestring, timeformat):
     if timeformat == 'yyyymmdd':
         if type(timestring) == int:
@@ -168,10 +180,12 @@ def updateprocess(task_id, content):
     conn = sqlite3.connect(dbf)
     # etime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
     c = conn.cursor()
-    c.execute("insert into task_process (task_id,content) values (?,?)",[task_id,content])
+    c.execute("insert into task_process (task_id,content) values (?,?)", [
+              task_id, content])
     conn.commit()
     conn.close()
     return True
+
 
 def deletetask(task_id):
     conn = sqlite3.connect(dbf)

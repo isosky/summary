@@ -120,7 +120,6 @@ def querytask():
 
 @app.route('/updatetask', methods=['POST'])
 def updatetask():
-    print(request.get_data())
     json_data = json.loads(request.get_data())
     task_id = json_data['task_id']
     subsub = json_data['subsub']
@@ -143,12 +142,19 @@ def gettasksummary_bar():
 # 更新
 @app.route('/updateprocess', methods=['POST'])
 def updateprocess():
-    print(request.get_data())
     json_data = json.loads(request.get_data())
     task_id = json_data['task_id']
     content = json_data['content']
     if dboo.updateprocess(task_id, content):
         return json.dumps({'result': True})
+
+
+# 更新
+@app.route('/getprocess', methods=['POST'])
+def getprocess():
+    json_data = json.loads(request.get_data())
+    task_id = json_data['task_id']
+    return json.dumps({'arrays': dboo.getprocess(task_id)})
 
 
 if __name__ == '__main__':
