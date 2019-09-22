@@ -196,12 +196,12 @@ def deletetask(task_id):
     conn.close()
 
 
-def updatetask(task_id, subsub, title, etime):
+def updatetask(task_id, subject, subsub, title, etime):
     conn = sqlite3.connect(dbf)
     # print(task_id, subsub, title, etime)
     c = conn.cursor()
-    c.execute('''update task set subsub=? , title=? , etime=? where task_id =? ''', [
-              subsub, title, etime, task_id])
+    c.execute('''update task set subject=?, subsub=? , title=? , etime=? where task_id =? ''', [
+              subject, subsub, title, etime, task_id])
     conn.commit()
     conn.close()
 

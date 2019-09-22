@@ -121,11 +121,13 @@ def querytask():
 @app.route('/updatetask', methods=['POST'])
 def updatetask():
     json_data = json.loads(request.get_data())
+    print(json_data)
     task_id = json_data['task_id']
+    subject = json_data['subject']
     subsub = json_data['subsub']
     title = json_data['title']
     etime = json_data['etime']
-    dboo.updatetask(task_id, subsub, title, etime)
+    dboo.updatetask(task_id, subject, subsub, title, etime)
     return json.dumps({'result': True})
 
 
