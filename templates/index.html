@@ -636,6 +636,7 @@
                         // console.log(response);
                         this.task_title = '';
                         this.new_edate = '';
+                        this.task_select='';
                         this.freshright();
                     })
                 }
@@ -732,7 +733,8 @@
                 this.task_sub_select = '';
             },
             showprocess: function (row, column, cell, event) {
-                if (column !== undefined && column.label == '操作') {
+                if (column !== undefined && column.label != '标题') {
+                    this.tabs_select = 'summary';
                     return
                 }
                 if ((column !== undefined && column.label == '标题') || (this.s_task_id != '' && !this.dialogpVisible)) {

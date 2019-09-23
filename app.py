@@ -20,18 +20,18 @@ def data_add():
 
 @app.route('/data_add_v', methods=['POST'])
 def data_add_v():
-    print(request.get_data())
+    # print(request.get_data())
     json_data = json.loads(request.get_data())
     arg_data = json_data['data']
     arg_type = json_data['type']
-    print(arg_data, arg_type)
+    # print(arg_data, arg_type)
     if arg_type == 'step':
         if arg_data:
             temp = arg_data.split(';')
             # result = []
             for i in temp:
                 ttt = i.split(',')
-                print(ttt)
+                # print(ttt)
                 if len(ttt) > 1:
                     dboo.step_add_one(ttt[0], ttt[1])
         return json.dumps({"result": dboo.getstep()})
@@ -41,7 +41,7 @@ def data_add_v():
             # result = []
             for i in temp:
                 ttt = i.split(',')
-                print(ttt)
+                # print(ttt)
                 if len(ttt) > 1:
                     dboo.weight_add_one(ttt[0], ttt[1])
         return json.dumps({"result": dboo.getweight()})
@@ -61,7 +61,7 @@ def getweight():
 
 @app.route('/addtask', methods=['POST'])
 def addtask():
-    print(request.get_data())
+    # print(request.get_data())
     json_data = json.loads(request.get_data())
     arg_subject = json_data['subject']
     arg_subsub = json_data['subsub']
@@ -89,7 +89,7 @@ def gettimedata():
 
 @app.route('/finishtask', methods=['POST'])
 def finishtask():
-    print(request.get_data())
+    # print(request.get_data())
     json_data = json.loads(request.get_data())
     task_id = json_data['task_id']
     input_numbers = json_data['input_numbers']
@@ -99,7 +99,7 @@ def finishtask():
 
 @app.route('/deletetask', methods=['POST'])
 def deletetask():
-    print(request.get_data())
+    # print(request.get_data())
     json_data = json.loads(request.get_data())
     task_id = json_data['task_id']
     dboo.deletetask(task_id)
@@ -121,7 +121,7 @@ def querytask():
 @app.route('/updatetask', methods=['POST'])
 def updatetask():
     json_data = json.loads(request.get_data())
-    print(json_data)
+    # print(json_data)
     task_id = json_data['task_id']
     subject = json_data['subject']
     subsub = json_data['subsub']
