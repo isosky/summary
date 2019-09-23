@@ -112,6 +112,8 @@
                         </el-table-column>
                         <el-table-column prop="title" label="标题">
                         </el-table-column>
+                        <el-table-column prop="num_process" label="进展" width="60">
+                        </el-table-column>
                         <el-table-column label="操作" width="170">
                             <template slot-scope="scope">
                                 <el-button @click="updateprocess(scope.row)" type="text" size="small">更新</el-button>
@@ -734,11 +736,11 @@
                 this.task_sub_select = '';
             },
             showprocess: function (row, column, cell, event) {
-                if (column !== undefined && column.label != '标题') {
+                if (column !== undefined && column.label != '进展') {
                     this.tabs_select = 'summary';
                     return
                 }
-                if ((column !== undefined && column.label == '标题') || (this.s_task_id != '' && !this.dialogpVisible)) {
+                if ((column !== undefined && column.label == '进展') || (this.s_task_id != '' && !this.dialogpVisible)) {
                     if (row !== undefined) {
                         this.s_task_id = row.task_id;
                     }

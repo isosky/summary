@@ -124,12 +124,26 @@ def gettasknow():
     cursor = c.execute(
         "select task_id,subject,subsub,title,etime,stime from task where isfinish=0 and isabandon=0 order by etime,task_id")
     result = []
+    process = getallprocess()
     for row in cursor:
         temp = {'task_id': row[0], 'subject': row[1], 'subsub': row[2],
                 'title': row[3], 'etime': row[4][5:], 'stime': row[5], 'tetime': row[4]}
+        if row[0] in process.keys():
+            temp['num_process'] = process[row[0]]
         result.append(temp)
     # temp = cursor
     conn.close()
+    return result
+
+
+def getallprocess():
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    cursor = c.execute(
+        "select task_id,count(*) from task_process where isfinish=0 group by task_id")
+    result = {}
+    for row in cursor:
+        result[row[0]] = row[1]
     return result
 
 
@@ -172,6 +186,8 @@ def finishtask(task_id, task_numbers):
     c = conn.cursor()
     c.execute('''update task set ftime=? ,isfinish=1 ,times=? where task_id =? ''', [
               etime, task_numbers, task_id])
+    #   关闭所有进程
+    c.execute('update task_process set isfinish=1 where task_id=?', [task_id])
     conn.commit()
     conn.close()
 
