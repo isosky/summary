@@ -251,7 +251,10 @@
                         }
                     },
                     calendar: {
-                        range: ['2019-07', '2020-01']
+                        range: ['2019-07', '2020-01'],
+                        dayLabel: {
+                            firstDay: 1 // 从周一开始
+                        }
                     },
                     series: {
                         type: 'heatmap',
@@ -550,8 +553,6 @@
             },
             setbar: function (event) {
                 // console.log('setbar');
-                // TODO 判断对象是否存在，避免重复刷新
-
                 console.log(typeof (task_chart));
                 axios.get("http://127.0.0.1:5000/gettimedata")
                     .then(response => {
@@ -636,7 +637,7 @@
                         // console.log(response);
                         this.task_title = '';
                         this.new_edate = '';
-                        this.task_select='';
+                        this.task_select = '';
                         this.freshright();
                     })
                 }

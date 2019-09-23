@@ -37,7 +37,7 @@ def initoption():
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
     cursor = c.execute(
-        "select subject,subsub from task where isabandon=0 group by subject,subsub")
+        "select subject,subsub,count(*) from task where isabandon=0 group by subject,subsub order by 3 desc")
     result = {}
     for row in cursor:
         if row[0] not in result.keys():
