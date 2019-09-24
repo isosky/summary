@@ -72,16 +72,17 @@
                             :value="item.value">
                         </el-option>
                     </el-select>
-                    <el-date-picker :picker-options="{'firstDayOfWeek': 1}" v-model="new_edate" value-format="yyyy-MM-dd" type="date" style="width:150px"
-                        placeholder="ddl">
+                    <el-date-picker :picker-options="{'firstDayOfWeek': 1}" v-model="new_edate"
+                        value-format="yyyy-MM-dd" type="date" style="width:150px" placeholder="ddl">
                     </el-date-picker>
                     <el-input v-model="task_title" style="width: 300px" placeholder="请输入内容"></el-input>
                     <el-button @click="addtask">提交</el-button>
                     <el-button @click="removetask">清空</el-button>
                 </el-row>
                 <el-row :gutter="5">
-                    <el-date-picker :picker-options="{'firstDayOfWeek': 1}"  v-model="querytimerange" type="daterange" :picker-options="pickerOptions"
-                        range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" align="right">
+                    <el-date-picker :picker-options="{'firstDayOfWeek': 1}" v-model="querytimerange" type="daterange"
+                        :picker-options="pickerOptions" range-separator="至" start-placeholder="开始日期"
+                        end-placeholder="结束日期" align="right">
                     </el-date-picker>
                     <el-switch v-model="isqueryall" active-color="#13ce66" inactive-color="#ff4949" active-text="全部"
                         inactive-text="待做">
@@ -188,7 +189,8 @@
 
         <!-- 修改 -->
         <el-dialog @close='closedialog' title="确认修改任务？？" :visible.sync="dialoguVisible" width="40%">
-            <el-date-picker :picker-options="{'firstDayOfWeek': 1}" v-model="duetime" value-format="yyyy-MM-dd" type="date" style="width:150px">
+            <el-date-picker :picker-options="{'firstDayOfWeek': 1}" v-model="duetime" value-format="yyyy-MM-dd"
+                type="date" style="width:150px">
             </el-date-picker>
             <!-- 修改任务面板里面的一级分类 -->
             <el-select @change='updatesuboption' clearable v-model="task_select" style="width: 120px" placeholder="请选择">
@@ -612,7 +614,7 @@
                         message: '更新成功',
                         type: 'success'
                     });
-                    this.input_process='';
+                    this.input_process = '';
                     this.dialogpVisible = false;
                     this.showprocess();
                     // TODO 是否可以做成局部刷新，只更新该任务的数据即可
