@@ -122,12 +122,12 @@ def gettasknow():
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
     cursor = c.execute(
-        "select task_id,subject,subsub,title,etime,stime from task where isfinish=0 and isabandon=0 order by etime,task_id")
+        "select task_id,subject,subsub,title,etime,stime,isfinish from task where isfinish=0 and isabandon=0 order by etime,task_id")
     result = []
     process = getallprocess()
     for row in cursor:
         temp = {'task_id': row[0], 'subject': row[1], 'subsub': row[2],
-                'title': row[3], 'etime': row[4][5:], 'stime': row[5], 'tetime': row[4]}
+                'title': row[3], 'etime': row[4][5:], 'stime': row[5], 'tetime': row[4],'isfinish':row[6]}
         if row[0] in process.keys():
             temp['num_process'] = process[row[0]]
         result.append(temp)
@@ -244,16 +244,20 @@ def gettasksummary():
 
 
 # FIXME 查询目前有bug，返回的时候顺序不对
-def querytask(query):
+def querytask(query, subject, subsub, isqueryall):
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
     query = '%'+query+'%'
+    if isqueryall:
+        isfinish = 1
+    else:
+        isfinish = 0
     cursor = c.execute(
-        "select task_id,subject,subsub,title,etime,stime from task where isfinish=0 and isabandon=0 and title like ?", [query])
+        "select task_id,subject,subsub,title,etime,stime,isfinish from task where isabandon=0 and title like ? and subject=? and subsub=? and isfinish=? order by etime,task_id", [query, subject, subsub, isfinish])
     result = []
     for row in cursor:
         temp = {'task_id': row[0], 'subject': row[1], 'subsub': row[2],
-                'title': row[3], 'etime': row[4][5:], 'stime': row[5], 'tetime': row[4]}
+                'title': row[3], 'etime': row[4][5:], 'stime': row[5], 'tetime': row[4],'isfinish':row[6]}
         result.append(temp)
     # temp = cursor
     conn.close()

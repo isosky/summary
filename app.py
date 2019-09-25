@@ -115,7 +115,10 @@ def gettasksummary():
 def querytask():
     json_data = json.loads(request.get_data())
     query = json_data['query']
-    return json.dumps({'arrays': dboo.querytask(query)})
+    subject = json_data['subject']
+    subsub = json_data['subsub']
+    isqueryall = json_data['isqueryall']
+    return json.dumps({'arrays': dboo.querytask(query, subject, subsub, isqueryall)})
 
 
 @app.route('/updatetask', methods=['POST'])
