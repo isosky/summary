@@ -558,7 +558,6 @@
             // TODO query
             setbar: function (event) {
                 // console.log('setbar');
-                console.log(typeof (task_chart));
                 axios.get("http://127.0.0.1:5000/gettimedata")
                     .then(response => {
                         // console.log(response.data.result);
@@ -582,15 +581,14 @@
                         this.task_summary_option.series[2].data = response.data.yAxistodo_list;
                         this.task_summary_option.series[3].data = response.data.yAxisnormal_list;
                         this.tasksummary_chart.setOption(this.task_summary_option);
-                        // console.log(this.task_summary_option);
 
                         // 饼图
-
                         this.tab_pie_option.series[0].data = response.data.piedata;
                         this.tab_pie_option.title.text = '完成率:' + response.data.percent[0] + '%，逾期率:' + response.data.percent[1] + '%';
                         this.tab_pie_option.title.subtext = '总统计数:' + response.data.sum_task + '个';
                         this.tasksummary_pie_chart.setOption(this.tab_pie_option);
 
+                        // 步数展示
                         this.v_step_avg = response.data.step_avg;
                         this.v_step_date = response.data.step_date;
 
