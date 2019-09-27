@@ -127,7 +127,7 @@ def gettasknow():
     process = getallprocess()
     for row in cursor:
         temp = {'task_id': row[0], 'subject': row[1], 'subsub': row[2],
-                'title': row[3], 'etime': row[4][5:], 'stime': row[5], 'tetime': row[4],'isfinish':row[6]}
+                'title': row[3], 'etime': row[4][5:], 'stime': row[5], 'tetime': row[4], 'isfinish': row[6]}
         if row[0] in process.keys():
             temp['num_process'] = process[row[0]]
         result.append(temp)
@@ -179,13 +179,16 @@ def gettimedata():
     return {'result': result}
 
 
-def finishtask(task_id, task_numbers):
+def finishtask(task_id, input_finish):
     conn = sqlite3.connect(dbf)
     # 格式化成2016-03-20 11:45:39形式
     etime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
     c = conn.cursor()
-    c.execute('''update task set ftime=? ,isfinish=1 ,times=? where task_id =? ''', [
-              etime, task_numbers, task_id])
+    c.execute('''update task set ftime=? ,isfinish=1 where task_id =? ''', [
+              etime, task_id])
+    c.execute("insert into task_process (task_id,content) values (?,?)", [
+        task_id, input_finish])
+    conn.commit()
     #   关闭所有进程
     c.execute('update task_process set isfinish=1 where task_id=?', [task_id])
     conn.commit()
@@ -257,7 +260,7 @@ def querytask(query, subject, subsub, isqueryall):
     result = []
     for row in cursor:
         temp = {'task_id': row[0], 'subject': row[1], 'subsub': row[2],
-                'title': row[3], 'etime': row[4][5:], 'stime': row[5], 'tetime': row[4],'isfinish':row[6]}
+                'title': row[3], 'etime': row[4][5:], 'stime': row[5], 'tetime': row[4], 'isfinish': row[6]}
         result.append(temp)
     # temp = cursor
     conn.close()

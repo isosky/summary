@@ -180,7 +180,8 @@
 
         <!-- 完成 -->
         <el-dialog @close='closedialog' title="提示" :visible.sync="dialogsVisible" width="30%">
-            请输入次数：<el-input v-model="input_numbers" style="width: 300px" placeholder="请输入次数"></el-input>
+            <el-input v-model="input_finish" type='textarea' placeholder="请输入完成情况" style="width: 500px"
+                :autosize="{ minRows: 5}"></el-input>
             <span slot="footer" class="dialog-footer">
                 <el-button @click="dialogsVisible = false">取 消</el-button>
                 <el-button type="primary" @click="dialogcommit">确 定</el-button>
@@ -463,7 +464,7 @@
                 // dialog commit
                 dialogsVisible: false,
                 s_task_id: '',
-                input_numbers: 1,
+                input_finish: '',
 
                 // dialog update
                 dialoguVisible: false,
@@ -659,9 +660,9 @@
                 //  TODO 在查询结果中编辑，应该还是掉查询结果后，可以考虑将两个接口合并成一个接口
                 axios.post('http://127.0.0.1:5000/querytask', {
                     query: this.task_title,
-                    subject:this.task_select,
-                    subsub:this.task_sub_select,
-                    isqueryall:this.isqueryall
+                    subject: this.task_select,
+                    subsub: this.task_sub_select,
+                    isqueryall: this.isqueryall
                 }).then(response => {
                     // console.log(response);
                     temp = response.data.arrays;
@@ -677,9 +678,10 @@
                 this.dialogsVisible = false;
                 axios.post('http://127.0.0.1:5000/finishtask', {
                     task_id: this.s_task_id,
-                    input_numbers: this.input_numbers
+                    input_finish: this.input_finish
                 }).then(response => {
                     // console.log(response);
+                    this.input_finish = '';
                     this.freshright();
                 })
             },
@@ -734,10 +736,10 @@
                 if (columnIndex == 0) {
                     temp = new Date(row.tetime + ' 23:59:59').getTime();
                     // console.log(row);
-                    if (temp < this.now_time && row.isfinish==0) {
+                    if (temp < this.now_time && row.isfinish == 0) {
                         return 'background-color:red;color:white'
                     }
-                    if (row.isfinish==1) {
+                    if (row.isfinish == 1) {
                         return 'background-color:green;color:white'
                     }
                 }

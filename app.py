@@ -92,8 +92,8 @@ def finishtask():
     # print(request.get_data())
     json_data = json.loads(request.get_data())
     task_id = json_data['task_id']
-    input_numbers = json_data['input_numbers']
-    dboo.finishtask(task_id, input_numbers)
+    input_finish = json_data['input_finish']
+    dboo.finishtask(task_id, input_finish)
     return json.dumps({'result': True})
 
 
