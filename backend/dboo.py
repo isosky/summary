@@ -132,6 +132,7 @@ def gettasknow():
             temp['num_process'] = process[row[0]]
         result.append(temp)
     # temp = cursor
+    print(len(result))
     conn.close()
     return result
 
