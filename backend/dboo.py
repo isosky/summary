@@ -1,9 +1,9 @@
-import sqlite3
+import datetime
+import json
 import os
 import random
-import json
+import sqlite3
 import time
-import datetime
 
 if not os.path.exists("C:/Users/fengy/OneDrive/文档/tmss.db"):
     dbf = "C:/Users/isowang/OneDrive/文档/tmss.db"
@@ -247,17 +247,30 @@ def gettasksummary():
     return json.dumps({'res_delay': res_delay, 'res_today': res_today, 'res_todo': res_todo})
 
 
-# FIXME 查询目前有bug，返回的时候顺序不对
 def querytask(query, subject, subsub, isqueryall):
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
     query = '%'+query+'%'
-    if isqueryall:
-        isfinish = 1
-    else:
-        isfinish = 0
-    cursor = c.execute(
-        "select task_id,subject,subsub,title,etime,stime,isfinish from task where isabandon=0 and title like ? and subject=? and subsub=? and isfinish=? order by etime,task_id", [query, subject, subsub, isfinish])
+    sql = "select task_id,subject,subsub,title,etime,stime,isfinish from task where isabandon=0 and title like ?"
+    if not isqueryall:
+        sql += " and isfinish = 0 "
+
+    params_list = [query]
+
+    print(subject)
+
+    if subject != '':
+        sql += " and subject=? "
+        params_list.append(subject)
+    if subsub != '':
+        sql += " and subsub=? "
+        params_list.append(subsub)
+
+    sql += " order by etime,task_id"
+    print(sql)
+    # print("select task_id,subject,subsub,title,etime,stime,isfinish from task where isabandon=0 and title like ? and subject=? and subsub=? and isfinish=? order by etime,task_id", [
+    #       query, subject, subsub, isfinish])
+    cursor = c.execute(sql, params_list)
     result = []
     for row in cursor:
         temp = {'task_id': row[0], 'subject': row[1], 'subsub': row[2],
@@ -266,12 +279,6 @@ def querytask(query, subject, subsub, isqueryall):
     # temp = cursor
     conn.close()
     return result
-
-
-def getcount():
-    conn = sqlite3.connect(dbf)
-    c = conn.cursor()
-    e, s = calday()
 
 
 def calday():

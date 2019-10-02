@@ -1,8 +1,9 @@
+import json
+
 from flask import Flask, render_template, request
 from flask_cors import CORS
-import json
-import dboo as dboo
 
+import dboo as dboo
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)

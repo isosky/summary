@@ -4,69 +4,72 @@
       <!-- 左侧面板 -->
       <el-col :span="13">
         <!-- 任务管理条 -->
-        <el-row :gutter="5">
-          <el-select
-            @change="updatesuboption"
-            clearable
-            v-model="task_select"
-            style="width: 120px"
-            placeholder="请选择"
-          >
-            <el-option
-              v-for="item in task_select_option"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            ></el-option>
-          </el-select>
-          <!-- <el-input v-model="task_sub_select" style="width: 100px" placeholder="二级分类"></el-input> -->
-          <el-select
-            v-model="task_sub_select"
-            filterable
-            clearable
-            allow-create
-            style="width: 120px"
-            placeholder="请选择"
-          >
-            <el-option
-              v-for="item in task_sub_select_option"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            ></el-option>
-          </el-select>
-          <el-date-picker
-            :picker-options="{'firstDayOfWeek': 1}"
-            v-model="new_edate"
-            value-format="yyyy-MM-dd"
-            type="date"
-            style="width:150px"
-            placeholder="ddl"
-          ></el-date-picker>
-          <el-input v-model="task_title" style="width: 300px" placeholder="请输入内容"></el-input>
-          <el-button @click="addtask">提交</el-button>
-          <el-button @click="removetask">清空</el-button>
-        </el-row>
-        <el-row :gutter="5">
-          <el-date-picker
-            :picker-options="{'firstDayOfWeek': 1}"
-            v-model="querytimerange"
-            type="daterange"
-            range-separator="至"
-            start-placeholder="开始日期"
-            end-placeholder="结束日期"
-            align="right"
-          ></el-date-picker>
-          <el-switch
-            v-model="isqueryall"
-            active-color="#13ce66"
-            inactive-color="#ff4949"
-            active-text="全部"
-            inactive-text="待做"
-          ></el-switch>
-          <el-button @click="settable">刷新</el-button>
-          <el-button @click="querytask">查询</el-button>
-        </el-row>
+        <el-collapse v-model="activeName" accordion>
+          <el-collapse-item title="任务管理（添加&查询）" name="1">
+            <el-row :gutter="5">
+              <el-select
+                @change="updatesuboption"
+                clearable
+                v-model="task_select"
+                style="width: 120px"
+                placeholder="请选择"
+              >
+                <el-option
+                  v-for="item in task_select_option"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                ></el-option>
+              </el-select>
+              <!-- <el-input v-model="task_sub_select" style="width: 100px" placeholder="二级分类"></el-input> -->
+              <el-select
+                v-model="task_sub_select"
+                filterable
+                clearable
+                allow-create
+                style="width: 120px"
+                placeholder="请选择"
+              >
+                <el-option
+                  v-for="item in task_sub_select_option"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                ></el-option>
+              </el-select>
+              <el-date-picker
+                :picker-options="{'firstDayOfWeek': 1}"
+                v-model="new_edate"
+                value-format="yyyy-MM-dd"
+                type="date"
+                style="width:150px"
+                placeholder="ddl"
+              ></el-date-picker>
+              <el-input v-model="task_title" style="width: 300px" placeholder="请输入内容"></el-input>
+              <el-button @click="addtask">提交</el-button>
+              <el-button @click="removetask">清空</el-button>
+            </el-row>
+            <el-row :gutter="5">
+              <el-date-picker
+                :picker-options="{'firstDayOfWeek': 1}"
+                v-model="querytimerange"
+                type="daterange"
+                range-separator="至"
+                start-placeholder="开始日期"
+                end-placeholder="结束日期"
+                align="right"
+              ></el-date-picker>
+              <el-switch
+                v-model="isqueryall"
+                active-color="#13ce66"
+                inactive-color="#ff4949"
+                active-text="全部"
+                inactive-text="待做"
+              ></el-switch>
+              <el-button @click="querytask">查询</el-button>
+            </el-row>
+          </el-collapse-item>
+        </el-collapse>
         <el-row :gutter="5">
           <el-badge v-model="badge_todo" class="item" type="primary">
             <el-button size="small">待做</el-button>
@@ -241,6 +244,7 @@ var echarts = require("echarts");
 export default {
   data: function() {
     return {
+      activeName: "",
       tabs_select: "summary",
       v_step_date: "",
       v_step_avg: "",
@@ -451,13 +455,13 @@ export default {
               let now = new Date();
               let start = new Date(now.getFullYear(), now.getMonth());
               let end = "";
-              console.log(now.getMonth());
+              // console.log(now.getMonth());
               if (now.getMonth() == "12") {
                 end = new Date(now.getFullYear() + 1, 1);
-                console.log("ii", end);
+                // console.log("ii", end);
               } else {
                 end = new Date(now.getFullYear(), now.getMonth() + 1);
-                console.log("ee", end);
+                // console.log("ee", end);
               }
               end.setTime(end.getTime() - 3600 * 1000 * 24 * 1);
               picker.$emit("pick", [start, end]);
@@ -523,7 +527,7 @@ export default {
       this.initoption();
       this.setbar();
       this.settasksummary_bar();
-      this.settable();
+      this.querytask(false);
       this.gettasksummary();
     },
     // 初始化分类的下拉列表
@@ -568,24 +572,6 @@ export default {
         }
       });
     },
-    settable: function(event) {
-      axios.get("http://127.0.0.1:5000/gettasknow").then(response => {
-        console.log(response);
-        if (response.status == 200) {
-          let temp = response.data.arrays;
-          this.tableData = [];
-          for (let row in temp) {
-            // console.log(row);
-            // console.log(temp[row].tetime);
-            this.tableData.push(temp[row]);
-          }
-          console.log(this.tableData);
-          // this.gettasksummary();
-          // console.log(this.tableData);
-        }
-      });
-    },
-    // TODO query
     setbar: function(event) {
       // console.log('setbar');
       axios.get("http://127.0.0.1:5000/gettimedata").then(response => {
@@ -657,7 +643,7 @@ export default {
           this.dialogpVisible = false;
           this.showprocess();
           // TODO 是否可以做成局部刷新，只更新该任务的数据即可
-          this.settable();
+          this.querytask(false);
         });
     },
 
@@ -698,15 +684,20 @@ export default {
       this.s_task_id = event.task_id;
     },
     // 查询任务
-    querytask: function(event) {
-      // console.log(this.isqueryall);
-      //  TODO 在查询结果中编辑，应该还是掉查询结果后，可以考虑将两个接口合并成一个接口
+    querytask: function(isquery) {
+      let isqueryall;
+      if (isquery == false) {
+        isqueryall = false;
+      } else {
+        isqueryall = this.isqueryall;
+      }
+
       axios
         .post("http://127.0.0.1:5000/querytask", {
           query: this.task_title,
           subject: this.task_select,
           subsub: this.task_sub_select,
-          isqueryall: this.isqueryall
+          isqueryall: isqueryall
         })
         .then(response => {
           // console.log(response);
@@ -736,7 +727,7 @@ export default {
     // 展示修改任务面板
     updatetask: function(event) {
       this.dialoguVisible = true;
-      console.log(event);
+      // console.log(event);
       this.task_select = event.subject;
       this.task_sub_select = event.subsub;
       this.dutitle = event.title;
@@ -746,7 +737,7 @@ export default {
 
     // 调用修改任务接口
     dialogupdate: function(event) {
-      console.log(this.s_task_id);
+      // console.log(this.s_task_id);
       axios
         .post("http://127.0.0.1:5000/updatetask", {
           task_id: this.s_task_id,
@@ -762,7 +753,7 @@ export default {
     },
     removetask: function(event) {
       axios.get("http://127.0.0.1:5000/removetask").then(response => {
-        console.log(response);
+        // console.log(response);
       });
     },
     deletetask: function(event) {
@@ -826,11 +817,6 @@ export default {
             }
           });
       }
-    },
-    jumptoschedule: function(event) {
-      console.log("jump to schedule");
-      console.log(this.$router);
-      this.$router.push("/analysis");
     }
   }
 };
@@ -838,11 +824,12 @@ export default {
 
 <style>
 .el-row {
-  margin-bottom: 20px;
+  margin-top: 5px;
+  margin-bottom: 5px;
 
-  &:last-child {
+  /* &:last-child {
     margin-bottom: 0;
-  }
+  } */
 }
 
 .el-col {
