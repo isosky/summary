@@ -10,14 +10,6 @@ import VueRouter from 'vue-router'
 Vue.use(ElementUI)
 Vue.use(VueRouter)
 
-const Foo = {
-  template: '<div>foo</div>'
-}
-const Bar = {
-  template: '<div>bar</div>'
-}
-
-
 const routes = [{
     path: '/task',
     component: task
@@ -35,5 +27,13 @@ const router = new VueRouter({
 
 const app = new Vue({
   router,
-  render: h => h(App)
+  render: h => h(App),
+  mounted: function () {
+    this.gofirstpage()
+  },
+  methods: {
+    gofirstpage: function (event) {
+      this.$router.push('/task')
+    }
+  }
 }).$mount('#app')

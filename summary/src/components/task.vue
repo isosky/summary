@@ -46,7 +46,6 @@
           <el-input v-model="task_title" style="width: 300px" placeholder="请输入内容"></el-input>
           <el-button @click="addtask">提交</el-button>
           <el-button @click="removetask">清空</el-button>
-          <el-button @click="jumptoschedule">计划任务编辑</el-button>
         </el-row>
         <el-row :gutter="5">
           <el-date-picker
