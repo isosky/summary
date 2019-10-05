@@ -4,6 +4,8 @@ import os
 import random
 import sqlite3
 import time
+import datetime
+import calendar
 
 if not os.path.exists("C:/Users/fengy/OneDrive/文档/tmss.db"):
     dbf = "C:/Users/isowang/OneDrive/文档/tmss.db"
@@ -11,6 +13,7 @@ else:
     dbf = "C:/Users/fengy/OneDrive/文档/tmss.db"
 
 
+# TODO 统一用datetime模块
 def init():
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
@@ -39,11 +42,13 @@ def initoption():
     cursor = c.execute(
         "select subject,subsub,count(*) from task where isabandon=0 group by subject,subsub order by 3 desc")
     result = {}
+    result_all = []
     for row in cursor:
         if row[0] not in result.keys():
             result[row[0]] = []
+            result_all.append({'value': row[0], 'label': row[0]})
         result[row[0]].append(row[1])
-    return result
+    return [result, result_all]
 
 
 def step_add(time, step):
@@ -171,7 +176,7 @@ def gettimedata():
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
     cursor = c.execute(
-        "select strftime('%Y-%m-%d',ftime),sum(times) from task where isfinish =1 and isabandon=0 group by strftime('%Y-%m-%d',ftime)")
+        "select strftime('%Y-%m-%d',ftime),count(*) from task where isfinish =1 and isabandon=0 group by strftime('%Y-%m-%d',ftime)")
     result = []
     for row in cursor:
         result.append(row)
@@ -257,8 +262,6 @@ def querytask(query, subject, subsub, isqueryall):
 
     params_list = [query]
 
-    print(subject)
-
     if subject != '':
         sql += " and subject=? "
         params_list.append(subject)
@@ -267,14 +270,14 @@ def querytask(query, subject, subsub, isqueryall):
         params_list.append(subsub)
 
     sql += " order by etime,task_id"
-    print(sql)
-    # print("select task_id,subject,subsub,title,etime,stime,isfinish from task where isabandon=0 and title like ? and subject=? and subsub=? and isfinish=? order by etime,task_id", [
-    #       query, subject, subsub, isfinish])
     cursor = c.execute(sql, params_list)
+    process = getallprocess()
     result = []
     for row in cursor:
         temp = {'task_id': row[0], 'subject': row[1], 'subsub': row[2],
                 'title': row[3], 'etime': row[4][5:], 'stime': row[5], 'tetime': row[4], 'isfinish': row[6]}
+        if row[0] in process.keys():
+            temp['num_process'] = process[row[0]]
         result.append(temp)
     # temp = cursor
     conn.close()
@@ -390,18 +393,139 @@ def gettasksummary_bar():
     return result
 
 
+# #####################################
+# 定义schedule的函数
+# #####################################
+def initschedule():
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    c.execute("select value from sys_cfg where id=1")
+    lastcheck = c.fetchone()[0]
+    print(lastcheck)
+    d = datetime.date.today().strftime("%Y-%m-%d")
+    if d != lastcheck:
+        cursor = c.execute(
+            "select * from schedule where isabandon=0 and lasttime<date() or lasttime is null")
+        res = []
+        for i in cursor:
+            temp = {'schedule_id':i[0],'subject':i[1],'subsub':i[2],'content':i[3],'schedule_type':i[4],'schedule_frequence':i[5],'nexttime':i[8]}
+            res.append(temp)
+        # 添加数据
+        for i in res:
+            # print(i['subject'],i['subsub'],i['content'],i['nexttime']+' 00:00:00')
+            c.execute("insert into task (subject,subsub,title,etime) values (?,?,?,?)",[i['subject'],i['subsub'],i['content'],i['nexttime']])
+            newtaskid = c.lastrowid
+            c.execute("insert into schedule_task (schedule_id,task_id) values (?,?)",[i['schedule_id'],newtaskid])
+            newnexttime =schedulecalnexttime(i['schedule_type'],i['schedule_frequence'])
+            c.execute("update schedule set nexttime =? where schedule_id=?",[newnexttime,i['schedule_id']])
+            conn.commit()
+        c.execute("update sys_cfg set value =? where id=1",[d])
+        conn.commit()
+        return {'status':1,'message':'新增了：'+str(len(res))+'条计划任务，可查看详情'}
+    else:
+        return {'status':0,'message':'今日已检查'}
+
+
+def addschedule(subject, subsub, schedule_type, schedule_frequence, content):
+    # sql = 'insert into schedule (subject,subsub,content) values (?,?,?)'
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    c.execute("insert into schedule (subject,subsub,content,schedule_type,schedule_frequence) values (?,?,?,?,?)", [
+              subject, subsub, content, schedule_type, schedule_frequence])
+    s_id = c.lastrowid
+    nexttime = schedulecalnexttime(schedule_type, schedule_frequence)
+    # if schedule_type == 'month':
+    c.execute("update schedule set nexttime=? where schedule_id=?", [
+        nexttime, s_id])
+    conn.commit()
+    conn.close()
+    return True
+
+
+def schedulecalnexttime(schedule_type, schedule_frequence):
+    n = datetime.date.today()
+    now_weekday = n.weekday()
+    if schedule_type == 'week':
+        t_sf = schedule_frequence.split(',')
+        tc = 0
+        for wd in t_sf:
+            td = datetime.date.today()
+            if int(wd) > now_weekday:
+                td += datetime.timedelta(days=int(wd)-now_weekday-1)
+            tc += 1
+        if tc == len(t_sf):
+            td = datetime.date.today()
+            td += datetime.timedelta(days=int(t_sf[0])+7-now_weekday-1)
+        return td
+    if schedule_type == 'month':
+        t_sf = schedule_frequence.split(';')
+        # print(t_sf)
+        temp = []
+        for wd in t_sf:
+            td = datetime.date.today()
+            # td = td.replace(month=12)
+            if ':' not in wd:
+                td = td.replace(day=int(wd))
+                temp.append(td)
+                if td.month == 12:
+                    td = td.replace(year=td.year+1)
+                    td = td.replace(month=1)
+                else:
+                    td = getnextmonthsameday(td)
+                temp.append(td)
+            else:
+                weeks, days = wd.split(':')
+                weeks = int(weeks)
+                days = [int(x) for x in days.split(',')]
+                if n.month == 12:
+                    nn = n.replace(year=td.year+1)
+                    nn = n.replace(month=1)
+                else:
+                    nn = n.replace(month=td.month+1)
+                for i in days:
+                    temp.append(getdate(n.year, n.month, weeks, i))
+                    temp.append(getdate(nn.year, nn.month, weeks, i))
+        # print(temp)
+        temp = [x for x in temp if x > n]
+        # print(temp)
+        # td = min(temp)
+    # print(td.strftime("%Y-%m-%d"))
+    return min(temp)
+
+
+def getnextmonthsameday(date):
+    if date.month == 12:
+        date = date.replace(year=date.year+1)
+        date = date.replace(month=1)
+    else:
+        date = date.replace(month=date.month+1)
+    # print(date)
+    return date
+
+
+# 早知道有calendar这个包就不用写的那么辛苦了
+def getdate(year, month, weeks, weekday):
+    c = calendar.Calendar()
+    monthcal = c.monthdatescalendar(year, month)
+    if weeks > 0:
+        result = [day for week in monthcal for day in week if day.weekday(
+        ) == weekday-1 and day.month == month][weeks-1]
+    else:
+        result = [day for week in monthcal for day in week if day.weekday(
+        ) == weekday-1 and day.month == month][weeks]
+    return result
+
+
 if __name__ == '__main__':
-    gettasksummary_bar()
-    # s_time = [str(x) for x in range(20190701, 20190720)]
-    # step = [random.randint(7000, 10000) for x in range(len(s_time))]
-    # querytask('规则')
-    # s, e = calday()
-    # removetask()
-    # step_add_one('20190729', 4)
-    # step_add(time, step)
-    # getstep()
-    # init()
-    # addtask('工作', '规则引擎调优', '2019-09-09')
-    # print(gettasknow())
-    # print(parsetime('20190707', 'yyyymmdd'))
-    # print(gettimedata())
+
+    # print(d.month, d.day,first_weekday)
+    # print(allmonday)
+    temp = '7;-1:1,7'
+    s = schedulecalnexttime('month', temp)
+    # print(type(s))
+    # print (s)
+    # pass
+    # getdate(2019, 10, 1, 1)
+
+    initschedule()
+    # print('aaa')

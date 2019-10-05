@@ -47,7 +47,7 @@
               ></el-date-picker>
               <el-input v-model="task_title" style="width: 300px" placeholder="请输入内容"></el-input>
               <el-button @click="addtask">提交</el-button>
-              <el-button @click="removetask">清空</el-button>
+              <el-button @click="resetall">重置</el-button>
             </el-row>
             <el-row :gutter="5">
               <el-date-picker
@@ -89,7 +89,7 @@
             height="700"
             :cell-style="isoverdate"
             style="width: 100%"
-            :default-sort="{prop: 'tetime', order: 'ascending'}"
+            :default-sort="{prop: 'tetime'  ,order: 'ascending'}"
             @cell-click="showprocess"
           >
             <el-table-column fixed prop="etime" sortable label="DDL" width="95"></el-table-column>
@@ -121,7 +121,7 @@
         <el-input v-model="first_input" style="width: 300px" placeholder="请输入内容"></el-input>
         <el-button @click="updatedata">提交数据</el-button>
         <el-row :gutter="5">
-          <div id="b_task" style="height:200px"></div>
+          <div id="b_task" style="height:220px"></div>
         </el-row>
         <el-tabs v-model="tabs_select" :lazy="true" type="border-card">
           <el-tab-pane name="summary" label="统计">
@@ -152,7 +152,7 @@
     <!-- 各种弹出框 -->
     <!-- 更新 -->
     <el-dialog @close="closedialog" title="提示" :visible.sync="dialogpVisible" width="30%">
-      {{v_process_content}}
+      <div>{{v_process_content}}</div>
       <el-input
         v-model="input_process"
         type="textarea"
@@ -168,6 +168,7 @@
 
     <!-- 完成 -->
     <el-dialog @close="closedialog" title="提示" :visible.sync="dialogsVisible" width="30%">
+      <div>{{v_process_content}}</div>
       <el-input
         v-model="input_finish"
         type="textarea"
@@ -251,9 +252,6 @@ export default {
       // 日历表
       task_option: {
         tooltip: {},
-        grid: {
-          top: 30
-        },
         visualMap: {
           show: false,
           min: 0,
@@ -419,24 +417,7 @@ export default {
       new_edate: "",
       task_title: "",
       // TODO 从数据库获得
-      task_select_option: [
-        {
-          value: "工作",
-          label: "工作"
-        },
-        {
-          value: "自己",
-          label: "自己"
-        },
-        {
-          value: "学习",
-          label: "学习"
-        },
-        {
-          value: "游戏",
-          label: "游戏"
-        }
-      ],
+      task_select_option: [],
       // 二级分类
       task_sub_select: "",
       task_sub_select_option: [],
@@ -530,6 +511,10 @@ export default {
       this.querytask(false);
       this.gettasksummary();
     },
+    resetall: function() {
+      this.task_title = "";
+      this.freshright();
+    },
     // 初始化分类的下拉列表
     initoption: function(event) {
       axios.get("http://127.0.0.1:5000/initoption").then(response => {
@@ -537,6 +522,8 @@ export default {
           // console.log(response);
           this.task_sub_all_option = [];
           this.task_sub_all_option = response.data.task_sub_all_option;
+          this.task_select_option = [];
+          this.task_select_option = response.data.task_select_option;
           // console.log(this.task_sub_all_option);
           this.updatesuboption();
         }
@@ -628,7 +615,7 @@ export default {
 
     // 调用进展接口
     dialogprocess: function(event) {
-      console.log(this.s_task_id);
+      // console.log(this.s_task_id);
       axios
         .post("http://127.0.0.1:5000/updateprocess", {
           task_id: this.s_task_id,
@@ -674,6 +661,8 @@ export default {
             this.task_title = "";
             this.new_edate = "";
             this.task_select = "";
+            this.task_select = "";
+            this.task_sub_select = "";
             this.freshright();
           });
       }
@@ -682,6 +671,7 @@ export default {
       // console.log(event.task_id);
       this.dialogsVisible = true;
       this.s_task_id = event.task_id;
+      this.v_process_content = event.title;
     },
     // 查询任务
     querytask: function(isquery) {
@@ -748,6 +738,11 @@ export default {
         })
         .then(response => {
           this.dialoguVisible = false;
+          this.task_title = "";
+          this.new_edate = "";
+          this.task_select = "";
+          this.task_select = "";
+          this.task_sub_select = "";
           this.freshright();
         });
     },
@@ -834,6 +829,22 @@ export default {
 
 .el-col {
   border-radius: 4px;
+}
+
+.el-input {
+  margin: 0 5px 0 5px;
+}
+
+.el-select {
+  margin: 0 5px 0 5px;
+}
+
+.el-date-picker {
+  margin: 0 5px 0 5px;
+}
+
+.el-switch {
+  margin: 0 5px 0 5px;
 }
 
 .bg-purple-dark {

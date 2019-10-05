@@ -38,14 +38,14 @@ export default {
   data() {
     return {
       isCollapse: true,
-      routers: ["/task", "/analysis"]
+      routers: ["/task", "/analysis", "/schedule"]
     };
   },
   methods: {
     moveto: function(index) {
-      if (index != 3) {
-        this.$router.push(this.routers[index - 1]);
-      }
+      // if (index != 3) {
+      this.$router.push(this.routers[index - 1]);
+      // }
     }
   }
 };

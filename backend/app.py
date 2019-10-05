@@ -8,7 +8,7 @@ import dboo as dboo
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
 
-
+# TODO 将所有的json格式化放到app.py里面
 @app.route('/')
 def mainroute():
     return render_template("index.html")
@@ -75,7 +75,8 @@ def addtask():
 
 @app.route('/initoption')
 def initoption():
-    return json.dumps({'task_sub_all_option': dboo.initoption()})
+    temp = dboo.initoption()
+    return json.dumps({'task_sub_all_option': temp[0], 'task_select_option': temp[1]})
 
 
 @app.route('/gettasknow')
@@ -161,6 +162,27 @@ def getprocess():
     json_data = json.loads(request.get_data())
     task_id = json_data['task_id']
     return json.dumps({'arrays': dboo.getprocess(task_id)})
+
+
+# #####################################
+# 定义schedule的函数
+# #####################################
+@app.route('/initschedule')
+def initschedule():
+    return json.dumps(dboo.initschedule())
+
+
+@app.route('/addschedule', methods=['POST'])
+def addschedule():
+    json_data = json.loads(request.get_data())
+    subject = json_data['task_select']
+    subsub = json_data['task_sub_select']
+    schedule_type = json_data['schedule_type']
+    schedule_frequence = json_data['schedule_frequence']
+    content = json_data['schedule_content']
+    temp = dboo.addschedule(subject, subsub, schedule_type,
+                            schedule_frequence, content)
+    return json.dumps({'result': temp})
 
 
 if __name__ == '__main__':
