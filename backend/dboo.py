@@ -421,8 +421,10 @@ def initschedule():
             newtaskid = c.lastrowid
             c.execute("insert into schedule_task (schedule_id,task_id) values (?,?)", [
                       i['schedule_id'], newtaskid])
+            nexttime=i['nexttime'].split('-')
+            nexttime = datetime.date(year=int(nexttime[0]),month=int(nexttime[1]),day=int(nexttime[2]))
             newnexttime = schedulecalnexttime(
-                i['schedule_type'], i['schedule_frequence'], i['nexttime'])
+                i['schedule_type'], i['schedule_frequence'], nexttime)
             c.execute("update schedule set nexttime =?,lasttime = ? where schedule_id=?", [
                       newnexttime, d, i['schedule_id']])
             conn.commit()

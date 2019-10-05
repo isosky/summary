@@ -40,13 +40,14 @@ const app = new Vue({
   },
   methods: {
     gofirstpage: function (event) {
-      this.$router.push('/schedule')
+      this.$router.push('/task')
     },
     initschedule: function (event) {
       axios.get("http://127.0.0.1:5000/initschedule").then(response => {
         if (response.status == 200) {
           // console.log(response);
           console.log(response);
+          // 添加完成后，需要重新刷新一下面板
           if (response.data.status == 1) {
             this.$message({
               message: response.data.message,
