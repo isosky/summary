@@ -1,9 +1,9 @@
 <template>
   <div id="app">
-    <el-col :span="11" class="grid-content bg-purple-light">
+    <el-col :span="15" class="grid-content bg-purple-light">
       <el-row>
         <el-collapse v-model="activeName" accordion>
-          <el-collapse-item title="定期计划任务添加" name="1">
+          <el-collapse-item :title="lastchecktime" name="1">
             <el-row :gutter="5">
               <el-select
                 @change="updatesuboption"
@@ -63,18 +63,30 @@
         </el-collapse>
       </el-row>
       <el-row>
-        <el-table :data="scheduledata" style="width: 100%">
-          <el-table-column prop="date" label="日期" width="180"></el-table-column>
-          <el-table-column prop="name" label="姓名" width="180"></el-table-column>
-          <el-table-column prop="address" label="地址"></el-table-column>
+        <!-- scheduledata -->
+        <el-table :data="scheduledata" border style="width: 100%" @cell-click="showscheduleprocess">
+          <el-table-column prop="subject" label="分类" width="60"></el-table-column>
+          <el-table-column prop="subsub" label="二级分类" width="80"></el-table-column>
+          <el-table-column prop="content" label="内容"></el-table-column>
+          <el-table-column prop="schedule_type" label="类型" width="60"></el-table-column>
+          <el-table-column prop="schedule_frequence" label="频率" width="100"></el-table-column>
+          <el-table-column prop="lasttime" label="上次更新" width="100"></el-table-column>
+          <el-table-column prop="nexttime" label="下次执行" width="100"></el-table-column>
+          <el-table-column prop="isabandon" label="状态" width="60"></el-table-column>
+          <el-table-column label="操作" width="170">
+            <template slot-scope="scope">
+              <el-button @click="updateschedule(scope.row)" type="text" size="small">修改</el-button>
+              <el-button @click="deleteschedule(scope.row)" type="text" size="small">删除</el-button>
+            </template>
+          </el-table-column>
         </el-table>
       </el-row>
     </el-col>
-    <el-col :span="11" :offset="1" class="grid-content bg-purple-light">
-      <el-table :data="schedulehistorydata" style="width: 100%">
-        <el-table-column prop="date" label="日期" width="180"></el-table-column>
-        <el-table-column prop="name" label="姓名" width="180"></el-table-column>
-        <el-table-column prop="address" label="地址"></el-table-column>
+    <el-col :span="8" :offset="1" class="grid-content bg-purple-light">
+      <el-table :data="scheduletaskdata" style="width: 100%">
+        <el-table-column prop="content" label="内容" width="180"></el-table-column>
+        <el-table-column prop="task_id" label="任务号" width="180"></el-table-column>
+        <el-table-column prop="addtime" label="添加时间"></el-table-column>
       </el-table>
     </el-col>
   </div>
@@ -94,6 +106,7 @@ export default {
       new_edate: "",
       schedule_frequence: "",
       schedule_content: "",
+      lastchecktime: "",
 
       schedule_type: "",
       schedule_type_option: [
@@ -110,7 +123,7 @@ export default {
       // 左侧表格-计划任务
       scheduledata: [],
       // 右侧表格-计划任务添加记录
-      schedulehistorydata: []
+      scheduletaskdata: []
     };
   },
   mounted: function() {
@@ -122,6 +135,8 @@ export default {
   methods: {
     initall: function(event) {
       this.initoption();
+      this.getscheduledata();
+      this.getscheduletaskdata("");
     },
     initoption: function(event) {
       axios.get("http://127.0.0.1:5000/initoption").then(response => {
@@ -131,10 +146,33 @@ export default {
           this.task_sub_all_option = response.data.task_sub_all_option;
           this.task_select_option = [];
           this.task_select_option = response.data.task_select_option;
+          this.lastchecktime =
+            "计划任务添加，上次自动检查时间为：" + response.data.lastchecktime;
           // console.log(this.task_sub_all_option);
           this.updatesuboption();
         }
       });
+    },
+    getscheduledata: function() {
+      axios.get("http://127.0.0.1:5000/getscheduledata").then(response => {
+        if (response.status == 200) {
+          // console.log(response.data);
+          this.scheduledata = response.data.data;
+        }
+      });
+    },
+    getscheduletaskdata: function(isquery) {
+      axios
+        .post("http://127.0.0.1:5000/getscheduletaskdata", {
+          schedule_id: isquery
+        })
+        .then(response => {
+          if (response.status == 200) {
+            console.log(response.data);
+
+            this.scheduletaskdata = response.data.data;
+          }
+        });
     },
     // TODO 应该有更优雅的方法，比如说计算函数
     updatesuboption: function(event) {
@@ -170,7 +208,10 @@ export default {
             this.updatesuboption();
           }
         });
-    }
+    },
+    updateschedule: function(event) {},
+    deleteschedule: function(event) {},
+    showscheduleprocess: function(row, column, cell, event) {}
   }
 };
 </script>

@@ -48,7 +48,9 @@ def initoption():
             result[row[0]] = []
             result_all.append({'value': row[0], 'label': row[0]})
         result[row[0]].append(row[1])
-    return [result, result_all]
+    cursor = c.execute("select value from sys_cfg where id=1")
+    lastchecktime =  cursor.fetchone()[0]
+    return [result, result_all,lastchecktime]
 
 
 def step_add(time, step):
@@ -401,11 +403,11 @@ def initschedule():
     c = conn.cursor()
     c.execute("select value from sys_cfg where id=1")
     lastcheck = c.fetchone()[0]
-    print(lastcheck)
+    print('last check time is : '+lastcheck)
     d = datetime.date.today().strftime("%Y-%m-%d")
     if d != lastcheck:
         cursor = c.execute(
-            "select * from schedule where isabandon=0 and lasttime<date() or lasttime is null")
+            "select * from schedule where isabandon=0 and (lasttime<date() or lasttime is null or nexttime<date(date(),'+10 day'))")
         res = []
         for i in cursor:
             temp = {'schedule_id':i[0],'subject':i[1],'subsub':i[2],'content':i[3],'schedule_type':i[4],'schedule_frequence':i[5],'nexttime':i[8]}
@@ -417,13 +419,13 @@ def initschedule():
             newtaskid = c.lastrowid
             c.execute("insert into schedule_task (schedule_id,task_id) values (?,?)",[i['schedule_id'],newtaskid])
             newnexttime =schedulecalnexttime(i['schedule_type'],i['schedule_frequence'])
-            c.execute("update schedule set nexttime =? where schedule_id=?",[newnexttime,i['schedule_id']])
+            c.execute("update schedule set nexttime =?,lasttime = ? where schedule_id=?",[newnexttime,d,i['schedule_id']])
             conn.commit()
         c.execute("update sys_cfg set value =? where id=1",[d])
         conn.commit()
-        return {'status':1,'message':'新增了：'+str(len(res))+'条计划任务，可查看详情'}
+        return {'status':1,'message':'新增了：'+str(len(res))+'条计划任务，可查看详情','lastchecktime':lastcheck}
     else:
-        return {'status':0,'message':'今日已检查'}
+        return {'status':0,'message':'今日已检查','lastchecktime':lastcheck}
 
 
 def addschedule(subject, subsub, schedule_type, schedule_frequence, content):
@@ -515,6 +517,34 @@ def getdate(year, month, weeks, weekday):
         ) == weekday-1 and day.month == month][weeks]
     return result
 
+
+def getscheduledata():
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    cursor =c.execute("select * from schedule order by schedule_id desc")
+    res = []
+    for i in cursor:
+        temp = {'schedule_id':i[0],'subject':i[1],'subsub':i[2],'content':i[3],'schedule_type':i[4],'schedule_frequence':i[5],'lasttime':i[6][0:10],'nexttime':i[8]}
+        res.append(temp)
+    return res
+
+
+def getscheduletaskdata(schedule_id):
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    params_list=[]
+    sql = "select a.schedule_id,b.content,a.task_id,a.addtime from schedule_task a,schedule b where a.schedule_id =b.schedule_id "
+    if schedule_id !='':
+        sql += ' and a.schedule_id=?'
+        params_list.append(schedule_id)
+    sql += " order by a.addtime desc"
+    cursor =c.execute(sql,params_list)
+    res = []
+    for i in cursor:
+        temp = {'schedule_id':i[0],'content':i[1],'task_id':i[2],'addtime':i[3]}
+        res.append(temp)
+    # print(res)
+    return res
 
 if __name__ == '__main__':
 

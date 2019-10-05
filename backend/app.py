@@ -76,7 +76,7 @@ def addtask():
 @app.route('/initoption')
 def initoption():
     temp = dboo.initoption()
-    return json.dumps({'task_sub_all_option': temp[0], 'task_select_option': temp[1]})
+    return json.dumps({'task_sub_all_option': temp[0], 'task_select_option': temp[1], 'lastchecktime': temp[2]})
 
 
 @app.route('/gettasknow')
@@ -183,6 +183,19 @@ def addschedule():
     temp = dboo.addschedule(subject, subsub, schedule_type,
                             schedule_frequence, content)
     return json.dumps({'result': temp})
+
+
+@app.route('/getscheduledata')
+def getscheduledata():
+    return json.dumps({'data': dboo.getscheduledata()})
+
+
+@app.route('/getscheduletaskdata', methods=['POST'])
+def getscheduletaskdata():
+    json_data = json.loads(request.get_data())
+    schedule_id = json_data['schedule_id']
+    # print(schedule_id)
+    return json.dumps({'data': dboo.getscheduletaskdata(schedule_id)})
 
 
 if __name__ == '__main__':

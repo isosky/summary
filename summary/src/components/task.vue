@@ -690,7 +690,7 @@ export default {
           isqueryall: isqueryall
         })
         .then(response => {
-          // console.log(response);
+          console.log(response);
           let temp = response.data.arrays;
           this.tableData = [];
           for (let row in temp) {
