@@ -49,8 +49,8 @@ def initoption():
             result_all.append({'value': row[0], 'label': row[0]})
         result[row[0]].append(row[1])
     cursor = c.execute("select value from sys_cfg where id=1")
-    lastchecktime =  cursor.fetchone()[0]
-    return [result, result_all,lastchecktime]
+    lastchecktime = cursor.fetchone()[0]
+    return [result, result_all, lastchecktime]
 
 
 def step_add(time, step):
@@ -410,22 +410,27 @@ def initschedule():
             "select * from schedule where isabandon=0 and (lasttime<date() or lasttime is null or nexttime<date(date(),'+10 day'))")
         res = []
         for i in cursor:
-            temp = {'schedule_id':i[0],'subject':i[1],'subsub':i[2],'content':i[3],'schedule_type':i[4],'schedule_frequence':i[5],'nexttime':i[8]}
+            temp = {'schedule_id': i[0], 'subject': i[1], 'subsub': i[2], 'content': i[3],
+                    'schedule_type': i[4], 'schedule_frequence': i[5], 'nexttime': i[8]}
             res.append(temp)
         # 添加数据
         for i in res:
             # print(i['subject'],i['subsub'],i['content'],i['nexttime']+' 00:00:00')
-            c.execute("insert into task (subject,subsub,title,etime) values (?,?,?,?)",[i['subject'],i['subsub'],i['content'],i['nexttime']])
+            c.execute("insert into task (subject,subsub,title,etime) values (?,?,?,?)", [
+                      i['subject'], i['subsub'], i['content'], i['nexttime']])
             newtaskid = c.lastrowid
-            c.execute("insert into schedule_task (schedule_id,task_id) values (?,?)",[i['schedule_id'],newtaskid])
-            newnexttime =schedulecalnexttime(i['schedule_type'],i['schedule_frequence'])
-            c.execute("update schedule set nexttime =?,lasttime = ? where schedule_id=?",[newnexttime,d,i['schedule_id']])
+            c.execute("insert into schedule_task (schedule_id,task_id) values (?,?)", [
+                      i['schedule_id'], newtaskid])
+            newnexttime = schedulecalnexttime(
+                i['schedule_type'], i['schedule_frequence'], i['nexttime'])
+            c.execute("update schedule set nexttime =?,lasttime = ? where schedule_id=?", [
+                      newnexttime, d, i['schedule_id']])
             conn.commit()
-        c.execute("update sys_cfg set value =? where id=1",[d])
+        c.execute("update sys_cfg set value =? where id=1", [d])
         conn.commit()
-        return {'status':1,'message':'新增了：'+str(len(res))+'条计划任务，可查看详情','lastchecktime':lastcheck}
+        return {'status': 1, 'message': '新增了：'+str(len(res))+'条计划任务，可查看详情', 'lastchecktime': lastcheck}
     else:
-        return {'status':0,'message':'今日已检查','lastchecktime':lastcheck}
+        return {'status': 0, 'message': '今日已检查', 'lastchecktime': lastcheck}
 
 
 def addschedule(subject, subsub, schedule_type, schedule_frequence, content):
@@ -435,7 +440,7 @@ def addschedule(subject, subsub, schedule_type, schedule_frequence, content):
     c.execute("insert into schedule (subject,subsub,content,schedule_type,schedule_frequence) values (?,?,?,?,?)", [
               subject, subsub, content, schedule_type, schedule_frequence])
     s_id = c.lastrowid
-    nexttime = schedulecalnexttime(schedule_type, schedule_frequence)
+    nexttime = schedulecalnexttime(schedule_type, schedule_frequence, None)
     # if schedule_type == 'month':
     c.execute("update schedule set nexttime=? where schedule_id=?", [
         nexttime, s_id])
@@ -444,53 +449,49 @@ def addschedule(subject, subsub, schedule_type, schedule_frequence, content):
     return True
 
 
-def schedulecalnexttime(schedule_type, schedule_frequence):
-    n = datetime.date.today()
-    now_weekday = n.weekday()
+def schedulecalnexttime(schedule_type, schedule_frequence, nexttime):
+    # 判断计算哪个时间
+    if nexttime:
+        n = max(datetime.date.today(), nexttime)
+    else:
+        n = datetime.date.today()
+    # 得到下个月
+    if n.month == 12:
+        nn = n.replace(year=n.year+1)
+        nn = n.replace(month=1)
+    else:
+        nn = n.replace(month=n.month+1)
     if schedule_type == 'week':
         t_sf = schedule_frequence.split(',')
-        tc = 0
-        for wd in t_sf:
-            td = datetime.date.today()
-            if int(wd) > now_weekday:
-                td += datetime.timedelta(days=int(wd)-now_weekday-1)
-            tc += 1
-        if tc == len(t_sf):
-            td = datetime.date.today()
-            td += datetime.timedelta(days=int(t_sf[0])+7-now_weekday-1)
-        return td
-    if schedule_type == 'month':
-        t_sf = schedule_frequence.split(';')
-        # print(t_sf)
+        t_sf = [int(x) for x in t_sf]
         temp = []
         for wd in t_sf:
-            td = datetime.date.today()
-            # td = td.replace(month=12)
+            temp.extend(getdate(n.year, n.month, wd))
+            temp.extend(getdate(nn.year, nn.month, wd))
+    if schedule_type == 'month':
+        t_sf = schedule_frequence.split(';')
+        temp = []
+        for wd in t_sf:
             if ':' not in wd:
-                td = td.replace(day=int(wd))
+                td = n.replace(day=int(wd))
                 temp.append(td)
-                if td.month == 12:
-                    td = td.replace(year=td.year+1)
-                    td = td.replace(month=1)
-                else:
-                    td = getnextmonthsameday(td)
+                td = nn.replace(day=int(wd))
                 temp.append(td)
             else:
                 weeks, days = wd.split(':')
                 weeks = int(weeks)
                 days = [int(x) for x in days.split(',')]
-                if n.month == 12:
-                    nn = n.replace(year=td.year+1)
-                    nn = n.replace(month=1)
-                else:
-                    nn = n.replace(month=td.month+1)
                 for i in days:
-                    temp.append(getdate(n.year, n.month, weeks, i))
-                    temp.append(getdate(nn.year, nn.month, weeks, i))
+                    alldd = getdate(n.year, n.month, i)
+                    allddnn = getdate(nn.year, nn.month, i)
+                    if weeks > 0:
+                        temp.append(alldd[weeks-1])
+                        temp.append(allddnn[weeks-1])
+                    else:
+                        temp.append(alldd[weeks])
+                        temp.append(allddnn[weeks])
         # print(temp)
-        temp = [x for x in temp if x > n]
-        # print(temp)
-        # td = min(temp)
+    temp = [x for x in temp if x > n]
     # print(td.strftime("%Y-%m-%d"))
     return min(temp)
 
@@ -506,25 +507,28 @@ def getnextmonthsameday(date):
 
 
 # 早知道有calendar这个包就不用写的那么辛苦了
-def getdate(year, month, weeks, weekday):
+def getdate(year, month, weekday):
     c = calendar.Calendar()
     monthcal = c.monthdatescalendar(year, month)
-    if weeks > 0:
-        result = [day for week in monthcal for day in week if day.weekday(
-        ) == weekday-1 and day.month == month][weeks-1]
-    else:
-        result = [day for week in monthcal for day in week if day.weekday(
-        ) == weekday-1 and day.month == month][weeks]
+    result = [day for week in monthcal for day in week if day.weekday(
+    ) == weekday-1 and day.month == month]
+    # result = [day for week in monthcal for day in week if day.weekday(
+    # ) == weekday-1 and day.month == month][weeks]
     return result
 
 
 def getscheduledata():
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
-    cursor =c.execute("select * from schedule order by schedule_id desc")
+    cursor = c.execute("select * from schedule order by schedule_id desc")
     res = []
     for i in cursor:
-        temp = {'schedule_id':i[0],'subject':i[1],'subsub':i[2],'content':i[3],'schedule_type':i[4],'schedule_frequence':i[5],'lasttime':i[6][0:10],'nexttime':i[8]}
+        if i[7]:
+            lasttime = i[7][0:10]
+        else:
+            lasttime = i[7]
+        temp = {'schedule_id': i[0], 'subject': i[1], 'subsub': i[2], 'content': i[3],
+                'schedule_type': i[4], 'schedule_frequence': i[5], 'lasttime': lasttime, 'nexttime': i[8]}
         res.append(temp)
     return res
 
@@ -532,30 +536,34 @@ def getscheduledata():
 def getscheduletaskdata(schedule_id):
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
-    params_list=[]
+    params_list = []
     sql = "select a.schedule_id,b.content,a.task_id,a.addtime from schedule_task a,schedule b where a.schedule_id =b.schedule_id "
-    if schedule_id !='':
+    if schedule_id != '':
         sql += ' and a.schedule_id=?'
         params_list.append(schedule_id)
     sql += " order by a.addtime desc"
-    cursor =c.execute(sql,params_list)
+    cursor = c.execute(sql, params_list)
     res = []
     for i in cursor:
-        temp = {'schedule_id':i[0],'content':i[1],'task_id':i[2],'addtime':i[3]}
+        temp = {'schedule_id': i[0], 'content': i[1],
+                'task_id': i[2], 'addtime': i[3]}
         res.append(temp)
     # print(res)
     return res
+
 
 if __name__ == '__main__':
 
     # print(d.month, d.day,first_weekday)
     # print(allmonday)
     temp = '7;-1:1,7'
-    s = schedulecalnexttime('month', temp)
+    t = datetime.date(year=2019, month=10, day=10)
+    s = schedulecalnexttime('month', temp, t)
+    print(s)
     # print(type(s))
     # print (s)
     # pass
     # getdate(2019, 10, 1, 1)
 
-    initschedule()
+    # initschedule()
     # print('aaa')

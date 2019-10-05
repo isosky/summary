@@ -68,12 +68,12 @@
           <el-table-column prop="subject" label="分类" width="60"></el-table-column>
           <el-table-column prop="subsub" label="二级分类" width="80"></el-table-column>
           <el-table-column prop="content" label="内容"></el-table-column>
-          <el-table-column prop="schedule_type" label="类型" width="60"></el-table-column>
-          <el-table-column prop="schedule_frequence" label="频率" width="100"></el-table-column>
+          <el-table-column prop="schedule_type" label="类型" width="80"></el-table-column>
+          <el-table-column prop="schedule_frequence" label="频率" width="150"></el-table-column>
           <el-table-column prop="lasttime" label="上次更新" width="100"></el-table-column>
           <el-table-column prop="nexttime" label="下次执行" width="100"></el-table-column>
           <el-table-column prop="isabandon" label="状态" width="60"></el-table-column>
-          <el-table-column label="操作" width="170">
+          <el-table-column label="操作" width="90">
             <template slot-scope="scope">
               <el-button @click="updateschedule(scope.row)" type="text" size="small">修改</el-button>
               <el-button @click="deleteschedule(scope.row)" type="text" size="small">删除</el-button>
@@ -169,7 +169,6 @@ export default {
         .then(response => {
           if (response.status == 200) {
             console.log(response.data);
-
             this.scheduletaskdata = response.data.data;
           }
         });
@@ -205,7 +204,7 @@ export default {
         })
         .then(response => {
           if (response.status == 200) {
-            this.updatesuboption();
+            this.initall();
           }
         });
     },
