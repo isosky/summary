@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <el-col :span="15" class="grid-content bg-purple-light">
+    <el-col :span="14" class="grid-content bg-purple-light">
       <el-row>
         <el-collapse v-model="activeName" accordion>
           <el-collapse-item :title="lastchecktime" name="1">
@@ -93,10 +93,11 @@
         </el-table>
       </el-row>
     </el-col>
-    <el-col :span="8" :offset="1" class="grid-content bg-purple-light">
+    <el-col :span="9" :offset="1" class="grid-content bg-purple-light">
       <el-table :data="scheduletaskdata" style="width: 100%">
         <el-table-column prop="content" label="内容" width="180"></el-table-column>
-        <el-table-column prop="task_id" label="任务号" width="180"></el-table-column>
+        <el-table-column prop="task_id" label="任务号" width="70"></el-table-column>
+        <el-table-column prop="etime" label="执行时间" width="180"></el-table-column>
         <el-table-column prop="addtime" label="添加时间"></el-table-column>
       </el-table>
     </el-col>
