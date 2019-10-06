@@ -75,8 +75,19 @@
           <el-table-column prop="isabandon" label="状态" width="60"></el-table-column>
           <el-table-column label="操作" width="90">
             <template slot-scope="scope">
-              <el-button @click="updateschedule(scope.row)" type="text" size="small">修改</el-button>
-              <el-button @click="deleteschedule(scope.row)" type="text" size="small">删除</el-button>
+              <el-button @click="showupdateschedule(scope.row)" type="text" size="small">修改</el-button>
+              <el-button
+                v-if="scope.row.isabandon=='启用'"
+                @click="forbidschedule(scope.row)"
+                type="text"
+                size="small"
+              >禁用</el-button>
+              <el-button
+                v-if="scope.row.isabandon=='禁用'"
+                @click="startschedule(scope.row)"
+                type="text"
+                size="small"
+              >启用</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -89,6 +100,64 @@
         <el-table-column prop="addtime" label="添加时间"></el-table-column>
       </el-table>
     </el-col>
+    <!-- 各种弹出框 -->
+    <el-dialog title="修改计划任务" :visible.sync="modifysVisible" width="25%">
+      <el-row :gutter="5">
+        <el-select
+          @change="updatesuboption"
+          clearable
+          v-model="task_select"
+          style="width: 120px"
+          placeholder="请选择"
+        >
+          <el-option
+            v-for="item in task_select_option"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          ></el-option>
+        </el-select>
+        <el-select
+          v-model="task_sub_select"
+          filterable
+          clearable
+          allow-create
+          style="width: 120px"
+          placeholder="请选择"
+        >
+          <el-option
+            v-for="item in task_sub_select_option"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          ></el-option>
+        </el-select>
+        <el-select
+          v-model="schedule_type"
+          filterable
+          clearable
+          allow-create
+          style="width: 120px"
+          placeholder="请选择"
+        >
+          <el-option
+            v-for="item in schedule_type_option"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          ></el-option>
+        </el-select>
+        <el-input v-model="schedule_frequence" placeholder="请输入频率"></el-input>
+      </el-row>
+      <el-input
+        v-model="schedule_content"
+        type="textarea"
+        :autosize="{ minRows: 5}"
+        placeholder="请输入内容"
+      ></el-input>
+      <el-button @click="modifysVisible = false">取 消</el-button>
+      <el-button type="primary" @click="modifyschedule">确 定</el-button>
+    </el-dialog>
   </div>
 </template>
 
@@ -107,6 +176,10 @@ export default {
       schedule_frequence: "",
       schedule_content: "",
       lastchecktime: "",
+      scheduleselect_id: "",
+
+      // 弹出框
+      modifysVisible: false,
 
       schedule_type: "",
       schedule_type_option: [
@@ -158,6 +231,13 @@ export default {
         if (response.status == 200) {
           // console.log(response.data);
           this.scheduledata = response.data.data;
+          for (let i in this.scheduledata) {
+            if (this.scheduledata[i].isabandon == 1) {
+              this.scheduledata[i].isabandon = "禁用";
+            } else {
+              this.scheduledata[i].isabandon = "启用";
+            }
+          }
         }
       });
     },
@@ -168,7 +248,6 @@ export default {
         })
         .then(response => {
           if (response.status == 200) {
-            console.log(response.data);
             this.scheduletaskdata = response.data.data;
           }
         });
@@ -208,8 +287,66 @@ export default {
           }
         });
     },
-    updateschedule: function(event) {},
-    deleteschedule: function(event) {},
+    showupdateschedule: function(event) {
+      this.modifysVisible = true;
+      this.task_select = event.subject;
+      this.task_sub_select = event.subsub;
+      this.schedule_type = event.schedule_type;
+      this.schedule_frequence = event.schedule_frequence;
+      this.schedule_content = event.content;
+      this.scheduleselect_id = event.schedule_id;
+    },
+    modifyschedule: function(event) {
+      axios
+        .post("http://127.0.0.1:5000/modifyschedule", {
+          schedule_id: this.scheduleselect_id,
+          subject: this.task_select,
+          subsub: this.task_sub_select,
+          schedule_type: this.schedule_type,
+          schedule_frequence: this.schedule_frequence,
+          schedule_content: this.schedule_content
+        })
+        .then(response => {
+          if (response.status == 200) {
+            this.modifysVisible = false;
+            this.$message({
+              message: "修改成功",
+              type: "success"
+            });
+            this.initall();
+          }
+        });
+    },
+    forbidschedule: function(event) {
+      axios
+        .post("http://127.0.0.1:5000/forbidschedule", {
+          schedule_id: event.schedule_id
+        })
+        .then(response => {
+          if (response.status == 200) {
+            this.$message({
+              message: "禁用成功",
+              type: "success"
+            });
+            this.initall();
+          }
+        });
+    },
+    startschedule: function(event) {
+      axios
+        .post("http://127.0.0.1:5000/startschedule", {
+          schedule_id: event.schedule_id
+        })
+        .then(response => {
+          if (response.status == 200) {
+            this.$message({
+              message: "启用成功",
+              type: "success"
+            });
+            this.initall();
+          }
+        });
+    },
     showscheduleprocess: function(row, column, cell, event) {}
   }
 };

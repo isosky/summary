@@ -159,10 +159,11 @@ def getprocess(task_id):
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
     cursor = c.execute(
-        "select stime,content from task_process where task_id=? order by 1 desc", [task_id])
+        "select stime,content,isfinish,process_id,task_id from task_process where task_id=? order by 1 desc", [task_id])
     result = []
     for row in cursor:
-        result.append({'stime': row[0][0:10], 'content': row[1]})
+        result.append({'stime': row[0][0:10], 'content': row[1],
+                       'isfinish': row[2], 'process_id': row[3], 'task_id': row[4]})
     conn.close()
     return result
 
@@ -201,17 +202,6 @@ def finishtask(task_id, input_finish):
     c.execute('update task_process set isfinish=1 where task_id=?', [task_id])
     conn.commit()
     conn.close()
-
-
-def updateprocess(task_id, content):
-    conn = sqlite3.connect(dbf)
-    # etime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-    c = conn.cursor()
-    c.execute("insert into task_process (task_id,content) values (?,?)", [
-              task_id, content])
-    conn.commit()
-    conn.close()
-    return True
 
 
 def deletetask(task_id):
@@ -297,7 +287,7 @@ def removetask():
     cursor = c.execute("select count(*) from task where isabandon=1")
     for i in cursor:
         result = i[0]
-    print(result)
+    # print(result)
     cursor = c.execute("delete from task where isabandon=1")
     conn.close()
     return str(result)
@@ -396,6 +386,52 @@ def gettasksummary_bar():
 
 
 # #####################################
+# 定义process的函数
+# #####################################
+
+def resetprocess(process_id):
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    c.execute("update task_process set isfinish=0 where process_id=?",
+              [process_id])
+    conn.commit()
+    conn.close()
+    return True
+
+
+def finishprocess(process_id):
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    c.execute("update task_process set isfinish=1 where process_id=?",
+              [process_id])
+    conn.commit()
+    conn.close()
+    return True
+
+
+def addprocess(task_id, content):
+    conn = sqlite3.connect(dbf)
+    # etime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    c = conn.cursor()
+    c.execute("insert into task_process (task_id,content) values (?,?)", [
+              task_id, content])
+    conn.commit()
+    conn.close()
+    return True
+
+
+def updateprocess(process_id, content):
+    conn = sqlite3.connect(dbf)
+    # etime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    c = conn.cursor()
+    c.execute("update task_process set content=? where process_id=?", [
+        content, process_id])
+    conn.commit()
+    conn.close()
+    return True
+
+
+# #####################################
 # 定义schedule的函数
 # #####################################
 def initschedule():
@@ -421,8 +457,9 @@ def initschedule():
             newtaskid = c.lastrowid
             c.execute("insert into schedule_task (schedule_id,task_id) values (?,?)", [
                       i['schedule_id'], newtaskid])
-            nexttime=i['nexttime'].split('-')
-            nexttime = datetime.date(year=int(nexttime[0]),month=int(nexttime[1]),day=int(nexttime[2]))
+            nexttime = i['nexttime'].split('-')
+            nexttime = datetime.date(year=int(nexttime[0]), month=int(
+                nexttime[1]), day=int(nexttime[2]))
             newnexttime = schedulecalnexttime(
                 i['schedule_type'], i['schedule_frequence'], nexttime)
             c.execute("update schedule set nexttime =?,lasttime = ? where schedule_id=?", [
@@ -430,7 +467,10 @@ def initschedule():
             conn.commit()
         c.execute("update sys_cfg set value =? where id=1", [d])
         conn.commit()
-        return {'status': 1, 'message': '新增了：'+str(len(res))+'条计划任务，可查看详情', 'lastchecktime': lastcheck}
+
+        # 删除无效的task
+        deleterows = removetask()
+        return {'status': 1, 'message': '新增了：'+str(len(res))+'条计划任务，可查看详情。删除了：'+str(len(deleterows))+'条无效任务', 'lastchecktime': lastcheck}
     else:
         return {'status': 0, 'message': '今日已检查', 'lastchecktime': lastcheck}
 
@@ -530,7 +570,7 @@ def getscheduledata():
         else:
             lasttime = i[7]
         temp = {'schedule_id': i[0], 'subject': i[1], 'subsub': i[2], 'content': i[3],
-                'schedule_type': i[4], 'schedule_frequence': i[5], 'lasttime': lasttime, 'nexttime': i[8]}
+                'schedule_type': i[4], 'schedule_frequence': i[5], 'lasttime': lasttime, 'nexttime': i[8], 'isabandon': i[9]}
         res.append(temp)
     return res
 
@@ -552,6 +592,37 @@ def getscheduletaskdata(schedule_id):
         res.append(temp)
     # print(res)
     return res
+
+
+def forbidschedule(schedule_id):
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    c.execute("update schedule set isabandon=1 where schedule_id=?",
+              [schedule_id])
+    conn.commit()
+    conn.close()
+    return True
+
+
+def startschedule(schedule_id):
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    c.execute("update schedule set isabandon=0 where schedule_id=?",
+              [schedule_id])
+    conn.commit()
+    conn.close()
+    return True
+
+
+def modifyschedule(schedule_id, subject, subsub, schedule_type, schedule_frequence, content):
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    netxtime = schedulecalnexttime(schedule_type, schedule_frequence, None)
+    c.execute("update schedule set subject=?,subsub=?,schedule_type=?,schedule_frequence=?,nexttime=? where schedule_id=?", [
+              subject, subsub, schedule_type, schedule_frequence, netxtime, schedule_id])
+    conn.commit()
+    conn.close()
+    return True
 
 
 if __name__ == '__main__':

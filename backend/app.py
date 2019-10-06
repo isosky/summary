@@ -147,12 +147,12 @@ def gettasksummary_bar():
 
 
 # 更新
-@app.route('/updateprocess', methods=['POST'])
-def updateprocess():
+@app.route('/addprocess', methods=['POST'])
+def addprocess():
     json_data = json.loads(request.get_data())
     task_id = json_data['task_id']
     content = json_data['content']
-    if dboo.updateprocess(task_id, content):
+    if dboo.addprocess(task_id, content):
         return json.dumps({'result': True})
 
 
@@ -162,6 +162,25 @@ def getprocess():
     json_data = json.loads(request.get_data())
     task_id = json_data['task_id']
     return json.dumps({'arrays': dboo.getprocess(task_id)})
+
+
+# #####################################
+# 定义process的函数
+# #####################################
+@app.route('/resetprocess', methods=['POST'])
+def resetprocess():
+    json_data = json.loads(request.get_data())
+    process_id = json_data['process_id']
+    # print(process_id)
+    return json.dumps({'status': dboo.resetprocess(process_id)})
+
+
+@app.route('/finishprocess', methods=['POST'])
+def finishprocess():
+    json_data = json.loads(request.get_data())
+    process_id = json_data['process_id']
+    # print(process_id)
+    return json.dumps({'status': dboo.finishprocess(process_id)})
 
 
 # #####################################
@@ -196,6 +215,35 @@ def getscheduletaskdata():
     schedule_id = json_data['schedule_id']
     # print(schedule_id)
     return json.dumps({'data': dboo.getscheduletaskdata(schedule_id)})
+
+
+@app.route('/forbidschedule', methods=['POST'])
+def forbidschedule():
+    json_data = json.loads(request.get_data())
+    schedule_id = json_data['schedule_id']
+    # print(schedule_id)
+    return json.dumps({'status': dboo.forbidschedule(schedule_id)})
+
+
+@app.route('/startschedule', methods=['POST'])
+def startschedule():
+    json_data = json.loads(request.get_data())
+    schedule_id = json_data['schedule_id']
+    # print(schedule_id)
+    return json.dumps({'status': dboo.startschedule(schedule_id)})
+
+
+@app.route('/modifyschedule', methods=['POST'])
+def modifyschedule():
+    json_data = json.loads(request.get_data())
+    schedule_id = json_data['schedule_id']
+    subject = json_data['subject']
+    subsub = json_data['subsub']
+    schedule_type = json_data['schedule_type']
+    schedule_frequence = json_data['schedule_frequence']
+    content = json_data['schedule_content']
+    # print(schedule_id)
+    return json.dumps({'status': dboo.modifyschedule(schedule_id, subject, subsub, schedule_type, schedule_frequence, content)})
 
 
 if __name__ == '__main__':

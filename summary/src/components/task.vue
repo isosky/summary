@@ -99,7 +99,7 @@
             <el-table-column prop="num_process" label="进展" width="60"></el-table-column>
             <el-table-column label="操作" width="170">
               <template slot-scope="scope">
-                <el-button @click="updateprocess(scope.row)" type="text" size="small">更新</el-button>
+                <el-button @click="diashowprocess(scope.row)" type="text" size="small">更新</el-button>
                 <el-button @click="finishtask(scope.row)" type="text" size="small">完成</el-button>
                 <el-button @click="updatetask(scope.row)" type="text" size="small">修改</el-button>
                 <el-button @click="deletetask(scope.row)" type="text" size="small">删除</el-button>
@@ -142,8 +142,26 @@
           </el-tab-pane>
           <el-tab-pane name="process" label="进展">
             <el-table :data="tableprocess" border height="500" style="width: 100%">
-              <el-table-column prop="stime" label="日期" width="180"></el-table-column>
+              <el-table-column prop="stime" label="日期" width="100"></el-table-column>
               <el-table-column prop="content" label="内容" width="400"></el-table-column>
+              <el-table-column prop="isfinish" label="状态" width="100"></el-table-column>
+              <el-table-column label="操作" width="170">
+                <template slot-scope="scope">
+                  <el-button @click="showupdateprocess(scope.row)" type="text" size="small">修改</el-button>
+                  <el-button
+                    v-if="scope.row.isfinish=='完成'"
+                    @click="resetprocess(scope.row)"
+                    type="text"
+                    size="small"
+                  >待做</el-button>
+                  <el-button
+                    v-if="scope.row.isfinish=='待做'"
+                    @click="finishprocess(scope.row)"
+                    type="text"
+                    size="small"
+                  >完成</el-button>
+                </template>
+              </el-table-column>
             </el-table>
           </el-tab-pane>
         </el-tabs>
@@ -152,7 +170,7 @@
     <!-- 各种弹出框 -->
     <!-- 更新 -->
     <el-dialog @close="closedialog" title="提示" :visible.sync="dialogpVisible" width="30%">
-      <div>{{v_process_content}}</div>
+      <div>{{v_task_content}}</div>
       <el-input
         v-model="input_process"
         type="textarea"
@@ -162,13 +180,13 @@
       ></el-input>
       <span slot="footer" class="dialog-footer">
         <el-button @click="dialogpVisible = false">取 消</el-button>
-        <el-button type="primary" @click="dialogprocess">确 定</el-button>
+        <el-button type="primary" @click="dialogaddprocess">确 定</el-button>
       </span>
     </el-dialog>
 
     <!-- 完成 -->
     <el-dialog @close="closedialog" title="提示" :visible.sync="dialogsVisible" width="30%">
-      <div>{{v_process_content}}</div>
+      <div>{{v_task_content}}</div>
       <el-input
         v-model="input_finish"
         type="textarea"
@@ -234,6 +252,22 @@
       <span slot="footer" class="dialog-footer">
         <el-button @click="dialogcVisible = false">取 消</el-button>
         <el-button type="primary" @click="dialogdelete">确 定</el-button>
+      </span>
+    </el-dialog>
+
+    <!-- 修改process -->
+    <el-dialog @close="closedialog" title="提示" :visible.sync="dialogprocessVisible" width="30%">
+      <div>{{process_content}}</div>
+      <el-input
+        v-model="process_content"
+        type="textarea"
+        placeholder="请输入完成情况"
+        style="width: 500px"
+        :autosize="{ minRows: 5}"
+      ></el-input>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogprocessVisible = false">取 消</el-button>
+        <el-button type="primary" @click="updateprocess">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -455,7 +489,7 @@ export default {
 
       // dialog process
       dialogpVisible: false,
-      v_process_content: "",
+      v_task_content: "",
       input_process: "",
 
       // dialog commit
@@ -470,6 +504,10 @@ export default {
 
       // dialog delete
       dialogcVisible: false,
+
+      dialogprocessVisible: false,
+      process_content: "",
+      process_id: "",
 
       // badge
       badge_todo: 0,
@@ -607,17 +645,17 @@ export default {
       });
     },
     // 展示进展面板
-    updateprocess: function(event) {
+    diashowprocess: function(event) {
       this.dialogpVisible = true;
-      this.v_process_content = event.title;
+      this.v_task_content = event.title;
       this.s_task_id = event.task_id;
     },
 
     // 调用进展接口
-    dialogprocess: function(event) {
+    dialogaddprocess: function(event) {
       // console.log(this.s_task_id);
       axios
-        .post("http://127.0.0.1:5000/updateprocess", {
+        .post("http://127.0.0.1:5000/addprocess", {
           task_id: this.s_task_id,
           content: this.input_process
         })
@@ -671,7 +709,7 @@ export default {
       // console.log(event.task_id);
       this.dialogsVisible = true;
       this.s_task_id = event.task_id;
-      this.v_process_content = event.title;
+      this.v_task_content = event.title;
     },
     // 查询任务
     querytask: function(isquery) {
@@ -690,13 +728,7 @@ export default {
           isqueryall: isqueryall
         })
         .then(response => {
-          console.log(response);
-          let temp = response.data.arrays;
-          this.tableData = [];
-          for (let row in temp) {
-            // console.log(row);
-            this.tableData.push(temp[row]);
-          }
+          this.tableData = response.data.arrays;
         });
     },
     dialogcommit: function(event) {
@@ -784,6 +816,7 @@ export default {
     closedialog: function(event) {
       this.task_select = "";
       this.task_sub_select = "";
+      this.process_content = "";
     },
     showprocess: function(row, column, cell, event) {
       if (column !== undefined && column.label != "进展") {
@@ -798,20 +831,79 @@ export default {
           this.s_task_id = row.task_id;
         }
         this.tabs_select = "process";
-        axios
-          .post("http://127.0.0.1:5000/getprocess", {
-            task_id: this.s_task_id
-          })
-          .then(response => {
-            let temp = response.data.arrays;
-            this.tableprocess = [];
-            this.s_task_id = "";
-            for (row in temp) {
-              // console.log(row);
-              this.tableprocess.push(temp[row]);
-            }
-          });
+        this.getprocess(this.s_task_id);
       }
+    },
+    getprocess: function(task_id) {
+      axios
+        .post("http://127.0.0.1:5000/getprocess", {
+          task_id: task_id
+        })
+        .then(response => {
+          this.tableprocess = response.data.arrays;
+          for (let i in this.tableprocess) {
+            if (this.tableprocess[i].isfinish == 1) {
+              this.tableprocess[i].isfinish = "完成";
+            } else {
+              this.tableprocess[i].isfinish = "待做";
+            }
+          }
+          this.s_task_id = "";
+        });
+    },
+    resetprocess: function(event) {
+      axios
+        .post("http://127.0.0.1:5000/resetprocess", {
+          process_id: event.process_id
+        })
+        .then(response => {
+          if (response.status == 200) {
+            this.$message({
+              message: "禁用成功",
+              type: "success"
+            });
+            console.log(event);
+            this.getprocess(event.task_id);
+          }
+        });
+    },
+    finishprocess: function(event) {
+      axios
+        .post("http://127.0.0.1:5000/finishprocess", {
+          process_id: event.process_id
+        })
+        .then(response => {
+          if (response.status == 200) {
+            this.$message({
+              message: "启用成功",
+              type: "success"
+            });
+            this.getprocess(event.task_id);
+          }
+        });
+    },
+    showupdateprocess: function(event) {
+      this.dialogprocessVisible = true;
+      this.process_content = event.content;
+      this.process_id = event.process_id;
+      this.s_task_id = event.task_id;
+    },
+    updateprocess: function(event) {
+      axios
+        .post("http://127.0.0.1:5000/updateprocess", {
+          process_id: this.process_id,
+          content: this.process_content
+        })
+        .then(response => {
+          if (response.status == 200) {
+            this.$message({
+              message: "启用成功",
+              type: "success"
+            });
+            this.getprocess(this.s_task_id);
+            this.s_task_id = "";
+          }
+        });
     }
   }
 };
