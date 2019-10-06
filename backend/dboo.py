@@ -434,14 +434,14 @@ def updateprocess(process_id, content):
 # #####################################
 # 定义schedule的函数
 # #####################################
-def initschedule():
+def initschedule(force=False):
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
     c.execute("select value from sys_cfg where id=1")
     lastcheck = c.fetchone()[0]
     print('last check time is : '+lastcheck)
     d = datetime.date.today().strftime("%Y-%m-%d")
-    if d != lastcheck:
+    if d != lastcheck or force:
         cursor = c.execute(
             "select * from schedule where isabandon=0 and (lasttime<date() or lasttime is null or nexttime<date(date(),'+10 day'))")
         res = []
@@ -455,8 +455,8 @@ def initschedule():
             c.execute("insert into task (subject,subsub,title,etime) values (?,?,?,?)", [
                       i['subject'], i['subsub'], i['content'], i['nexttime']])
             newtaskid = c.lastrowid
-            c.execute("insert into schedule_task (schedule_id,task_id) values (?,?)", [
-                      i['schedule_id'], newtaskid])
+            c.execute("insert into schedule_task (schedule_id,task_id,etime) values (?,?,?)", [
+                      i['schedule_id'], newtaskid, i['nexttime']])
             nexttime = i['nexttime'].split('-')
             nexttime = datetime.date(year=int(nexttime[0]), month=int(
                 nexttime[1]), day=int(nexttime[2]))
@@ -467,7 +467,6 @@ def initschedule():
             conn.commit()
         c.execute("update sys_cfg set value =? where id=1", [d])
         conn.commit()
-
         # 删除无效的task
         deleterows = removetask()
         return {'status': 1, 'message': '新增了：'+str(len(res))+'条计划任务，可查看详情。删除了：'+str(len(deleterows))+'条无效任务', 'lastchecktime': lastcheck}
@@ -487,6 +486,7 @@ def addschedule(subject, subsub, schedule_type, schedule_frequence, content):
     c.execute("update schedule set nexttime=? where schedule_id=?", [
         nexttime, s_id])
     conn.commit()
+    initschedule(force=True)
     conn.close()
     return True
 
@@ -579,7 +579,7 @@ def getscheduletaskdata(schedule_id):
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
     params_list = []
-    sql = "select a.schedule_id,b.content,a.task_id,a.addtime from schedule_task a,schedule b where a.schedule_id =b.schedule_id "
+    sql = "select a.schedule_id,b.content,a.task_id,a.addtime,a.etime from schedule_task a,schedule b where a.schedule_id =b.schedule_id "
     if schedule_id != '':
         sql += ' and a.schedule_id=?'
         params_list.append(schedule_id)
@@ -588,7 +588,7 @@ def getscheduletaskdata(schedule_id):
     res = []
     for i in cursor:
         temp = {'schedule_id': i[0], 'content': i[1],
-                'task_id': i[2], 'addtime': i[3]}
+                'task_id': i[2], 'addtime': i[3], 'etime': i[4]}
         res.append(temp)
     # print(res)
     return res
