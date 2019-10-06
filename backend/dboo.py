@@ -148,7 +148,7 @@ def getallprocess():
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
     cursor = c.execute(
-        "select task_id,count(*) from task_process where isfinish=0 group by task_id")
+        "select task_id,count(*) from task_process group by task_id")
     result = {}
     for row in cursor:
         result[row[0]] = row[1]
