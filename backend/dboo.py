@@ -289,7 +289,7 @@ def removetask():
         result = i[0]
     # print(result)
     cursor = c.execute("delete from task where isabandon=1")
-    conn.close()
+    conn.commit()
     return str(result)
 
 
@@ -443,7 +443,7 @@ def initschedule(force=False):
     d = datetime.date.today().strftime("%Y-%m-%d")
     if d != lastcheck or force:
         cursor = c.execute(
-            "select * from schedule where isabandon=0 and (lasttime<date() or lasttime is null or nexttime<date(date(),'+10 day'))")
+            "select * from schedule where isabandon=0 and (lasttime is null or nexttime<date(date(),'+10 day'))")
         res = []
         for i in cursor:
             temp = {'schedule_id': i[0], 'subject': i[1], 'subsub': i[2], 'content': i[3],
@@ -469,6 +469,7 @@ def initschedule(force=False):
         conn.commit()
         # 删除无效的task
         deleterows = removetask()
+        conn.close()
         return {'status': 1, 'message': '新增了：'+str(len(res))+'条计划任务，可查看详情。删除了：'+str(len(deleterows))+'条无效任务', 'lastchecktime': lastcheck}
     else:
         return {'status': 0, 'message': '今日已检查', 'lastchecktime': lastcheck}
@@ -492,6 +493,7 @@ def addschedule(subject, subsub, schedule_type, schedule_frequence, content):
 
 
 def schedulecalnexttime(schedule_type, schedule_frequence, nexttime):
+    # print(schedule_type, schedule_frequence, nexttime)
     # 判断计算哪个时间
     if nexttime:
         n = max(datetime.date.today(), nexttime)
@@ -500,7 +502,7 @@ def schedulecalnexttime(schedule_type, schedule_frequence, nexttime):
     # 得到下个月
     if n.month == 12:
         nn = n.replace(year=n.year+1)
-        nn = n.replace(month=1)
+        nn = nn.replace(month=1)
     else:
         nn = n.replace(month=n.month+1)
     if schedule_type == 'week':
@@ -629,10 +631,10 @@ if __name__ == '__main__':
 
     # print(d.month, d.day,first_weekday)
     # print(allmonday)
-    temp = '7;-1:1,7'
-    t = datetime.date(year=2019, month=10, day=10)
-    s = schedulecalnexttime('month', temp, t)
-    print(s)
+    # temp = '7;-1:1,7'
+    # t = datetime.date(year=2019, month=10, day=10)
+    # s = schedulecalnexttime('month', temp, t)
+    # print(s)
     # print(type(s))
     # print (s)
     # pass
@@ -640,3 +642,7 @@ if __name__ == '__main__':
 
     # initschedule()
     # print('aaa')
+    # initschedule(force=False)
+
+    t = datetime.date(year=2019, month=12, day=29)
+    print(schedulecalnexttime('month', '-1:7', t))

@@ -614,7 +614,7 @@ export default {
         if (response.status == 200) {
           // 柱形图
 
-          console.log(response.data);
+          // console.log(response.data);
           this.task_summary_option.yAxis.data = response.data.yAxisdata;
           this.task_summary_option.series[0].data =
             response.data.yAxisoverdue_list;
