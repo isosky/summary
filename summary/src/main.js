@@ -5,7 +5,9 @@ import App from './App.vue'
 import task from './components/task.vue'
 import analysis from './components/analysis.vue'
 import schedule from './components/schedule.vue'
+import syssetting from './components/syssetting.vue'
 import VueRouter from 'vue-router'
+
 import axios from 'axios'
 
 Vue.use(ElementUI)
@@ -22,6 +24,11 @@ const routes = [{
   {
     path: '/schedule',
     component: schedule
+
+  },
+  {
+    path: '/syssetting',
+    component: syssetting
 
   }
 ]

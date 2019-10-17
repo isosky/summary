@@ -21,6 +21,10 @@
               <i class="el-icon-time"></i>
               <span slot="title">定时任务</span>
             </el-menu-item>
+            <el-menu-item index="4">
+              <i class="el-icon-setting"></i>
+              <span slot="title">系统设置</span>
+            </el-menu-item>
           </el-menu>
         </div>
       </el-col>
@@ -38,7 +42,7 @@ export default {
   data() {
     return {
       isCollapse: true,
-      routers: ["/task", "/analysis", "/schedule"]
+      routers: ["/task", "/analysis", "/schedule","/syssetting"]
     };
   },
   methods: {

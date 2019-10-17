@@ -4,6 +4,7 @@ from flask import Flask, render_template, request
 from flask_cors import CORS
 
 import dboo as dboo
+import getlockscreen as ls
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
@@ -247,4 +248,5 @@ def modifyschedule():
 
 
 if __name__ == '__main__':
+    ls.getlocksreen()
     app.run()

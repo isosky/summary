@@ -644,5 +644,15 @@ if __name__ == '__main__':
     # print('aaa')
     # initschedule(force=False)
 
-    t = datetime.date(year=2019, month=12, day=29)
-    print(schedulecalnexttime('month', '-1:7', t))
+    # t = datetime.date(year=2019, month=12, day=29)
+    # print(schedulecalnexttime('month', '-1:7', t))
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    sss = '1;create table aa as select * from task'
+    # sss ='1'
+    sql = "select * from task where task_id=?"
+    cursor = c.execute(sql, [sss])
+    for c in cursor:
+        print(c)
+    conn.commit()
+    conn.close()
