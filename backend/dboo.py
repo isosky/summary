@@ -494,6 +494,7 @@ def addschedule(subject, subsub, schedule_type, schedule_frequence, content):
 
 def schedulecalnexttime(schedule_type, schedule_frequence, nexttime):
     # print(schedule_type, schedule_frequence, nexttime)
+    day31s = [1, 3, 5, 7, 8, 10, 12]
     # 判断计算哪个时间
     if nexttime:
         n = max(datetime.date.today(), nexttime)
@@ -504,7 +505,14 @@ def schedulecalnexttime(schedule_type, schedule_frequence, nexttime):
         nn = n.replace(year=n.year+1)
         nn = nn.replace(month=1)
     else:
-        nn = n.replace(month=n.month+1)
+        if n.month == 1 and n.day > 28:
+            nn = n.replace(day=28)
+            nn = nn.replace(month=2)
+        elif n.day >= 30 and (n.month+1 not in day31s):
+            nn = n.replace(day=30)
+            nn = nn.replace(month=n.month+1)
+        else:
+            nn = n.replace(month=n.month+1)
     if schedule_type == 'week':
         t_sf = schedule_frequence.split(',')
         t_sf = [int(x) for x in t_sf]
