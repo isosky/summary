@@ -13,7 +13,7 @@ else:
     dbf = "C:/Users/fengy/OneDrive/文档/tmss.db"
 
 iswork = None
-subject_work = {'游戏': 0, '自己': 0, '学习': 1, '工作': 0}
+subject_work = {'游戏': 0, '自己': 0, '学习': 1, '工作': 1}
 
 # TODO 统一用datetime模块
 # #####################################
@@ -434,7 +434,7 @@ def updateprocess(process_id, content):
 # 定义schedule的函数
 # #####################################
 def initschedule(force=False):
-    global
+    global subject_work
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
     c.execute("select value from sys_cfg where id=1")
