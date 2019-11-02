@@ -52,7 +52,7 @@ def getlocksreen():
                     if image.width==1080:
                         # print(os.path.join(dir_h,name+'.jpg'))
                         image.save(os.path.join(dir_h,name+'.jpg'))
-                    else:
+                    elif image.width==1920:
                         image.save(os.path.join(dir_w,name+'.jpg'))
                     temp+=1
     print("新增了"+str(temp)+"张图片")

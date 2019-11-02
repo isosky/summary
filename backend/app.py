@@ -247,6 +247,23 @@ def modifyschedule():
     return json.dumps({'status': dboo.modifyschedule(schedule_id, subject, subsub, schedule_type, schedule_frequence, content)})
 
 
+# #####################################
+# 定义schedule的函数
+# #####################################
+@app.route('/setiswork', methods=['POST'])
+def setiswork():
+    json_data = json.loads(request.get_data())
+    iswork = json_data['iswork']
+    dboo.setiswork(iswork)
+    return json.dumps({'result': True})
+
+
+@app.route('/getiswork')
+def getiswork():
+    res = dboo.getiswork()
+    return json.dumps({'iswork': res})
+
+
 if __name__ == '__main__':
     ls.getlocksreen()
     app.run()

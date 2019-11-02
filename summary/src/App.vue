@@ -42,7 +42,7 @@ export default {
   data() {
     return {
       isCollapse: true,
-      routers: ["/task", "/analysis", "/schedule","/syssetting"]
+      routers: ["/task", "/analysis", "/schedule", "/syssetting"]
     };
   },
   methods: {

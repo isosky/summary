@@ -12,48 +12,17 @@ if not os.path.exists("C:/Users/fengy/OneDrive/文档/tmss.db"):
 else:
     dbf = "C:/Users/fengy/OneDrive/文档/tmss.db"
 
+iswork = None
+subject_work = {'游戏': 0, '自己': 0, '学习': 1, '工作': 0}
 
 # TODO 统一用datetime模块
-def init():
-    conn = sqlite3.connect(dbf)
-    c = conn.cursor()
-    # create table steps
-    # c.execute('''CREATE TABLE my_weights(weight_time TEXT NOT NULL,weight INT );''')
-    # print("success create table my_weights")
-    c.execute('''create table task (
-    task_id            integer PRIMARY KEY autoincrement,                -- 设置主键
-    subject       varchar(20),
-    title         varchar (100),
-    content      varchar(400),
-    stime   datetime default (datetime('now', 'localtime')),
-    etime   datetime ,
-    ftime  datetime,
-    times int default 1,
-    isfinish int default 0,
-    isabandon int default 0
-    );''')
-    conn.commit()
-    conn.close()
-
-
-def initoption():
-    conn = sqlite3.connect(dbf)
-    c = conn.cursor()
-    cursor = c.execute(
-        "select subject,subsub,count(*) from task where isabandon=0 group by subject,subsub order by 3 desc")
-    result = {}
-    result_all = []
-    for row in cursor:
-        if row[0] not in result.keys():
-            result[row[0]] = []
-            result_all.append({'value': row[0], 'label': row[0]})
-        result[row[0]].append(row[1])
-    cursor = c.execute("select value from sys_cfg where id=1")
-    lastchecktime = cursor.fetchone()[0]
-    return [result, result_all, lastchecktime]
+# #####################################
+# 定义step的函数
+# #####################################
 
 
 def step_add(time, step):
+    global iswork
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
     times = "','".join(time)
@@ -115,21 +84,46 @@ def getweight(forchart=True):
     return result
 
 
-def addtask(subject, subsub, title, etime):
+# #####################################
+# 定义task的函数
+# #####################################
+
+
+def initoption():
+    global iswork
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
-    c.execute("insert into task (subject,subsub,title,etime) values (?,?,?,?)", [
-              subject, subsub, title, etime])
+    cursor = c.execute(
+        "select subject,subsub,count(*) from task where isabandon=0 and iswork>=? group by subject,subsub order by 3 desc", [iswork])
+    result = {}
+    result_all = []
+    for row in cursor:
+        if row[0] not in result.keys():
+            result[row[0]] = []
+            result_all.append({'value': row[0], 'label': row[0]})
+        result[row[0]].append(row[1])
+    cursor = c.execute("select value from sys_cfg where id=1")
+    lastchecktime = cursor.fetchone()[0]
+    return [result, result_all, lastchecktime]
+
+
+def addtask(subject, subsub, title, etime):
+    global subject_work
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    c.execute("insert into task (subject,subsub,title,etime,iswork) values (?,?,?,?,?)", [
+              subject, subsub, title, etime, subject_work[subject]])
     conn.commit()
     conn.close()
     return gettasknow()
 
 
 def gettasknow():
+    global iswork
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
     cursor = c.execute(
-        "select task_id,subject,subsub,title,etime,stime,isfinish from task where isfinish=0 and isabandon=0 order by etime,task_id")
+        "select task_id,subject,subsub,title,etime,stime,isfinish from task where isfinish=0 and isabandon=0 and iswork>=? order by etime,task_id", [iswork])
     result = []
     process = getallprocess()
     for row in cursor:
@@ -176,10 +170,11 @@ def parsetime(timestring, timeformat):
 
 
 def gettimedata():
+    global iswork
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
     cursor = c.execute(
-        "select strftime('%Y-%m-%d',ftime),count(*) from task where isfinish =1 and isabandon=0 group by strftime('%Y-%m-%d',ftime)")
+        "select strftime('%Y-%m-%d',ftime),count(*) from task where isfinish =1 and isabandon=0 and iswork>=? group by strftime('%Y-%m-%d',ftime)", [iswork])
     result = []
     for row in cursor:
         result.append(row)
@@ -224,20 +219,21 @@ def updatetask(task_id, subject, subsub, title, etime):
 
 
 def gettasksummary():
+    global iswork
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
     etime = time.strftime("%Y-%m-%d", time.localtime())
     print(etime)
     today = c.execute(
-        "select count(*) from task where etime=? and isfinish=0 and isabandon=0", [etime])
+        "select count(*) from task where etime=? and isfinish=0 and isabandon=0 and iswork>=?", [etime, iswork])
     for i in today:
         res_today = i[0]
     delay = c.execute(
-        "select count(*) from task where etime<? and isfinish=0 and isabandon=0", [etime])
+        "select count(*) from task where etime<? and isfinish=0 and isabandon=0 and iswork>=?", [etime, iswork])
     for i in delay:
         res_delay = i[0]
     todo = c.execute(
-        "select count(*) from task where isfinish=0 and isabandon=0")
+        "select count(*) from task where isfinish=0 and isabandon=0 and iswork>=?", [iswork])
     for i in todo:
         res_todo = i[0]
 
@@ -245,6 +241,7 @@ def gettasksummary():
 
 
 def querytask(query, subject, subsub, isqueryall):
+    global iswork
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
     query = '%'+query+'%'
@@ -261,7 +258,8 @@ def querytask(query, subject, subsub, isqueryall):
         sql += " and subsub=? "
         params_list.append(subsub)
 
-    sql += " order by etime,task_id"
+    sql += " and iswork>=? order by etime,task_id"
+    params_list.append(iswork)
     cursor = c.execute(sql, params_list)
     process = getallprocess()
     result = []
@@ -295,10 +293,11 @@ def removetask():
 
 # 统计的柱形图
 def gettasksummary_bar():
+    global iswork
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
     cursor = c.execute(
-        "select subsub,count(*) from task where isabandon=0 group by subsub order by 2")
+        "select subsub,count(*) from task where isabandon=0 and iswork>=? group by subsub order by 2", [iswork])
     yAxisdata = []
     for i in cursor:
         yAxisdata.append(i[0])
@@ -306,28 +305,28 @@ def gettasksummary_bar():
     etime = time.strftime("%Y-%m-%d", time.localtime())
     # todo
     cursor = c.execute(
-        "select subsub,count(*) from task where etime>=? and isabandon=0 and isfinish=0 group by subsub", [etime])
+        "select subsub,count(*) from task where etime>=? and isabandon=0 and isfinish=0  and iswork>=? group by subsub", [etime, iswork])
     yAxistodo = {}
     for i in cursor:
         yAxistodo[i[0]] = i[1]
 
     # unfinish and delay
     cursor = c.execute(
-        "select subsub,count(*) from task where etime<? and isfinish=0 and isabandon=0 group by subsub", [etime])
+        "select subsub,count(*) from task where etime<? and isfinish=0 and isabandon=0  and iswork>=? group by subsub", [etime, iswork])
     yAxistodooverdue = {}
     for i in cursor:
         yAxistodooverdue[i[0]] = i[1]
 
     # normal
     cursor = c.execute(
-        "select subsub,count(*) from task where ftime<date(etime,'+1 day') group by subsub")
+        "select subsub,count(*) from task where ftime<date(etime,'+1 day')  and iswork>=? group by subsub", [iswork])
     yAxisnormal = {}
     for i in cursor:
         yAxisnormal[i[0]] = i[1]
 
     # overdue
     cursor = c.execute(
-        "select subsub,count(*) from task where ftime>=date(etime,'+1 day') group by subsub")
+        "select subsub,count(*) from task where ftime>=date(etime,'+1 day')  and iswork>=? group by subsub", [iswork])
     yAxisoverdue = {}
     for i in cursor:
         yAxisoverdue[i[0]] = i[1]
@@ -435,6 +434,7 @@ def updateprocess(process_id, content):
 # 定义schedule的函数
 # #####################################
 def initschedule(force=False):
+    global
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
     c.execute("select value from sys_cfg where id=1")
@@ -452,8 +452,8 @@ def initschedule(force=False):
         # 添加数据
         for i in res:
             # print(i['subject'],i['subsub'],i['content'],i['nexttime']+' 00:00:00')
-            c.execute("insert into task (subject,subsub,title,etime) values (?,?,?,?)", [
-                      i['subject'], i['subsub'], i['content'], i['nexttime']])
+            c.execute("insert into task (subject,subsub,title,etime,iswork) values (?,?,?,?,?)", [
+                      i['subject'], i['subsub'], i['content'], i['nexttime'], subject_work[i['subject']]])
             newtaskid = c.lastrowid
             c.execute("insert into schedule_task (schedule_id,task_id,etime) values (?,?,?)", [
                       i['schedule_id'], newtaskid, i['nexttime']])
@@ -635,32 +635,54 @@ def modifyschedule(schedule_id, subject, subsub, schedule_type, schedule_frequen
     return True
 
 
-if __name__ == '__main__':
-
-    # print(d.month, d.day,first_weekday)
-    # print(allmonday)
-    # temp = '7;-1:1,7'
-    # t = datetime.date(year=2019, month=10, day=10)
-    # s = schedulecalnexttime('month', temp, t)
-    # print(s)
-    # print(type(s))
-    # print (s)
-    # pass
-    # getdate(2019, 10, 1, 1)
-
-    # initschedule()
-    # print('aaa')
-    # initschedule(force=False)
-
-    # t = datetime.date(year=2019, month=12, day=29)
-    # print(schedulecalnexttime('month', '-1:7', t))
+# #####################################
+# 定义全局的函数
+# #####################################
+def getiswork():
+    global iswork
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
-    sss = '1;create table aa as select * from task'
-    # sss ='1'
-    sql = "select * from task where task_id=?"
-    cursor = c.execute(sql, [sss])
-    for c in cursor:
-        print(c)
+    cursor = c.execute("select value from sys_cfg where id=2")
+    iswork = cursor.fetchone()[0]
+    # print(iswork)
+    return iswork
+
+
+def setiswork(isw):
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    if isw == True:
+        isw = 1
+    else:
+        isw = 0
+    c.execute("update sys_cfg set value = ? where id=2", [isw])
     conn.commit()
     conn.close()
+
+
+def init():
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    # create table steps
+    # c.execute('''CREATE TABLE my_weights(weight_time TEXT NOT NULL,weight INT );''')
+    # print("success create table my_weights")
+    c.execute('''create table task (
+    task_id            integer PRIMARY KEY autoincrement,                -- 设置主键
+    subject       varchar(20),
+    title         varchar (100),
+    content      varchar(400),
+    stime   datetime default (datetime('now', 'localtime')),
+    etime   datetime ,
+    ftime  datetime,
+    times int default 1,
+    isfinish int default 0,
+    isabandon int default 0
+    );''')
+    conn.commit()
+    conn.close()
+
+
+if __name__ == '__main__':
+    pass
+else:
+    getiswork()
