@@ -104,6 +104,7 @@ def initoption():
         result[row[0]].append(row[1])
     cursor = c.execute("select value from sys_cfg where id=1")
     lastchecktime = cursor.fetchone()[0]
+    conn.close()
     return [result, result_all, lastchecktime]
 
 
@@ -146,6 +147,7 @@ def getallprocess():
     result = {}
     for row in cursor:
         result[row[0]] = row[1]
+    conn.close()
     return result
 
 
@@ -236,7 +238,7 @@ def gettasksummary():
         "select count(*) from task where isfinish=0 and isabandon=0 and iswork>=?", [iswork])
     for i in todo:
         res_todo = i[0]
-
+    conn.close()
     return json.dumps({'res_delay': res_delay, 'res_today': res_today, 'res_todo': res_todo})
 
 
@@ -381,6 +383,7 @@ def gettasksummary_bar():
     result = {'sum_task': sum_task, 'percent': [finish_percent, overdue_percent], 'yAxisdata': yAxisdata, 'yAxistodo_list': yAxistodo_list,
               'yAxisnormal_list': yAxisnormal_list, 'yAxisoverdue_list': yAxisoverdue_list, 'yAxistodooverdue_list': yAxistodooverdue_list, 'piedata': piedata, 'step_avg': step_avg, 'step_date': step_date}
     # print('tongji')
+    conn.close()
     return result
 
 
@@ -582,6 +585,7 @@ def getscheduledata():
         temp = {'schedule_id': i[0], 'subject': i[1], 'subsub': i[2], 'content': i[3],
                 'schedule_type': i[4], 'schedule_frequence': i[5], 'lasttime': lasttime, 'nexttime': i[8], 'isabandon': i[9]}
         res.append(temp)
+    conn.close()
     return res
 
 
@@ -601,6 +605,7 @@ def getscheduletaskdata(schedule_id):
                 'task_id': i[2], 'addtime': i[3], 'etime': i[4]}
         res.append(temp)
     # print(res)
+    conn.close()
     return res
 
 
@@ -645,6 +650,7 @@ def getiswork():
     cursor = c.execute("select value from sys_cfg where id=2")
     iswork = cursor.fetchone()[0]
     # print(iswork)
+    conn.close()
     return iswork
 
 
