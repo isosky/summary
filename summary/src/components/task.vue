@@ -902,6 +902,7 @@ export default {
             });
             this.getprocess(this.s_task_id);
             this.s_task_id = "";
+            this.dialogprocessVisible = false;
           }
         });
     }

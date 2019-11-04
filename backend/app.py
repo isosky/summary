@@ -184,6 +184,14 @@ def finishprocess():
     return json.dumps({'status': dboo.finishprocess(process_id)})
 
 
+@app.route('/updateprocess', methods=['POST'])
+def updateprocess():
+    json_data = json.loads(request.get_data())
+    process_id = json_data['process_id']
+    content = json_data['content']
+    # print(process_id)
+    return json.dumps({'status': dboo.updateprocess(process_id,content)})
+
 # #####################################
 # 定义schedule的函数
 # #####################################
