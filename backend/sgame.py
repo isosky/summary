@@ -3,15 +3,14 @@
 import random
 
 
-r = [{'items': 'SSR', 'value': 1}, {'items': 'SR',
-                                        'value': 39}, {'items': 'R', 'value': 60}]
+r = [{'SSR': 1}, {'SR': 39}, {'R': 60}]
 
 
 def getrandowmitem(listrange):
     randomList = []
-    for k in listrange:
-        for h in range(k.get('value')):
-            randomList.append(k.get('items'))
+    for lr in listrange:
+        for k, v in lr.items():
+            randomList.extend([k]*v)
     random.shuffle(randomList)
     randomNum = random.randint(1, len(randomList))
     items = randomList[randomNum - 1]

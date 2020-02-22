@@ -295,7 +295,7 @@ export default {
           }
         },
         calendar: {
-          range: ["2019-07", "2020-01"],
+          range: ["2020-01", "2020-06"],
           dayLabel: {
             firstDay: 1 // 从周一开始
           }
