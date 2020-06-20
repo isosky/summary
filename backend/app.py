@@ -282,7 +282,13 @@ def getiswork():
 # #####################################
 @app.route('/yys_getyhscore')
 def yys_getyhscore():
-    res = dboo_yys.getroleequipsscore()
+    res = dboo_yys.getyhscore()
+    return json.dumps(res)
+
+
+@app.route('/yys_getyhtypescore')
+def yys_getyhtypescor():
+    res = dboo_yys.getyhtypescor()
     return json.dumps(res)
 
 
