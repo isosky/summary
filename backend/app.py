@@ -298,6 +298,12 @@ def yys_getyhtypenum():
     return json.dumps(res)
 
 
+@app.route('/yys_getyhtypesunburst')
+def yys_getyhtypesunburst():
+    res = dboo_yys.getyhtypesunburst()
+    return json.dumps(res)
+
+
 if __name__ == '__main__':
     ls.getlocksreen()
     app.run()

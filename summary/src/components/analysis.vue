@@ -37,7 +37,7 @@
       </el-col>
 
       <el-col :span="8">
-        <div id="yys_yhtype_sunburst" style="height:600px">123</div>
+        <div id="yys_yhtype_sunburst" style="height:600px"></div>
       </el-col>
     </el-row>
   </div>
@@ -146,6 +146,19 @@ export default {
           }
         ]
       },
+      yys_yhtype_sunburst_chart: "",
+      yys_yhtype_sunburst_chart_data: "",
+      yys_yhtype_sunburst_option: {
+        series: {
+          type: "sunburst",
+          // highlightPolicy: 'ancestor',
+          data: [],
+          radius: [0, "90%"],
+          label: {
+            rotate: "radial"
+          }
+        }
+      },
       yys_yhtypetop10: "一号位"
     };
   },
@@ -164,6 +177,11 @@ export default {
 
     this.yys_yhtypenum_radar_chart = echarts.init(
       document.getElementById("yys_yhtypenum_radar"),
+      "white",
+      { renderer: "canvas" }
+    );
+    this.yys_yhtype_sunburst_chart = echarts.init(
+      document.getElementById("yys_yhtype_sunburst"),
       "white",
       { renderer: "canvas" }
     );
@@ -226,10 +244,27 @@ export default {
         }
       });
     },
+    freshyhtypesunburst: function() {
+      axios
+        .get("http://127.0.0.1:5000/yys_getyhtypesunburst")
+        .then(response => {
+          if (response.status == 200) {
+            console.log(response);
+            this.yys_yhtype_sunburst_chart_data = response.data.series;
+            this.yys_yhtype_sunburst_option.series.data = this.yys_yhtype_sunburst_chart_data[
+              this.yys_yhtypescore_bar_select
+            ][this.yys_yhtypescore_bar_option_select];
+            this.yys_yhtype_sunburst_chart.setOption(
+              this.yys_yhtype_sunburst_option
+            );
+          }
+        });
+    },
     freshall: function() {
       this.freshyhscore();
       this.freshyhtypescore();
       this.freshyhtypenum();
+      this.freshyhtypesunburst();
     },
     roleclick(tab, event) {
       // console.log(tab, event);
@@ -255,6 +290,11 @@ export default {
         this.yys_yhtypescore_bar_select
       ][this.yys_yhtypescore_bar_option_select];
       this.yys_yhtypenum_radar_chart.setOption(this.yys_yhtypenum_radar_option);
+      // 更新右边的图
+      this.yys_yhtype_sunburst_option.series.data = this.yys_yhtype_sunburst_chart_data[
+        this.yys_yhtypescore_bar_select
+      ][this.yys_yhtypescore_bar_option_select];
+      this.yys_yhtype_sunburst_chart.setOption(this.yys_yhtype_sunburst_option);
     }
   }
 };

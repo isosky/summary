@@ -58,6 +58,7 @@ def getyhscore():
             elif temp_data[i] == 0 and temp_data[i-1] != 0:
                 temp_data[i] = temp_data[i-1]
         series.append({'name': role, 'type': "line", "data": temp_data})
+    conn.close()
     return {'legend': role_list, 'axis': axis, 'series': series}
 
 
@@ -88,7 +89,7 @@ def getyhtypescore():
         series[role] = {}
         for i in temp_axis:
             series[role] = list(temp_series_score[role].values())
-
+    conn.close()
     return {'axis': axis, 'series': series, 'yh_type_nums': series_nums}
 
 
@@ -116,8 +117,61 @@ def getyhtypenum():
                 temp_series[role][i].values())
 
     print('*')
+    conn.close()
+    return {'series': series}
+
+
+dict_pos_attr = {
+    0: ['Attack'],
+    1: ['Speed', 'DefenseRate', 'AttackRate', 'HpRate'],
+    2: ['Defense'],
+    3: ['EffectResistRate', 'AttackRate', 'EffectHitRate', 'HpRate', 'DefenseRate'],
+    4: ['Hp'],
+    5: ['AttackRate', 'CritRate', 'HpRate', 'CritPower', 'DefenseRate']}
+
+dict_pos_name = {0: '一号位', 1: '二号位', 2: '三号位', 3: '四号位', 4: '五号位', 5: '六号位'}
+
+
+def getyhtypesunburst():
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    cursor = c.execute(
+        "select role_id,suit_id,pos,main_attr,count(*) as count from role_hero_equips where level=15 group by role_id,suit_id,pos,main_attr")
+
+    # 初始化数组 角色-套装-位置-属性-个数（默认为0）
+    temp_series = {}
+    for role in role_list:
+        temp_series[role] = {}
+        for k in SUIT_ID_TO_NAME.keys():
+            temp_series[role][k] = {}
+            for i in range(6):
+                temp_series[role][k][i] = {}
+                for j in dict_pos_attr[i]:
+                    temp_series[role][k][i][j] = 0
+
+    # 加载数据
+    for i in cursor:
+        temp_series[i[0]][i[1]][i[2]][i[3]] = i[4]
+
+    series = {}
+    for role in role_list:
+        series[role] = {}
+        for k in SUIT_ID_TO_NAME.keys():
+            # 御魂id转中文
+            # series[role][SUIT_ID_TO_NAME[k]] = []
+            temp_r_s = []
+            temp = temp_series[role][k]
+            for i in range(6):
+                temp_children = []
+                for j in temp[i].keys():
+                    temp_children.append({'name': j, 'value': temp[i][j]})
+                temp_r_s.append(
+                    {'name': dict_pos_name[i], 'value': sum(list(temp[i].values())), 'children': temp_children})
+                series[role][SUIT_ID_TO_NAME[k]] = temp_r_s
+    # print('*'*10)
+    conn.close()
     return {'series': series}
 
 
 if __name__ == "__main__":
-    print(getyhtypescore())
+    print(getyhtypesunburst())
