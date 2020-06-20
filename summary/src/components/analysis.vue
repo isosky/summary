@@ -15,13 +15,29 @@
     </el-row>
     <el-row :gutter="5">
       <el-col :span="16">
-        <div id="yys_yhtypescore_bar" style="height:300px"></div>
+        <el-row :gutter="5">
+          <div id="yys_yhtypescore_bar" style="height:300px"></div>
+        </el-row>
+        <el-row :gutter="5">
+          <el-col :span="6">
+            <div id="yys_yhtypenum_radar" style="height:300px"></div>
+          </el-col>
+          <el-col :span="18">
+            <!-- <div id="yys_yhtypetop10" style="height:300px"></div> -->
+            <el-tabs v-model="yys_yhtypetop10" @tab-click="roleclick">
+              <el-tab-pane label="一号位" name="一号位">一号位</el-tab-pane>
+              <el-tab-pane label="二号位" name="二号位">二号位</el-tab-pane>
+              <el-tab-pane label="三号位" name="三号位">三号位</el-tab-pane>
+              <el-tab-pane label="四号位" name="四号位">四号位</el-tab-pane>
+              <el-tab-pane label="五号位" name="五号位">五号位</el-tab-pane>
+              <el-tab-pane label="六号位" name="六号位">六号位</el-tab-pane>
+            </el-tabs>
+          </el-col>
+        </el-row>
       </el-col>
-      <el-col :span="4">
-        <div id="yys_yhtypenum_radar" style="height:300px"></div>
-      </el-col>
-      <el-col :span="4">
-        <div id="yys_yhtype_sunburst" style="height:300px"></div>
+
+      <el-col :span="8">
+        <div id="yys_yhtype_sunburst" style="height:600px">123</div>
       </el-col>
     </el-row>
   </div>
@@ -75,9 +91,10 @@ export default {
           type: "value"
         },
         grid: {
-          left: "3%",
-          right: "4%",
-          bottom: "3%",
+          left: "2%",
+          right: "2%",
+          bottom: "5%",
+          top: "5%",
           containLabel: true
         },
         series: [
@@ -90,7 +107,43 @@ export default {
             data: []
           }
         ]
-      }
+      },
+      yys_yhtypenum_radar_chart: "",
+      yys_yhtypenum_radar_chart_data: "",
+      yys_yhtypenum_radar_option: {
+        title: {
+          text: ""
+        },
+        radar: {
+          // name: {
+          //   textStyle: {
+          //     color: "#fff",
+          //     backgroundColor: "#999",
+          //     borderRadius: 3,
+          //   }
+          // },
+          indicator: [
+            { name: "一号位" },
+            { name: "二号位" },
+            { name: "三号位" },
+            { name: "四号位" },
+            { name: "五号位" },
+            { name: "六号位" }
+          ]
+        },
+        series: [
+          {
+            type: "radar",
+            // areaStyle: {normal: {}},
+            data: [
+              {
+                value: [4300, 10000, 28000, 35000, 50000, 19000]
+              }
+            ]
+          }
+        ]
+      },
+      yys_yhtypetop10: "一号位"
     };
   },
   mounted: function() {
@@ -101,6 +154,11 @@ export default {
     );
     this.yys_yhtypescore_bar_chart = echarts.init(
       document.getElementById("yys_yhtypescore_bar"),
+      "white",
+      { renderer: "canvas" }
+    );
+    this.yys_yhtypenum_radar_chart = echarts.init(
+      document.getElementById("yys_yhtypenum_radar"),
       "white",
       { renderer: "canvas" }
     );
@@ -139,6 +197,7 @@ export default {
       });
     },
     freshall: function() {
+      this.yys_yhtypenum_radar_chart.setOption(this.yys_yhtypenum_radar_option);
       this.freshyhscore();
       this.freshyhtypescore();
     },
