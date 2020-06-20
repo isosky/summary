@@ -520,6 +520,7 @@ export default {
     };
   },
   mounted: function() {
+    console.log(this);
     // console.log('asdasdasda');
     // console.log(this.tableData);
     this.task_chart = echarts.init(document.getElementById("b_task"), "white", {

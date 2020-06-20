@@ -1,6 +1,11 @@
 <template>
   <div id="app">
-    <el-switch inactive-text="工作模式" v-model="iswork" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
+    <el-switch
+      inactive-text="工作模式"
+      v-model="iswork"
+      active-color="#13ce66"
+      inactive-color="#ff4949"
+    ></el-switch>
     <el-button @click="setiswork">提交</el-button>
   </div>
 </template>

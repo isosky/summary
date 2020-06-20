@@ -11,6 +11,8 @@ app = Flask(__name__)
 CORS(app, supports_credentials=True)
 
 # TODO 将所有的json格式化放到app.py里面
+
+
 @app.route('/')
 def mainroute():
     return render_template("index.html")
@@ -196,6 +198,8 @@ def updateprocess():
 # #####################################
 # 定义schedule的函数
 # #####################################
+
+
 @app.route('/initschedule')
 def initschedule():
     return json.dumps(dboo.initschedule())
@@ -271,6 +275,15 @@ def setiswork():
 def getiswork():
     res = dboo.getiswork()
     return json.dumps({'iswork': res})
+
+
+# #####################################
+# 定义yys的函数
+# #####################################
+@app.route('/yys_getyhscore')
+def yys_getyhscore():
+    res = dboo_yys.getroleequipsscore()
+    return json.dumps(res)
 
 
 if __name__ == '__main__':

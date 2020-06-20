@@ -47,7 +47,7 @@ const app = new Vue({
   },
   methods: {
     gofirstpage: function (event) {
-      this.$router.push('/task')
+      this.$router.push('/analysis')
     },
     initschedule: function (event) {
       axios.get("http://127.0.0.1:5000/initschedule").then(response => {

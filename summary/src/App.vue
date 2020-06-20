@@ -4,7 +4,7 @@
       <el-col :span="1">
         <div>
           <el-menu
-            default-active="1"
+            default-active="3"
             class="el-menu-vertical-demo"
             :collapse="isCollapse"
             @select="moveto"
@@ -15,7 +15,7 @@
             </el-menu-item>
             <el-menu-item index="2">
               <i class="el-icon-s-data"></i>
-              <span slot="title">统计分析</span>
+              <span slot="title">yys分析</span>
             </el-menu-item>
             <el-menu-item index="3">
               <i class="el-icon-time"></i>
