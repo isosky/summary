@@ -68,29 +68,28 @@ def getyhtypescore():
         "select role_id,suit_id,sum(score) as score,count(*) as nums from role_hero_equips where level=15 group by role_id,suit_id")
     axis = list(SUIT_ID_TO_NAME.values())
     series = {}
-    # TODO 先构建全数组，然后再提取，会方便
-    for i in cursor:
-        if i[0] not in series.keys():
-            series[i[0]] = {}
-        series[i[0]][i[1]] = round(i[2], 2)
-
-    for i in series.keys():
-        temp = series[i].keys()
-        temp_axis = [x for x in SUIT_ID_TO_NAME.keys() if x not in temp]
-        for j in temp_axis:
-            series[i][j] = 0
-        # print(i)
-        # print(temp_axis)
-
-    series_data = {}
+    # 得分
+    temp_series_score = {}
+    # 个数
+    series_nums = {}
+    temp_axis = list(SUIT_ID_TO_NAME.keys())
     for role in role_list:
-        series_data[role] = []
-    for i in SUIT_ID_TO_NAME.keys():
-        for role in role_list:
-            series_data[role].append(series[role][i])
+        temp_series_score[role] = {}
+        series_nums[role] = {}
+        for i in temp_axis:
+            temp_series_score[role][i] = 0
+            series_nums[role][i] = 0
+    for i in cursor:
+        temp_series_score[i[0]][i[1]] = round(i[2], 2)
+        series_nums[i[0]][SUIT_ID_TO_NAME[i[1]]] = i[3]
 
-    # print(axis)
-    return {'axis': axis, 'series': series_data}
+    series = {}
+    for role in role_list:
+        series[role] = {}
+        for i in temp_axis:
+            series[role] = list(temp_series_score[role].values())
+
+    return {'axis': axis, 'series': series, 'yh_type_nums': series_nums}
 
 
 def getyhtypenum():
@@ -98,7 +97,6 @@ def getyhtypenum():
     c = conn.cursor()
     cursor = c.execute(
         "select role_id,suit_id,pos,count(*) as count from role_hero_equips where level=15 group by role_id,suit_id,pos")
-    axis = list(SUIT_ID_TO_NAME.values())
     temp_series = {}
     temp_axis = list(SUIT_ID_TO_NAME.keys())
     for role in role_list:
@@ -122,4 +120,4 @@ def getyhtypenum():
 
 
 if __name__ == "__main__":
-    print(getyhtypenum())
+    print(getyhtypescore())
