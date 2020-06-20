@@ -13,8 +13,16 @@ else:
 
 
 def getroleequipsscore():
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    cursor = c.execute("select * from yys_role_yh_score")
+    res = {}
+    for i in cursor:
+        if i[1] not in res.keys():
+            res[i[1]] = []
+        print(i)
     return
 
 
 if __name__ == "__main__":
-    pass
+    getroleequipsscore()
