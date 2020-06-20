@@ -4,7 +4,6 @@ import os
 import random
 import sqlite3
 import time
-import datetime
 import calendar
 
 if not os.path.exists("C:/Users/fengy/OneDrive/文档/tmss.db"):
