@@ -109,3 +109,7 @@ venv.bak/
 
 
 temp.py
+
+*.json
+*.jpg
+*.png
