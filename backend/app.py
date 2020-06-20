@@ -287,8 +287,14 @@ def yys_getyhscore():
 
 
 @app.route('/yys_getyhtypescore')
-def yys_getyhtypescor():
-    res = dboo_yys.getyhtypescor()
+def yys_getyhtypescore():
+    res = dboo_yys.getyhtypescore()
+    return json.dumps(res)
+
+
+@app.route('/yys_getyhtypenum')
+def yys_getyhtypenum():
+    res = dboo_yys.getyhtypenum()
     return json.dumps(res)
 
 

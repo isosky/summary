@@ -61,13 +61,14 @@ def getyhscore():
     return {'legend': role_list, 'axis': axis, 'series': series}
 
 
-def getyhtypescor():
+def getyhtypescore():
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
     cursor = c.execute(
-        "select role_id,suit_id,sum(score) as score from role_hero_equips where level=15 group by role_id,suit_id")
+        "select role_id,suit_id,sum(score) as score,count(*) as nums from role_hero_equips where level=15 group by role_id,suit_id")
     axis = list(SUIT_ID_TO_NAME.values())
     series = {}
+    # TODO 先构建全数组，然后再提取，会方便
     for i in cursor:
         if i[0] not in series.keys():
             series[i[0]] = {}
@@ -92,5 +93,33 @@ def getyhtypescor():
     return {'axis': axis, 'series': series_data}
 
 
+def getyhtypenum():
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    cursor = c.execute(
+        "select role_id,suit_id,pos,count(*) as count from role_hero_equips where level=15 group by role_id,suit_id,pos")
+    axis = list(SUIT_ID_TO_NAME.values())
+    temp_series = {}
+    temp_axis = list(SUIT_ID_TO_NAME.keys())
+    for role in role_list:
+        temp_series[role] = {}
+        for i in temp_axis:
+            temp_series[role][i] = {}
+            for j in range(6):
+                temp_series[role][i][j] = 0
+    for i in cursor:
+        temp_series[i[0]][i[1]][i[2]] = i[3]
+
+    series = {}
+    for role in role_list:
+        series[role] = {}
+        for i in temp_axis:
+            series[role][SUIT_ID_TO_NAME[i]] = list(
+                temp_series[role][i].values())
+
+    print('*')
+    return {'series': series}
+
+
 if __name__ == "__main__":
-    print(getyhtypescor())
+    print(getyhtypenum())

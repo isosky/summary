@@ -108,6 +108,7 @@ export default {
           }
         ]
       },
+      yys_yhtypescore_bar_option_select: "雪幽魂",
       yys_yhtypenum_radar_chart: "",
       yys_yhtypenum_radar_chart_data: "",
       yys_yhtypenum_radar_option: {
@@ -137,7 +138,7 @@ export default {
             // areaStyle: {normal: {}},
             data: [
               {
-                value: [4300, 10000, 28000, 35000, 50000, 19000]
+                value: []
               }
             ]
           }
@@ -196,8 +197,28 @@ export default {
         }
       });
     },
+    freshyhtypenum: function() {
+      axios.get("http://127.0.0.1:5000/yys_getyhtypenum").then(response => {
+        if (response.status == 200) {
+          console.log(response);
+          console.log(this.yys_yhtypenum_radar_option);
+          this.yys_yhtypenum_radar_chart_data = response.data.series;
+          console.log(this.yys_yhtypenum_radar_chart_data);
+          this.yys_yhtypenum_radar_option.title.text = this.yys_yhtypescore_bar_option_select;
+          this.yys_yhtypenum_radar_option.title.subtext = "14个";
+          this.yys_yhtypenum_radar_option.series[0].data[0].value = this.yys_yhtypenum_radar_chart_data[
+            this.yys_yhtypescore_bar_select
+          ][this.yys_yhtypescore_bar_option_select];
+
+          console.log(this.yys_yhtypenum_radar_option);
+          this.yys_yhtypenum_radar_chart.setOption(
+            this.yys_yhtypenum_radar_option
+          );
+        }
+      });
+    },
     freshall: function() {
-      this.yys_yhtypenum_radar_chart.setOption(this.yys_yhtypenum_radar_option);
+      this.freshyhtypenum();
       this.freshyhscore();
       this.freshyhtypescore();
     },
