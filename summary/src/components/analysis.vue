@@ -149,6 +149,7 @@ export default {
       yys_yhtype_sunburst_chart: "",
       yys_yhtype_sunburst_chart_data: "",
       yys_yhtype_sunburst_option: {
+        tooltip: {},
         series: {
           type: "sunburst",
           // highlightPolicy: 'ancestor',
