@@ -2,11 +2,33 @@
   <div id="app">
     <el-row :gutter="5">
       <el-col :span="6">
-        <el-tabs v-model="yys_yhtypescore_bar_select" @tab-click="roleclick">
-          <el-tab-pane label="scrapy" name="scrapy">scrapy</el-tab-pane>
-          <el-tab-pane label="吃糖了" name="吃糖了">吃糖了</el-tab-pane>
-          <el-tab-pane label="ploit" name="ploit">ploit</el-tab-pane>
-          <el-tab-pane label="葛神棍" name="葛神棍">葛神棍</el-tab-pane>
+        <el-tabs v-model="role_name" @tab-click="roleclick">
+          <!-- TODO 原本这个地方想用组件来实现，结果发现直接在下面重新声明一个div就好了 -->
+          <el-tab-pane label="scrapy" name="scrapy"></el-tab-pane>
+          <el-tab-pane label="吃糖了" name="吃糖了"></el-tab-pane>
+          <el-tab-pane label="ploit" name="ploit"></el-tab-pane>
+          <el-tab-pane label="葛神棍" name="葛神棍"></el-tab-pane>
+          <!-- <div>asd</div> -->
+          <el-row :gutter="20">
+            <el-col :span="8">
+              <div class="grid-content bg-purple" align="center">6星式神:{{sixss}}</div>
+            </el-col>
+            <el-col :span="8">
+              <div class="grid-content bg-purple-light" align="center">6星御魂:{{sixyh}}</div>
+            </el-col>
+            <el-col :span="8">
+              <div class="grid-content bg-purple" align="center">御魂总分:{{yhsum}}</div>
+            </el-col>
+          </el-row>
+          <el-row :gutter="20">
+            <el-col :span="4" v-for="item in yys_role_now" :key="item.id">
+              <!-- <span class="demonstration">{{ fit }}</span> -->
+              <el-image style="width: 40px; height: 40px;left:10px" :src="item.rurl" :fit="full"></el-image>
+              <div class="grid-content bg-purple" align="center">{{item.value}}</div>
+              <div class="grid-content bg-purple-light" align="center">{{item.zc}}</div>
+            </el-col>
+          </el-row>
+          <el-row :gutter="5"></el-row>
         </el-tabs>
       </el-col>
       <el-col :span="18">
@@ -51,6 +73,19 @@ var echarts = require("echarts");
 export default {
   data() {
     return {
+      sixss: "123",
+      sixyh: "234",
+      yhsum: "123",
+      yys_role_data: "",
+      /**
+       * { id: 1, v: 1, url: require("../assets/suit/300007.png") },
+       * { id: 2, v: 2, url: require("../assets/suit/300002.png") },
+       * { id: 3, v: 3, url: require("../assets/suit/300003.png") },
+       * { id: 4, v: 4, url: require("../assets/suit/300004.png") },
+       * { id: 5, v: 5, url: require("../assets/suit/300008.png") },
+       * { id: 6, v: 6, url: require("../assets/suit/300006.png") }
+       */
+      yys_role_now: [],
       yys_yhscore_line_chart: "",
       yys_yhscore_line_option: {
         tooltip: {
@@ -76,7 +111,7 @@ export default {
         },
         series: []
       },
-      yys_yhtypescore_bar_select: "scrapy",
+      role_name: "scrapy",
       yys_yhtypescore_bar_chart: "",
       yys_yhtypescore_bar_chart_data: "",
       yys_yhtypescore_bar_option: {
@@ -110,7 +145,7 @@ export default {
           }
         ]
       },
-      yys_yhtypescore_bar_option_select: "雪幽魂",
+      yh_name: "雪幽魂",
       yys_yhtypenum_radar_chart: "",
       yys_yhtypenum_radar_chart_data: "",
       yys_yhtypenum_radar_title_data: "",
@@ -219,7 +254,7 @@ export default {
           this.yys_yhtypescore_bar_chart_data = response.data.series;
           this.yys_yhtypescore_bar_option.xAxis.data = response.data.axis;
           this.yys_yhtypescore_bar_option.series[0].data = this.yys_yhtypescore_bar_chart_data[
-            this.yys_yhtypescore_bar_select
+            this.role_name
           ];
           this.yys_yhtypescore_bar_chart.setOption(
             this.yys_yhtypescore_bar_option
@@ -228,8 +263,8 @@ export default {
           let _this = this;
           this.yys_yhtypescore_bar_chart.on("click", function(params) {
             // console.log(_this);
-            _this.yys_yhtypescore_bar_option_select = params.name;
-            // console.log(_this.yys_yhtypescore_bar_option_select);
+            _this.yh_name = params.name;
+            // console.log(_this.yh_name);
           });
         }
       });
@@ -239,14 +274,13 @@ export default {
         if (response.status == 200) {
           // console.log(response);
           this.yys_yhtypenum_radar_chart_data = response.data.series;
-          this.yys_yhtypenum_radar_option.title.text = this.yys_yhtypescore_bar_option_select;
+          this.yys_yhtypenum_radar_option.title.text = this.yh_name;
           this.yys_yhtypenum_radar_option.title.subtext =
-            this.yys_yhtypenum_radar_title_data[
-              this.yys_yhtypescore_bar_select
-            ][this.yys_yhtypescore_bar_option_select] + "个";
+            this.yys_yhtypenum_radar_title_data[this.role_name][this.yh_name] +
+            "个";
           this.yys_yhtypenum_radar_option.series[0].data[0].value = this.yys_yhtypenum_radar_chart_data[
-            this.yys_yhtypescore_bar_select
-          ][this.yys_yhtypescore_bar_option_select];
+            this.role_name
+          ][this.yh_name];
           this.yys_yhtypenum_radar_chart.setOption(
             this.yys_yhtypenum_radar_option
           );
@@ -258,18 +292,43 @@ export default {
         .get("http://127.0.0.1:5000/yys_getyhtypesunburst")
         .then(response => {
           if (response.status == 200) {
-            console.log(response);
+            // console.log(response);
             this.yys_yhtype_sunburst_chart_data = response.data.series;
             this.yys_yhtype_sunburst_option.series.data = this.yys_yhtype_sunburst_chart_data[
-              this.yys_yhtypescore_bar_select
-            ][this.yys_yhtypescore_bar_option_select];
+              this.role_name
+            ][this.yh_name];
             this.yys_yhtype_sunburst_chart.setOption(
               this.yys_yhtype_sunburst_option
             );
           }
         });
     },
+    setrole: function() {
+      // console.log(this.yys_role_data);
+      this.sixss = this.yys_role_data[this.role_name].sixss;
+      this.sixyh = this.yys_role_data[this.role_name].sixyh;
+      this.yhsum = this.yys_role_data[this.role_name].yhsum;
+      this.yys_role_now = this.yys_role_data[this.role_name].speed;
+    },
+    initrole: function() {
+      axios.get("http://127.0.0.1:5000/yys_getyysrole").then(response => {
+        if (response.status == 200) {
+          console.log(response);
+          this.yys_role_data = response.data.res;
+          console.log("**********");
+          for (let i in this.yys_role_data) {
+            // console.log(i);
+            this.yys_role_data[i].speed.forEach(item => {
+              item.rurl = require("../assets/suit/" + item.url);
+              // console.log(item);
+            });
+          }
+          this.setrole();
+        }
+      });
+    },
     freshall: function() {
+      this.initrole();
       this.freshyhscore();
       this.freshyhtypescore();
       this.freshyhtypenum();
@@ -278,31 +337,31 @@ export default {
     roleclick(tab, event) {
       // console.log(tab, event);
       this.yys_yhtypescore_bar_option.series[0].data = this.yys_yhtypescore_bar_chart_data[
-        this.yys_yhtypescore_bar_select
+        this.role_name
       ];
       this.yys_yhtypescore_bar_chart.setOption(this.yys_yhtypescore_bar_option);
+      this.setrole();
     }
   },
   watch: {
-    yys_yhtypescore_bar_option_select: function(val) {
+    yh_name: function(val) {
       // console.log(
-      //   this.yys_yhtypescore_bar_select,
-      //   this.yys_yhtypescore_bar_option_select
+      //   this.role_name,
+      //   this.yh_name
       // );
       // console.log(this.yys_yhtypenum_radar_chart_data);
-      this.yys_yhtypenum_radar_option.title.text = this.yys_yhtypescore_bar_option_select;
+      this.yys_yhtypenum_radar_option.title.text = this.yh_name;
       this.yys_yhtypenum_radar_option.title.subtext =
-        this.yys_yhtypenum_radar_title_data[this.yys_yhtypescore_bar_select][
-          this.yys_yhtypescore_bar_option_select
-        ] + "个";
+        this.yys_yhtypenum_radar_title_data[this.role_name][this.yh_name] +
+        "个";
       this.yys_yhtypenum_radar_option.series[0].data[0].value = this.yys_yhtypenum_radar_chart_data[
-        this.yys_yhtypescore_bar_select
-      ][this.yys_yhtypescore_bar_option_select];
+        this.role_name
+      ][this.yh_name];
       this.yys_yhtypenum_radar_chart.setOption(this.yys_yhtypenum_radar_option);
       // 更新右边的图
       this.yys_yhtype_sunburst_option.series.data = this.yys_yhtype_sunburst_chart_data[
-        this.yys_yhtypescore_bar_select
-      ][this.yys_yhtypescore_bar_option_select];
+        this.role_name
+      ][this.yh_name];
       this.yys_yhtype_sunburst_chart.setOption(this.yys_yhtype_sunburst_option);
     }
   }

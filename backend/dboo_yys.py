@@ -1,9 +1,5 @@
-import datetime
-import json
 import os
-import random
 import sqlite3
-import time
 
 
 if not os.path.exists("C:/Users/fengy/OneDrive/文档/tmss.db"):
@@ -11,6 +7,7 @@ if not os.path.exists("C:/Users/fengy/OneDrive/文档/tmss.db"):
 else:
     dbf = "C:/Users/fengy/OneDrive/文档/tmss.db"
 
+suit_url = 'https://cbg-yys.res.netease.com/game_res/suit/'
 
 SUIT_ID_TO_NAME = {300002: '雪幽魂', 300003: '地藏像', 300004: '蝠翼',
                    300006: '涅槃之火', 300007: '三味', 300008: '魍魉之匣',
@@ -27,6 +24,7 @@ SUIT_ID_TO_NAME = {300002: '雪幽魂', 300003: '地藏像', 300004: '蝠翼',
                    300073: '飞缘魔', 300074: '兵主部', 300075: '青女房',
                    300076: '涂佛', 300077: '鬼灵歌伎'}
 
+SUIT_ID_TO_URL = {}
 
 role_list = ['scrapy', 'ploit', '吃糖了', '葛神棍']
 
@@ -173,7 +171,14 @@ def getyhtypesunburst():
     return {'series': series}
 
 
+def idtourl():
+    global suit_url, SUIT_ID_TO_URL, SUIT_ID_TO_NAME
+    for i in SUIT_ID_TO_NAME.keys():
+        SUIT_ID_TO_URL[i] = suit_url+str(i)+'.png'
+
+
 def getyysrole():
+    # init url
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
     cursor = c.execute(
@@ -181,20 +186,21 @@ def getyysrole():
     res = {}
     # 御魂基本信息统计
     for i in cursor:
-        res[i[0]] = {'nums': i[1], 'score': i[2], 'avg': round(i[2]/i[1], 2)}
-        res[i[0]]['speed'] = {}
-        res[i[0]]['speed_zc'] = {}
+        res[i[0]] = {'sixyh': i[1], 'yhsum': round(i[2], 2),
+                     'avg': round(i[2]/i[1], 2,), 'sixss': 0}
+        res[i[0]]['speed'] = []
+        # res[i[0]]['speed_zc'] = {}
 
     # 角色一速
     cursor = c.execute("select * from v_role_speed")
     for i in cursor:
-        res[i[0]]['speed'][dict_pos_name[i[1]]] = {SUIT_ID_TO_NAME[i[3]]: i[2]}
+        res[i[0]]['speed'].append(
+            {'id': i[1], 'value': i[2], 'url': str(i[3])+'.png'})
 
     # 角色招财一速
     cursor = c.execute("select * from v_role_speed_zc")
     for i in cursor:
-        res[i[0]]['speed_zc'][dict_pos_name[i[1]]] = {
-            SUIT_ID_TO_NAME[i[3]]: i[2]}
+        res[i[0]]['speed'][i[1]]['zc'] = i[2]
 
     conn.close()
     return {'res': res}

@@ -304,6 +304,12 @@ def yys_getyhtypesunburst():
     return json.dumps(res)
 
 
+@app.route('/yys_getyysrole')
+def yys_getyysrole():
+    res = dboo_yys.getyysrole()
+    return json.dumps(res)
+
+
 if __name__ == '__main__':
     ls.getlocksreen()
     app.run()
