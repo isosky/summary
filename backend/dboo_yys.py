@@ -173,5 +173,32 @@ def getyhtypesunburst():
     return {'series': series}
 
 
+def getyysrole():
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    cursor = c.execute(
+        "select role_id,count(*) as c,sum(score) as s from role_hero_equips where level=15 group by role_id")
+    res = {}
+    # 御魂基本信息统计
+    for i in cursor:
+        res[i[0]] = {'nums': i[1], 'score': i[2], 'avg': round(i[2]/i[1], 2)}
+        res[i[0]]['speed'] = {}
+        res[i[0]]['speed_zc'] = {}
+
+    # 角色一速
+    cursor = c.execute("select * from v_role_speed")
+    for i in cursor:
+        res[i[0]]['speed'][dict_pos_name[i[1]]] = {SUIT_ID_TO_NAME[i[3]]: i[2]}
+
+    # 角色招财一速
+    cursor = c.execute("select * from v_role_speed_zc")
+    for i in cursor:
+        res[i[0]]['speed_zc'][dict_pos_name[i[1]]] = {
+            SUIT_ID_TO_NAME[i[3]]: i[2]}
+
+    conn.close()
+    return {'res': res}
+
+
 if __name__ == "__main__":
-    print(getyhtypesunburst())
+    print(getyysrole())

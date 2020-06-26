@@ -102,6 +102,7 @@ export default {
           {
             label: {
               show: true,
+              color: "#000",
               position: "top"
             },
             type: "bar",
@@ -140,7 +141,13 @@ export default {
             // areaStyle: {normal: {}},
             data: [
               {
-                value: []
+                value: [],
+                label: {
+                  show: true,
+                  formatter: function(params) {
+                    return params.value;
+                  }
+                }
               }
             ]
           }
@@ -154,6 +161,7 @@ export default {
           type: "sunburst",
           // highlightPolicy: 'ancestor',
           data: [],
+          sort: null,
           radius: [0, "90%"],
           label: {
             rotate: "radial"
