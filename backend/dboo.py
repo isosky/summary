@@ -12,7 +12,8 @@ else:
     dbf = "C:/Users/fengy/OneDrive/文档/tmss.db"
 
 iswork = None
-subject_work = {'游戏': 0, '自己': 0, '学习': 1, '工作': 1}
+# TODO 要放到数据库里面
+subject_work = {'游戏': 0, '自己': 0, '学习': 1, '项目': 1, '公司': 1}
 
 # TODO 统一用datetime模块
 # #####################################
@@ -96,6 +97,7 @@ def initoption():
         "select subject,subsub,count(*) from task where isabandon=0 and iswork>=? group by subject,subsub order by 3 desc", [iswork])
     result = {}
     result_all = []
+    # TODO 将所有的分类都加上
     for row in cursor:
         if row[0] not in result.keys():
             result[row[0]] = []
@@ -191,7 +193,7 @@ def finishtask(task_id, input_finish):
     c = conn.cursor()
     c.execute('''update task set ftime=? ,isfinish=1 where task_id =? ''', [
               etime, task_id])
-    c.execute("insert into task_process (task_id,content) values (?,?)", [
+    c.execute("insert into task_process (task_id,content,isfinish) values (?,?,1)", [
         task_id, input_finish])
     conn.commit()
     #   关闭所有进程
@@ -320,7 +322,7 @@ def gettasksummary_bar():
 
     # normal
     cursor = c.execute(
-        "select subsub,count(*) from task where ftime<date(etime,'+1 day')  and iswork>=? group by subsub", [iswork])
+        "select subsub,count(*) from task where ftime<date(etime,'+1 day') and isfinish=1 and iswork>=? group by subsub", [iswork])
     yAxisnormal = {}
     for i in cursor:
         yAxisnormal[i[0]] = i[1]
@@ -373,8 +375,13 @@ def gettasksummary_bar():
 
     sum_task = sum_todo + sum_normal + sum_overdue + sum_todoovredue
 
-    overdue_percent = round((sum_overdue+sum_todoovredue) / sum_task * 100, 2)
-    finish_percent = round((sum_overdue+sum_normal)/sum_task*100, 2)
+    if sum_task !=0:
+        overdue_percent = round((sum_overdue+sum_todoovredue) / sum_task * 100, 2)
+        finish_percent = round((sum_overdue+sum_normal)/sum_task*100, 2)
+    else:
+        overdue_percent =0
+        finish_percent =0
+    
 
     piedata = [{'value': sum_overdue, 'name': '逾期'}, {'value': sum_todoovredue, 'name': '待做逾期'}, {'value': sum_todo, 'name': '待做'}, {
         'value': sum_normal, 'name': '正常完成'}]
@@ -451,7 +458,7 @@ def initschedule(force=False):
             temp = {'schedule_id': i[0], 'subject': i[1], 'subsub': i[2], 'content': i[3],
                     'schedule_type': i[4], 'schedule_frequence': i[5], 'nexttime': i[8]}
             res.append(temp)
-        # 添加数据
+        # 添加定时任务
         for i in res:
             # print(i['subject'],i['subsub'],i['content'],i['nexttime']+' 00:00:00')
             c.execute("insert into task (subject,subsub,title,etime,iswork) values (?,?,?,?,?)", [

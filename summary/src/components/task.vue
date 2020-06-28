@@ -1,4 +1,5 @@
 <template>
+<!-- TODO 重构界面 增加  4象限，然后展示4象限-->
   <div id="app">
     <el-row :gutter="5">
       <!-- 左侧面板 -->
@@ -70,6 +71,7 @@
             </el-row>
           </el-collapse-item>
         </el-collapse>
+        <!-- TODO 考虑去掉这部分东西，换一个新的形式 -->
         <el-row :gutter="5">
           <el-badge v-model="badge_todo" class="item" type="primary">
             <el-button size="small">待做</el-button>
@@ -131,12 +133,6 @@
             <el-col :span="11">
               <el-row :gutter="5">
                 <div id="task_pie_summary" style="height:300px"></div>
-              </el-row>
-              <el-row :gutter="5">
-                <div id="step_date">{{v_step_date}}</div>
-              </el-row>
-              <el-row :gutter="5">
-                <div id="step_avg">{{v_step_avg}}</div>
               </el-row>
             </el-col>
           </el-tab-pane>
@@ -281,8 +277,8 @@ export default {
     return {
       activeName: "",
       tabs_select: "summary",
-      v_step_date: "",
-      v_step_avg: "",
+      // v_step_date: "",
+      // v_step_avg: "",
       // 日历表
       task_option: {
         tooltip: {},
@@ -294,8 +290,9 @@ export default {
             color: ["#ebedf0", "#c6e48b", "#7bc96f", "#239a3b", "#196127"]
           }
         },
+        // TODO 从数据中生成，获取前后1个月；形式上是否要有所修改？
         calendar: {
-          range: ["2020-01", "2020-06"],
+          range: ["2020-05", "2020-08"],
           dayLabel: {
             firstDay: 1 // 从周一开始
           }
@@ -614,7 +611,7 @@ export default {
       axios.get("http://127.0.0.1:5000/gettasksummary_bar").then(response => {
         if (response.status == 200) {
           // 柱形图
-
+          // TODO 增加一级类型-二级类型
           // console.log(response.data);
           this.task_summary_option.yAxis.data = response.data.yAxisdata;
           this.task_summary_option.series[0].data =
@@ -638,10 +635,6 @@ export default {
           this.tab_pie_option.title.subtext =
             "总统计数:" + response.data.sum_task + "个";
           this.tasksummary_pie_chart.setOption(this.tab_pie_option);
-
-          // 步数展示
-          this.v_step_avg = response.data.step_avg;
-          this.v_step_date = response.data.step_date;
         }
       });
     },
@@ -653,6 +646,7 @@ export default {
     },
 
     // 调用进展接口
+    // TODO 在进展那部分增加完成比例
     dialogaddprocess: function(event) {
       // console.log(this.s_task_id);
       axios
@@ -735,6 +729,7 @@ export default {
     dialogcommit: function(event) {
       // console.log(this.s_task_id);
       this.dialogsVisible = false;
+      // TODO 到后台的完成
       axios
         .post("http://127.0.0.1:5000/finishtask", {
           task_id: this.s_task_id,
