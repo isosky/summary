@@ -47,6 +47,7 @@ const app = new Vue({
   },
   methods: {
     gofirstpage: function (event) {
+      // TODO 从数据库中获得
       this.$router.push('/analysis')
     },
     initschedule: function (event) {
