@@ -15,7 +15,7 @@
             </el-menu-item>
             <el-menu-item index="2">
               <i class="el-icon-s-data"></i>
-              <span slot="title">yys分析</span>
+              <span slot="title">yys御魂</span>
             </el-menu-item>
             <el-menu-item index="3">
               <i class="el-icon-time"></i>
@@ -42,7 +42,7 @@ export default {
   data() {
     return {
       isCollapse: true,
-      routers: ["/task", "/analysis", "/schedule", "/syssetting"]
+      routers: ["/task", "/yysyh", "/schedule", "/syssetting"]
     };
   },
   methods: {

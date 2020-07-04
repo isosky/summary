@@ -3,7 +3,7 @@ import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 import App from './App.vue'
 import task from './components/task.vue'
-import analysis from './components/analysis.vue'
+import yysyh from './components/yysyh.vue'
 import schedule from './components/schedule.vue'
 import syssetting from './components/syssetting.vue'
 import VueRouter from 'vue-router'
@@ -18,8 +18,8 @@ const routes = [{
     component: task
   },
   {
-    path: '/analysis',
-    component: analysis
+    path: '/yysyh',
+    component: yysyh
   },
   {
     path: '/schedule',

@@ -265,7 +265,6 @@ export default {
             color: ["#ebedf0", "#c6e48b", "#7bc96f", "#239a3b", "#196127"]
           }
         },
-        // TODO 从数据中生成，获取前后1个月；形式上是否要有所修改？
         calendar: {
           range: ["2020-06", "2020-08"],
           dayLabel: {
@@ -569,7 +568,6 @@ export default {
       axios.get("http://127.0.0.1:5000/gettasksummary_bar").then(response => {
         if (response.status == 200) {
           // 柱形图
-          // TODO 增加一级类型-二级类型
           // console.log(response.data);
           this.task_summary_option.yAxis.data = response.data.yAxisdata;
           this.task_summary_option.series[0].data =

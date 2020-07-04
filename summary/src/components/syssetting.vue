@@ -32,7 +32,7 @@ export default {
       firstpage: "",
       options: [
         { value: "task", label: "task" },
-        { value: "analysis", label: "analysis" },
+        { value: "yysyh", label: "yysyh" },
         { value: "schedule", label: "schedule" },
         { value: "syssetting", label: "syssetting" }
       ]
