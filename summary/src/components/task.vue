@@ -3,7 +3,7 @@
   <div id="app">
     <el-row :gutter="5">
       <!-- 左侧面板 -->
-      <el-col :span="13">
+      <el-col :span="14">
         <!-- 任务管理条 -->
         <el-collapse v-model="activeName" accordion>
           <el-collapse-item title="任务管理（添加&查询）" name="1">
@@ -98,8 +98,8 @@
         </div>
       </el-col>
       <!-- 右侧面板 -->
-      <el-col :span="11">
-        <el-select v-model="first_select" style="width: 150px" placeholder="请选择">
+      <el-col :span="10">
+        <!-- <el-select v-model="first_select" style="width: 150px" placeholder="请选择">
           <el-option
             v-for="item in select_option"
             :key="item.value"
@@ -108,20 +108,20 @@
           ></el-option>
         </el-select>
         <el-input v-model="first_input" style="width: 300px" placeholder="请输入内容"></el-input>
-        <el-button @click="updatedata">提交数据</el-button>
+        <el-button @click="updatedata">提交数据</el-button>-->
         <el-row :gutter="5">
-          <div id="b_task" style="height:220px"></div>
+          <el-col :span="12">
+            <div id="b_task" style="height:220px"></div>
+          </el-col>
+          <el-col :span="12">
+            <div id="task_pie_summary" style="height:220px"></div>
+          </el-col>
         </el-row>
         <el-tabs v-model="tabs_select" :lazy="true" type="border-card">
           <el-tab-pane name="summary" label="统计">
-            <el-col :span="13">
-              <div id="task_summary" style="height:500px"></div>
-            </el-col>
-            <el-col :span="11">
-              <el-row :gutter="5">
-                <div id="task_pie_summary" style="height:300px"></div>
-              </el-row>
-            </el-col>
+            <!-- <el-col :span="13"> -->
+            <div id="task_summary" style="height:500px"></div>
+            <!-- </el-col> -->
           </el-tab-pane>
           <el-tab-pane name="process" label="进展">
             <el-table :data="tableprocess" border height="500" style="width: 100%">
@@ -279,7 +279,7 @@ export default {
         },
         // TODO 从数据中生成，获取前后1个月；形式上是否要有所修改？
         calendar: {
-          range: ["2020-05", "2020-08"],
+          range: ["2020-06", "2020-08"],
           dayLabel: {
             firstDay: 1 // 从周一开始
           }
@@ -427,8 +427,8 @@ export default {
         }
       ],
 
-      first_select: "",
-      first_input: "",
+      // first_select: "",
+      // first_input: "",
       // right input
 
       task_select: "",
@@ -638,18 +638,18 @@ export default {
         });
     },
 
-    updatedata: function(event) {
-      axios
-        .post("http://127.0.0.1:5000/data_add_v", {
-          type: this.first_select,
-          data: this.first_input
-        })
-        .then(response => {
-          // console.log(response);
-          // this.setbar();
-          this.freshright();
-        });
-    },
+    // updatedata: function(event) {
+    //   axios
+    //     .post("http://127.0.0.1:5000/data_add_v", {
+    //       type: this.first_select,
+    //       data: this.first_input
+    //     })
+    //     .then(response => {
+    //       // console.log(response);
+    //       // this.setbar();
+    //       this.freshright();
+    //     });
+    // },
     // 添加任务
     addtask: function(event) {
       if (this.new_edate != "" && this.task_title) {
