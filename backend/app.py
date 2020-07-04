@@ -112,11 +112,6 @@ def deletetask():
     return json.dumps({'result': True})
 
 
-@app.route('/gettasksummary')
-def gettasksummary():
-    return dboo.gettasksummary()
-
-
 @app.route('/querytask', methods=['POST'])
 def querytask():
     json_data = json.loads(request.get_data())

@@ -71,24 +71,11 @@
             </el-row>
           </el-collapse-item>
         </el-collapse>
-        <!-- TODO 考虑去掉这部分东西，换一个新的形式 -->
-        <el-row :gutter="5">
-          <el-badge v-model="badge_todo" class="item" type="primary">
-            <el-button size="small">待做</el-button>
-          </el-badge>
-          <el-badge v-model="badge_today" class="item" type="primary">
-            <el-button size="small">今日</el-button>
-          </el-badge>
-          <el-badge v-model="badge_delay" class="item">
-            <el-button size="small">逾期</el-button>
-          </el-badge>
-        </el-row>
-
         <div class="grid-content bg-purple">
           <el-table
             :data="tableData"
             border
-            height="700"
+            height="750"
             :cell-style="isoverdate"
             style="width: 100%"
             :default-sort="{prop: 'tetime'  ,order: 'ascending'}"
@@ -506,10 +493,6 @@ export default {
       process_content: "",
       process_id: "",
 
-      // badge
-      badge_todo: 0,
-      badge_today: 0,
-      badge_delay: 0,
       now_time: new Date().getTime(),
       task_chart: "",
       tasksummary_chart: "",
@@ -545,7 +528,6 @@ export default {
       this.setbar();
       this.settasksummary_bar();
       this.querytask(false);
-      this.gettasksummary();
     },
     resetall: function() {
       this.task_title = "";
@@ -584,16 +566,6 @@ export default {
           }
         }
       }
-    },
-    gettasksummary: function(event) {
-      axios.get("http://127.0.0.1:5000/gettasksummary").then(response => {
-        if (response.status == 200) {
-          // console.log(response);
-          this.badge_todo = response.data.res_todo;
-          this.badge_today = response.data.res_today;
-          this.badge_delay = response.data.res_delay;
-        }
-      });
     },
     setbar: function(event) {
       // console.log('setbar');

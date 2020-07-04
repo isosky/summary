@@ -250,6 +250,7 @@ def updatetask(task_id, subject, subsub, title, etime):
     conn.close()
 
 
+# 2020-07-05 星期日 放弃这部分展示
 def gettasksummary():
     global iswork
     conn = sqlite3.connect(dbf)
