@@ -1,5 +1,5 @@
 <template>
-<!-- TODO 重构界面 增加  4象限，然后展示4象限-->
+  <!-- TODO 重构界面 增加  4象限，然后展示4象限-->
   <div id="app">
     <el-row :gutter="5">
       <!-- 左侧面板 -->
@@ -646,7 +646,6 @@ export default {
     },
 
     // 调用进展接口
-    // TODO 在进展那部分增加完成比例
     dialogaddprocess: function(event) {
       // console.log(this.s_task_id);
       axios
@@ -729,7 +728,6 @@ export default {
     dialogcommit: function(event) {
       // console.log(this.s_task_id);
       this.dialogsVisible = false;
-      // TODO 到后台的完成
       axios
         .post("http://127.0.0.1:5000/finishtask", {
           task_id: this.s_task_id,

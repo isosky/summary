@@ -164,11 +164,19 @@ def gettasknow():
 def getallprocess():
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
+
     cursor = c.execute(
         "select task_id,count(*) from task_process group by task_id")
+    pfa = dict(cursor)
+    cursor = c.execute(
+        "select task_id,count(*) from task_process where isfinish=1 group by task_id")
+    pff = dict(cursor)
     result = {}
-    for row in cursor:
-        result[row[0]] = row[1]
+    for i in pfa.keys():
+        if i in pff.keys():
+            result[i] = str(pfa[i]) + '/'+str(pfa[i])
+        else:
+            result[i] = '0/'+str(pfa[i])
     conn.close()
     return result
 
@@ -272,9 +280,7 @@ def querytask(query, subject, subsub, isqueryall):
     sql = "select task_id,subject,subsub,title,etime,stime,isfinish from task where isabandon=0 and title like ?"
     if not isqueryall:
         sql += " and isfinish = 0 "
-
     params_list = [query]
-
     if subject != '':
         sql += " and subject=? "
         params_list.append(subject)
@@ -285,6 +291,7 @@ def querytask(query, subject, subsub, isqueryall):
     sql += " and iswork>=? order by etime,task_id"
     params_list.append(iswork)
     cursor = c.execute(sql, params_list)
+    # 得到所有进展清单
     process = getallprocess()
     result = []
     for row in cursor:
@@ -716,6 +723,6 @@ def init():
 
 
 if __name__ == '__main__':
-    print(getfirstpage())
+    print(getallprocess())
 else:
     getiswork()
