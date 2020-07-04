@@ -340,47 +340,39 @@ def gettasksummary_bar():
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
     cursor = c.execute(
-        "select subsub,count(*) from task where isabandon=0 and iswork>=? group by subsub order by 2", [iswork])
+        "select subject,subsub,count(*) from task where isabandon=0 and iswork>=? group by subject,subsub order by 3", [iswork])
     yAxisdata = []
     for i in cursor:
-        yAxisdata.append(i[0])
+        yAxisdata.append(i[0]+'-'+i[1])
 
     etime = time.strftime("%Y-%m-%d", time.localtime())
     # todo
     cursor = c.execute(
-        "select subsub,count(*) from task where etime>=? and isabandon=0 and isfinish=0  and iswork>=? group by subsub", [etime, iswork])
+        "select subject,subsub,count(*) from task where etime>=? and isabandon=0 and isfinish=0  and iswork>=? group by subject,subsub", [etime, iswork])
     yAxistodo = {}
     for i in cursor:
-        yAxistodo[i[0]] = i[1]
+        yAxistodo[i[0]+'-'+i[1]] = i[2]
 
     # unfinish and delay
     cursor = c.execute(
-        "select subsub,count(*) from task where etime<? and isfinish=0 and isabandon=0  and iswork>=? group by subsub", [etime, iswork])
+        "select subject,subsub,count(*) from task where etime<? and isfinish=0 and isabandon=0  and iswork>=? group by subject,subsub", [etime, iswork])
     yAxistodooverdue = {}
     for i in cursor:
-        yAxistodooverdue[i[0]] = i[1]
+        yAxistodooverdue[i[0]+'-'+i[1]] = i[2]
 
     # normal
     cursor = c.execute(
-        "select subsub,count(*) from task where ftime<date(etime,'+1 day') and isfinish=1 and iswork>=? group by subsub", [iswork])
+        "select subject,subsub,count(*) from task where ftime<date(etime,'+1 day') and isfinish=1 and iswork>=? group by subject,subsub", [iswork])
     yAxisnormal = {}
     for i in cursor:
-        yAxisnormal[i[0]] = i[1]
+        yAxisnormal[i[0]+'-'+i[1]] = i[2]
 
     # overdue
     cursor = c.execute(
-        "select subsub,count(*) from task where ftime>=date(etime,'+1 day')  and iswork>=? group by subsub", [iswork])
+        "select subject,subsub,count(*) from task where ftime>=date(etime,'+1 day')  and iswork>=? group by subject,subsub", [iswork])
     yAxisoverdue = {}
     for i in cursor:
-        yAxisoverdue[i[0]] = i[1]
-
-    # step
-    cursor = c.execute("select max(step_time),avg(steps) from my_steps")
-    for i in cursor:
-        step_date = i[0]
-        step_avg = round(i[1], 2)
-
-    step_date = parsetime(step_date, 'yyyymmdd')
+        yAxisoverdue[i[0]+'-'+i[1]] = i[2]
 
     yAxistodo_list = []
     yAxisnormal_list = []
@@ -427,7 +419,7 @@ def gettasksummary_bar():
         'value': sum_normal, 'name': '正常完成'}]
 
     result = {'sum_task': sum_task, 'percent': [finish_percent, overdue_percent], 'yAxisdata': yAxisdata, 'yAxistodo_list': yAxistodo_list,
-              'yAxisnormal_list': yAxisnormal_list, 'yAxisoverdue_list': yAxisoverdue_list, 'yAxistodooverdue_list': yAxistodooverdue_list, 'piedata': piedata, 'step_avg': step_avg, 'step_date': step_date}
+              'yAxisnormal_list': yAxisnormal_list, 'yAxisoverdue_list': yAxisoverdue_list, 'yAxistodooverdue_list': yAxistodooverdue_list, 'piedata': piedata}
     # print('tongji')
     conn.close()
     return result
@@ -542,6 +534,9 @@ def addschedule(subject, subsub, schedule_type, schedule_frequence, content):
 
 
 def schedulecalnexttime(schedule_type, schedule_frequence, nexttime):
+    # 月任务的写法应该是
+    # 1;3 每月1号，3号
+    # 1:1;2:2 第一个周一，第二个周二
     # print(schedule_type, schedule_frequence, nexttime)
     day31s = [1, 3, 5, 7, 8, 10, 12]
     # 判断计算哪个时间
@@ -735,6 +730,7 @@ def init():
 
 
 if __name__ == '__main__':
-    print(gettimedata())
+    getiswork()
+    print(gettasksummary_bar())
 else:
     getiswork()

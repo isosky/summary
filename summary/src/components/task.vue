@@ -292,7 +292,7 @@ export default {
           data: ["逾期", "待做逾期", "待做", "正常完成"]
         },
         grid: {
-          left: 60
+          left: 80
         },
         xAxis: {
           type: "value"
