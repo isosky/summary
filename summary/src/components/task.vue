@@ -99,16 +99,6 @@
       </el-col>
       <!-- 右侧面板 -->
       <el-col :span="10">
-        <!-- <el-select v-model="first_select" style="width: 150px" placeholder="请选择">
-          <el-option
-            v-for="item in select_option"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
-          ></el-option>
-        </el-select>
-        <el-input v-model="first_input" style="width: 300px" placeholder="请输入内容"></el-input>
-        <el-button @click="updatedata">提交数据</el-button>-->
         <el-row :gutter="5">
           <el-col :span="12">
             <div id="b_task" style="height:220px"></div>
@@ -119,9 +109,7 @@
         </el-row>
         <el-tabs v-model="tabs_select" :lazy="true" type="border-card">
           <el-tab-pane name="summary" label="统计">
-            <!-- <el-col :span="13"> -->
             <div id="task_summary" style="height:500px"></div>
-            <!-- </el-col> -->
           </el-tab-pane>
           <el-tab-pane name="process" label="进展">
             <el-table :data="tableprocess" border height="500" style="width: 100%">
@@ -426,11 +414,7 @@ export default {
           label: "体重"
         }
       ],
-
-      // first_select: "",
-      // first_input: "",
       // right input
-
       task_select: "",
       new_edate: "",
       task_title: "",
@@ -574,6 +558,8 @@ export default {
         if (response.status == 200) {
           // console.log(response.data.result);
           this.task_option.series.data = response.data.result;
+          this.task_option.calendar.range = response.data.range;
+
           // console.log(this.task_option);
           this.task_chart.setOption(this.task_option);
         }
@@ -637,19 +623,6 @@ export default {
           this.querytask(false);
         });
     },
-
-    // updatedata: function(event) {
-    //   axios
-    //     .post("http://127.0.0.1:5000/data_add_v", {
-    //       type: this.first_select,
-    //       data: this.first_input
-    //     })
-    //     .then(response => {
-    //       // console.log(response);
-    //       // this.setbar();
-    //       this.freshright();
-    //     });
-    // },
     // 添加任务
     addtask: function(event) {
       if (this.new_edate != "" && this.task_title) {

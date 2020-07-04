@@ -210,9 +210,20 @@ def gettimedata():
     result = []
     for row in cursor:
         result.append(row)
+# 返回日历的时间
+    cur_year = time.localtime()[0]
+    cur_month = time.localtime()[1]
+    if cur_month == 1:
+        r = [str(cur_year-1)+'-12', str(cur_year)+'-01']
+    elif cur_month == 12:
+        r = [str(cur_year)+'-'+str(cur_month-1),
+             str(cur_year+1)+'-01']
+    else:
+        r = [str(cur_year)+'-'+str(cur_month-1),
+             str(cur_year)+'-'+str(cur_month+1)]
     conn.commit()
     conn.close()
-    return {'result': result}
+    return {'result': result, 'range': r}
 
 
 def finishtask(task_id, input_finish):
@@ -724,6 +735,6 @@ def init():
 
 
 if __name__ == '__main__':
-    print(getallprocess())
+    print(gettimedata())
 else:
     getiswork()
