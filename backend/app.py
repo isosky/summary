@@ -310,6 +310,23 @@ def yys_getyysrole():
     return json.dumps(res)
 
 
+# #####################################
+# 定义全局的函数
+# #####################################
+@app.route('/getfirstpage')
+def getfirstpage():
+    res = dboo.getfirstpage()
+    return json.dumps(res)
+
+
+@app.route('/setfirstpage', methods=['POST'])
+def setfirstpage():
+    json_data = json.loads(request.get_data())
+    firstpage = json_data['firstpage']
+    dboo.setfirstpage(firstpage)
+    return json.dumps({'result': True})
+
+
 if __name__ == '__main__':
     ls.getlocksreen()
     app.run()

@@ -47,14 +47,22 @@ const app = new Vue({
   },
   methods: {
     gofirstpage: function (event) {
-      // TODO 从数据库中获得
-      this.$router.push('/analysis')
+      // 2020-07-05 从数据库中获得
+      // TODO 搞个yys的题库，现在的这个命中率太丢人了
+      axios.get("http://127.0.0.1:5000/getfirstpage").then(response => {
+        if (response.status == 200) {
+          // console.log(response);
+          // 添加完成后，需要重新刷新一下面板
+          let temp = '/' + response.data.firstpage
+          this.$router.push(temp)
+        }
+      });
+
     },
     initschedule: function (event) {
       axios.get("http://127.0.0.1:5000/initschedule").then(response => {
         if (response.status == 200) {
           // console.log(response);
-          console.log(response);
           // 添加完成后，需要重新刷新一下面板
           if (response.data.status == 1) {
             this.$message({

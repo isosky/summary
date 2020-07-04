@@ -15,6 +15,27 @@ iswork = None
 # TODO 要放到数据库里面
 subject_work = {'游戏': 0, '自己': 0, '学习': 1, '项目': 1, '公司': 1}
 
+
+# #####################################
+# 定义全局的函数
+# #####################################
+def getfirstpage():
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    temp = c.execute("select value from sys_cfg where id=4")
+    i = temp.fetchone()[0]
+    conn.commit()
+    conn.close()
+    return {'firstpage': i}
+
+
+def setfirstpage(fp):
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    c.execute("update sys_cfg set value =? where id=4", [fp])
+    conn.commit()
+    conn.close()
+
 # TODO 统一用datetime模块
 # #####################################
 # 定义step的函数
@@ -375,13 +396,13 @@ def gettasksummary_bar():
 
     sum_task = sum_todo + sum_normal + sum_overdue + sum_todoovredue
 
-    if sum_task !=0:
-        overdue_percent = round((sum_overdue+sum_todoovredue) / sum_task * 100, 2)
+    if sum_task != 0:
+        overdue_percent = round(
+            (sum_overdue+sum_todoovredue) / sum_task * 100, 2)
         finish_percent = round((sum_overdue+sum_normal)/sum_task*100, 2)
     else:
-        overdue_percent =0
-        finish_percent =0
-    
+        overdue_percent = 0
+        finish_percent = 0
 
     piedata = [{'value': sum_overdue, 'name': '逾期'}, {'value': sum_todoovredue, 'name': '待做逾期'}, {'value': sum_todo, 'name': '待做'}, {
         'value': sum_normal, 'name': '正常完成'}]
@@ -695,6 +716,6 @@ def init():
 
 
 if __name__ == '__main__':
-    pass
+    print(getfirstpage())
 else:
     getiswork()
