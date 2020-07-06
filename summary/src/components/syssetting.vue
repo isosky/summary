@@ -33,6 +33,7 @@ export default {
       options: [
         { value: "task", label: "task" },
         { value: "yysyh", label: "yysyh" },
+        { value: "yyshero", label: "yyshero" },
         { value: "schedule", label: "schedule" },
         { value: "syssetting", label: "syssetting" }
       ]

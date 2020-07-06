@@ -18,10 +18,14 @@
               <span slot="title">yys御魂</span>
             </el-menu-item>
             <el-menu-item index="3">
+              <i class="el-icon-aim"></i>
+              <span slot="title">yys角色</span>
+            </el-menu-item>
+            <el-menu-item index="4">
               <i class="el-icon-time"></i>
               <span slot="title">定时任务</span>
             </el-menu-item>
-            <el-menu-item index="4">
+            <el-menu-item index="5">
               <i class="el-icon-setting"></i>
               <span slot="title">系统设置</span>
             </el-menu-item>
@@ -42,7 +46,7 @@ export default {
   data() {
     return {
       isCollapse: true,
-      routers: ["/task", "/yysyh", "/schedule", "/syssetting"]
+      routers: ["/task", "/yysyh", "/yyshero", "/schedule", "/syssetting"]
     };
   },
   methods: {

@@ -4,6 +4,7 @@ import 'element-ui/lib/theme-chalk/index.css'
 import App from './App.vue'
 import task from './components/task.vue'
 import yysyh from './components/yysyh.vue'
+import yyshero from './components/yyshero.vue'
 import schedule from './components/schedule.vue'
 import syssetting from './components/syssetting.vue'
 import VueRouter from 'vue-router'
@@ -20,6 +21,10 @@ const routes = [{
   {
     path: '/yysyh',
     component: yysyh
+  },
+  {
+    path: '/yyshero',
+    component: yyshero
   },
   {
     path: '/schedule',

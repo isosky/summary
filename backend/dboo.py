@@ -37,72 +37,6 @@ def setfirstpage(fp):
     conn.close()
 
 # TODO 统一用datetime模块
-# #####################################
-# 定义step的函数
-# #####################################
-
-
-def step_add(time, step):
-    global iswork
-    conn = sqlite3.connect(dbf)
-    c = conn.cursor()
-    times = "','".join(time)
-    # print("delete FROM my_steps where step_time in (%s) " % times)
-    c.execute("delete FROM my_steps where step_time in ('%s') " % times)
-    data = zip(time, step)
-    c.executemany("insert into my_steps values(?,?)", data)
-    conn.commit()
-    conn.close()
-
-
-def step_add_one(time, step):
-    conn = sqlite3.connect(dbf)
-    c = conn.cursor()
-    c.execute("delete FROM my_steps where step_time = ?", [time])
-    c.execute("insert into my_steps values(?,?)", [time, step])
-    conn.commit()
-    conn.close()
-
-
-def getstep(forchart=True):
-    conn = sqlite3.connect(dbf)
-    c = conn.cursor()
-    cursor = c.execute("select * from my_steps order by 1")
-    result = []
-    for row in cursor:
-        result.append(row)
-    conn.commit()
-    conn.close()
-    if not forchart:
-        time = [x[0] for x in result]
-        step = [x[1] for x in result]
-        return {'time': time, 'value': step}
-    return result
-
-
-def weight_add_one(time, step):
-    conn = sqlite3.connect(dbf)
-    c = conn.cursor()
-    c.execute("delete FROM my_weights where weight_time = ?", [time])
-    c.execute("insert into my_weights values(?,?)", [time, step])
-    conn.commit()
-    conn.close()
-
-
-def getweight(forchart=True):
-    conn = sqlite3.connect(dbf)
-    c = conn.cursor()
-    cursor = c.execute("select * from my_weights order by 1")
-    result = []
-    for row in cursor:
-        result.append(row)
-    conn.commit()
-    conn.close()
-    if not forchart:
-        time = [x[0] for x in result]
-        step = [x[1] for x in result]
-        return {'time': time, 'value': step}
-    return result
 
 
 # #####################################
@@ -337,10 +271,20 @@ def removetask():
 # 统计的柱形图
 def gettasksummary_bar():
     global iswork
+    cur_year = time.localtime()[0]
+    cur_month = time.localtime()[1]
+    if cur_month == 12:
+        t = str(cur_year-1)+'-12-01'
+    else:
+        if cur_month < 10:
+            t = str(cur_year)+'-0'+str(cur_month-1)+'-01'
+        else:
+            t = str(cur_year)+'-'+str(cur_month)-1+'-01'
+    # print(t)
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
     cursor = c.execute(
-        "select subject,subsub,count(*) from task where isabandon=0 and iswork>=? group by subject,subsub order by 3", [iswork])
+        "select subject,subsub,count(*) from task where isabandon=0 and iswork>=? and etime>? group by subject,subsub order by 3", [iswork, t])
     yAxisdata = []
     for i in cursor:
         yAxisdata.append(i[0]+'-'+i[1])
@@ -348,28 +292,28 @@ def gettasksummary_bar():
     etime = time.strftime("%Y-%m-%d", time.localtime())
     # todo
     cursor = c.execute(
-        "select subject,subsub,count(*) from task where etime>=? and isabandon=0 and isfinish=0  and iswork>=? group by subject,subsub", [etime, iswork])
+        "select subject,subsub,count(*) from task where etime>=? and isabandon=0 and isfinish=0  and iswork>=? and etime>? group by subject,subsub", [etime, iswork, t])
     yAxistodo = {}
     for i in cursor:
         yAxistodo[i[0]+'-'+i[1]] = i[2]
 
     # unfinish and delay
     cursor = c.execute(
-        "select subject,subsub,count(*) from task where etime<? and isfinish=0 and isabandon=0  and iswork>=? group by subject,subsub", [etime, iswork])
+        "select subject,subsub,count(*) from task where etime<? and isfinish=0 and isabandon=0  and iswork>=? and etime>? group by subject,subsub", [etime, iswork, t])
     yAxistodooverdue = {}
     for i in cursor:
         yAxistodooverdue[i[0]+'-'+i[1]] = i[2]
 
     # normal
     cursor = c.execute(
-        "select subject,subsub,count(*) from task where ftime<date(etime,'+1 day') and isfinish=1 and iswork>=? group by subject,subsub", [iswork])
+        "select subject,subsub,count(*) from task where ftime<date(etime,'+1 day') and isfinish=1 and iswork>=? and etime>? group by subject,subsub", [iswork, t])
     yAxisnormal = {}
     for i in cursor:
         yAxisnormal[i[0]+'-'+i[1]] = i[2]
 
     # overdue
     cursor = c.execute(
-        "select subject,subsub,count(*) from task where ftime>=date(etime,'+1 day')  and iswork>=? group by subject,subsub", [iswork])
+        "select subject,subsub,count(*) from task where ftime>=date(etime,'+1 day')  and iswork>=? and etime>? group by subject,subsub", [iswork, t])
     yAxisoverdue = {}
     for i in cursor:
         yAxisoverdue[i[0]+'-'+i[1]] = i[2]
@@ -703,28 +647,6 @@ def setiswork(isw):
     else:
         isw = 0
     c.execute("update sys_cfg set value = ? where id=2", [isw])
-    conn.commit()
-    conn.close()
-
-
-def init():
-    conn = sqlite3.connect(dbf)
-    c = conn.cursor()
-    # create table steps
-    # c.execute('''CREATE TABLE my_weights(weight_time TEXT NOT NULL,weight INT );''')
-    # print("success create table my_weights")
-    c.execute('''create table task (
-    task_id            integer PRIMARY KEY autoincrement,                -- 设置主键
-    subject       varchar(20),
-    title         varchar (100),
-    content      varchar(400),
-    stime   datetime default (datetime('now', 'localtime')),
-    etime   datetime ,
-    ftime  datetime,
-    times int default 1,
-    isfinish int default 0,
-    isabandon int default 0
-    );''')
     conn.commit()
     conn.close()
 

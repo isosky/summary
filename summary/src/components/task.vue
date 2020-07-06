@@ -771,6 +771,7 @@ export default {
         this.getprocess(this.s_task_id);
       }
     },
+    // TODO 更新主任务的数据
     getprocess: function(task_id) {
       axios
         .post("http://127.0.0.1:5000/getprocess", {

@@ -23,47 +23,6 @@ def data_add():
     return render_template("data_add.html")
 
 
-@app.route('/data_add_v', methods=['POST'])
-def data_add_v():
-    # print(request.get_data())
-    json_data = json.loads(request.get_data())
-    arg_data = json_data['data']
-    arg_type = json_data['type']
-    # print(arg_data, arg_type)
-    if arg_type == 'step':
-        if arg_data:
-            temp = arg_data.split(';')
-            # result = []
-            for i in temp:
-                ttt = i.split(',')
-                # print(ttt)
-                if len(ttt) > 1:
-                    dboo.step_add_one(ttt[0], ttt[1])
-        return json.dumps({"result": dboo.getstep()})
-    if arg_type == 'weight':
-        if arg_data:
-            temp = arg_data.split(';')
-            # result = []
-            for i in temp:
-                ttt = i.split(',')
-                # print(ttt)
-                if len(ttt) > 1:
-                    dboo.weight_add_one(ttt[0], ttt[1])
-        return json.dumps({"result": dboo.getweight()})
-
-
-@app.route('/getstep')
-def getstep():
-    temp = dboo.getstep(False)
-    return json.dumps(temp)
-
-
-@app.route('/getweight')
-def getweight():
-    temp = dboo.getweight(False)
-    return json.dumps(temp)
-
-
 @app.route('/addtask', methods=['POST'])
 def addtask():
     # print(request.get_data())
@@ -156,6 +115,7 @@ def addprocess():
 
 
 # 更新
+# TODO 把这个任务的最新状态反馈一下
 @app.route('/getprocess', methods=['POST'])
 def getprocess():
     json_data = json.loads(request.get_data())
