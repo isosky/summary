@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 import datetime
 import json
 import os
@@ -298,6 +301,7 @@ def gettasksummary_bar():
         yAxistodo[i[0]+'-'+i[1]] = i[2]
 
     # unfinish and delay
+    # TODO 这部分不应该计算开始日期
     cursor = c.execute(
         "select subject,subsub,count(*) from task where etime<? and isfinish=0 and isabandon=0  and iswork>=? and etime>? group by subject,subsub", [etime, iswork, t])
     yAxistodooverdue = {}
