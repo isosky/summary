@@ -9,10 +9,12 @@ import sqlite3
 import time
 import calendar
 
-if not os.path.exists("C:/Users/fengy/OneDrive/文档/tmss.db"):
+if os.path.exists("C:/Users/isowang/OneDrive/文档/tmss.db"):
     dbf = "C:/Users/isowang/OneDrive/文档/tmss.db"
-else:
+elif os.path.exists("C:/Users/fengy/OneDrive/文档/tmss.db"):
     dbf = "C:/Users/fengy/OneDrive/文档/tmss.db"
+else:
+    dbf = "/data/wangtr/data/tmss.db"
 
 iswork = None
 # TODO 要放到数据库里面

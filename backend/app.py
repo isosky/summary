@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import getlockscreen as ls
+# import getlockscreen as ls
 import json
 
 from flask import Flask, render_template, request
@@ -286,5 +286,5 @@ def setfirstpage():
 
 
 if __name__ == '__main__':
-    ls.getlocksreen()
+    # ls.getlocksreen()
     app.run()
