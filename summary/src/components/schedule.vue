@@ -1,5 +1,6 @@
 <template>
   <div id="app">
+    <!-- TODO 有个bug，提交不了任务的描述 -->
     <el-col :span="14" class="grid-content bg-purple-light">
       <el-row>
         <el-collapse v-model="activeName" accordion>
@@ -186,34 +187,34 @@ export default {
       schedule_type_option: [
         {
           value: "week",
-          label: "周任务"
+          label: "周任务",
         },
         {
           value: "month",
-          label: "月任务"
-        }
+          label: "月任务",
+        },
       ],
 
       // 左侧表格-计划任务
       scheduledata: [],
       // 右侧表格-计划任务添加记录
-      scheduletaskdata: []
+      scheduletaskdata: [],
     };
   },
-  mounted: function() {
+  mounted: function () {
     // console.log('asdasdasda');
     // console.log(this.tableData);
 
     this.initall();
   },
   methods: {
-    initall: function(event) {
+    initall: function (event) {
       this.initoption();
       this.getscheduledata();
       this.getscheduletaskdata("");
     },
-    initoption: function(event) {
-      axios.get("http://127.0.0.1:5000/initoption").then(response => {
+    initoption: function (event) {
+      axios.get("http://127.0.0.1:5000/initoption").then((response) => {
         if (response.status == 200) {
           // console.log(response);
           this.task_sub_all_option = [];
@@ -227,8 +228,8 @@ export default {
         }
       });
     },
-    getscheduledata: function() {
-      axios.get("http://127.0.0.1:5000/getscheduledata").then(response => {
+    getscheduledata: function () {
+      axios.get("http://127.0.0.1:5000/getscheduledata").then((response) => {
         if (response.status == 200) {
           // console.log(response.data);
           this.scheduledata = response.data.data;
@@ -242,19 +243,19 @@ export default {
         }
       });
     },
-    getscheduletaskdata: function(isquery) {
+    getscheduletaskdata: function (isquery) {
       axios
         .post("http://127.0.0.1:5000/getscheduletaskdata", {
-          schedule_id: isquery
+          schedule_id: isquery,
         })
-        .then(response => {
+        .then((response) => {
           if (response.status == 200) {
             this.scheduletaskdata = response.data.data;
           }
         });
     },
     // TODO 应该有更优雅的方法，比如说计算函数
-    updatesuboption: function(event) {
+    updatesuboption: function (event) {
       // console.log('update option');
       this.task_sub_select = "";
       if (this.task_select != "" && this.task_sub_all_option != []) {
@@ -267,28 +268,28 @@ export default {
             // console.log(temp[i]);
             this.task_sub_select_option.push({
               value: temp[i],
-              label: temp[i]
+              label: temp[i],
             });
           }
         }
       }
     },
-    addschedule: function(event) {
+    addschedule: function (event) {
       axios
         .post("http://127.0.0.1:5000/addschedule", {
           task_select: this.task_select,
           task_sub_select: this.task_sub_select,
           schedule_type: this.schedule_type,
           schedule_frequence: this.schedule_frequence,
-          schedule_content: this.schedule_content
+          schedule_content: this.schedule_content,
         })
-        .then(response => {
+        .then((response) => {
           if (response.status == 200) {
             this.initall();
           }
         });
     },
-    showupdateschedule: function(event) {
+    showupdateschedule: function (event) {
       this.modifysVisible = true;
       this.task_select = event.subject;
       this.task_sub_select = event.subsub;
@@ -297,7 +298,7 @@ export default {
       this.schedule_content = event.content;
       this.scheduleselect_id = event.schedule_id;
     },
-    modifyschedule: function(event) {
+    modifyschedule: function (event) {
       axios
         .post("http://127.0.0.1:5000/modifyschedule", {
           schedule_id: this.scheduleselect_id,
@@ -305,51 +306,51 @@ export default {
           subsub: this.task_sub_select,
           schedule_type: this.schedule_type,
           schedule_frequence: this.schedule_frequence,
-          schedule_content: this.schedule_content
+          schedule_content: this.schedule_content,
         })
-        .then(response => {
+        .then((response) => {
           if (response.status == 200) {
             this.modifysVisible = false;
             this.$message({
               message: "修改成功",
-              type: "success"
+              type: "success",
             });
             this.initall();
           }
         });
     },
-    forbidschedule: function(event) {
+    forbidschedule: function (event) {
       axios
         .post("http://127.0.0.1:5000/forbidschedule", {
-          schedule_id: event.schedule_id
+          schedule_id: event.schedule_id,
         })
-        .then(response => {
+        .then((response) => {
           if (response.status == 200) {
             this.$message({
               message: "禁用成功",
-              type: "success"
+              type: "success",
             });
             this.initall();
           }
         });
     },
-    startschedule: function(event) {
+    startschedule: function (event) {
       axios
         .post("http://127.0.0.1:5000/startschedule", {
-          schedule_id: event.schedule_id
+          schedule_id: event.schedule_id,
         })
-        .then(response => {
+        .then((response) => {
           if (response.status == 200) {
             this.$message({
               message: "启用成功",
-              type: "success"
+              type: "success",
             });
             this.initall();
           }
         });
     },
-    showscheduleprocess: function(row, column, cell, event) {}
-  }
+    showscheduleprocess: function (row, column, cell, event) {},
+  },
 };
 </script>
 

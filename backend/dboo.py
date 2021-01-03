@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 import datetime
 import json
 import os
@@ -6,10 +9,12 @@ import sqlite3
 import time
 import calendar
 
-if not os.path.exists("C:/Users/fengy/OneDrive/文档/tmss.db"):
+if os.path.exists("C:/Users/isowang/OneDrive/文档/tmss.db"):
     dbf = "C:/Users/isowang/OneDrive/文档/tmss.db"
-else:
+elif os.path.exists("C:/Users/fengy/OneDrive/文档/tmss.db"):
     dbf = "C:/Users/fengy/OneDrive/文档/tmss.db"
+else:
+    dbf = "/data/wangtr/data/tmss.db"
 
 iswork = None
 # TODO 要放到数据库里面
@@ -298,6 +303,7 @@ def gettasksummary_bar():
         yAxistodo[i[0]+'-'+i[1]] = i[2]
 
     # unfinish and delay
+    # TODO 这部分不应该计算开始日期
     cursor = c.execute(
         "select subject,subsub,count(*) from task where etime<? and isfinish=0 and isabandon=0  and iswork>=? and etime>? group by subject,subsub", [etime, iswork, t])
     yAxistodooverdue = {}

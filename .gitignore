@@ -115,3 +115,8 @@ temp.py
 *.png
 
 yys*.py
+
+
+
+backend/nohup.out
+backend/start.sh
