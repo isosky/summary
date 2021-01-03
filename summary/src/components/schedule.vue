@@ -50,11 +50,18 @@
                   :value="item.value"
                 ></el-option>
               </el-select>
-              <el-input v-model="schedule_frequence" style="width: 300px" placeholder="请输入频率"></el-input>
+              <el-input
+                v-model="schedule_frequence"
+                style="width: 300px"
+                placeholder="请输入频率"
+              ></el-input>
             </el-row>
             <el-row :gutter="5">
               <el-col :span="20">
-                <el-input v-model="schedule_content" placeholder="请输入内容"></el-input>
+                <el-input
+                  v-model="schedule_content"
+                  placeholder="请输入内容"
+                ></el-input>
               </el-col>
               <el-col :span="2" :offset="1">
                 <el-button @click="addschedule">提交</el-button>
@@ -65,30 +72,70 @@
       </el-row>
       <el-row>
         <!-- scheduledata -->
-        <el-table :data="scheduledata" border style="width: 100%" @cell-click="showscheduleprocess">
-          <el-table-column prop="subject" label="分类" width="60"></el-table-column>
-          <el-table-column prop="subsub" label="二级分类" width="80"></el-table-column>
+        <el-table
+          :data="scheduledata"
+          border
+          style="width: 100%"
+          @cell-click="showscheduleprocess"
+        >
+          <el-table-column
+            prop="subject"
+            label="分类"
+            width="60"
+          ></el-table-column>
+          <el-table-column
+            prop="subsub"
+            label="二级分类"
+            width="80"
+          ></el-table-column>
           <el-table-column prop="content" label="内容"></el-table-column>
-          <el-table-column prop="schedule_type" label="类型" width="80"></el-table-column>
-          <el-table-column prop="schedule_frequence" label="频率" width="150"></el-table-column>
-          <el-table-column prop="lasttime" label="上次更新" width="100"></el-table-column>
-          <el-table-column prop="nexttime" label="下次执行" width="100"></el-table-column>
-          <el-table-column prop="isabandon" label="状态" width="60"></el-table-column>
+          <el-table-column
+            prop="schedule_type"
+            label="类型"
+            width="80"
+          ></el-table-column>
+          <el-table-column
+            prop="schedule_frequence"
+            label="频率"
+            width="150"
+          ></el-table-column>
+          <el-table-column
+            prop="lasttime"
+            label="上次更新"
+            width="100"
+          ></el-table-column>
+          <el-table-column
+            prop="nexttime"
+            label="下次执行"
+            width="100"
+          ></el-table-column>
+          <el-table-column
+            prop="isabandon"
+            label="状态"
+            width="60"
+          ></el-table-column>
           <el-table-column label="操作" width="90">
             <template slot-scope="scope">
-              <el-button @click="showupdateschedule(scope.row)" type="text" size="small">修改</el-button>
               <el-button
-                v-if="scope.row.isabandon=='启用'"
+                @click="showupdateschedule(scope.row)"
+                type="text"
+                size="small"
+                >修改</el-button
+              >
+              <el-button
+                v-if="scope.row.isabandon == '启用'"
                 @click="forbidschedule(scope.row)"
                 type="text"
                 size="small"
-              >禁用</el-button>
+                >禁用</el-button
+              >
               <el-button
-                v-if="scope.row.isabandon=='禁用'"
+                v-if="scope.row.isabandon == '禁用'"
                 @click="startschedule(scope.row)"
                 type="text"
                 size="small"
-              >启用</el-button>
+                >启用</el-button
+              >
             </template>
           </el-table-column>
         </el-table>
@@ -96,9 +143,21 @@
     </el-col>
     <el-col :span="9" :offset="1" class="grid-content bg-purple-light">
       <el-table :data="scheduletaskdata" style="width: 100%">
-        <el-table-column prop="content" label="内容" width="180"></el-table-column>
-        <el-table-column prop="task_id" label="任务号" width="70"></el-table-column>
-        <el-table-column prop="etime" label="执行时间" width="180"></el-table-column>
+        <el-table-column
+          prop="content"
+          label="内容"
+          width="180"
+        ></el-table-column>
+        <el-table-column
+          prop="task_id"
+          label="任务号"
+          width="70"
+        ></el-table-column>
+        <el-table-column
+          prop="etime"
+          label="执行时间"
+          width="180"
+        ></el-table-column>
         <el-table-column prop="addtime" label="添加时间"></el-table-column>
       </el-table>
     </el-col>
@@ -149,12 +208,15 @@
             :value="item.value"
           ></el-option>
         </el-select>
-        <el-input v-model="schedule_frequence" placeholder="请输入频率"></el-input>
+        <el-input
+          v-model="schedule_frequence"
+          placeholder="请输入频率"
+        ></el-input>
       </el-row>
       <el-input
         v-model="schedule_content"
         type="textarea"
-        :autosize="{ minRows: 5}"
+        :autosize="{ minRows: 5 }"
         placeholder="请输入内容"
       ></el-input>
       <el-button @click="modifysVisible = false">取 消</el-button>
@@ -214,7 +276,7 @@ export default {
       this.getscheduletaskdata("");
     },
     initoption: function (event) {
-      axios.get("http://127.0.0.1:5000/initoption").then((response) => {
+      axios.get("/initoption").then((response) => {
         if (response.status == 200) {
           // console.log(response);
           this.task_sub_all_option = [];
@@ -229,7 +291,7 @@ export default {
       });
     },
     getscheduledata: function () {
-      axios.get("http://127.0.0.1:5000/getscheduledata").then((response) => {
+      axios.get("/getscheduledata").then((response) => {
         if (response.status == 200) {
           // console.log(response.data);
           this.scheduledata = response.data.data;
@@ -245,7 +307,7 @@ export default {
     },
     getscheduletaskdata: function (isquery) {
       axios
-        .post("http://127.0.0.1:5000/getscheduletaskdata", {
+        .post("/getscheduletaskdata", {
           schedule_id: isquery,
         })
         .then((response) => {
@@ -276,7 +338,7 @@ export default {
     },
     addschedule: function (event) {
       axios
-        .post("http://127.0.0.1:5000/addschedule", {
+        .post("/addschedule", {
           task_select: this.task_select,
           task_sub_select: this.task_sub_select,
           schedule_type: this.schedule_type,
@@ -300,7 +362,7 @@ export default {
     },
     modifyschedule: function (event) {
       axios
-        .post("http://127.0.0.1:5000/modifyschedule", {
+        .post("/modifyschedule", {
           schedule_id: this.scheduleselect_id,
           subject: this.task_select,
           subsub: this.task_sub_select,
@@ -321,7 +383,7 @@ export default {
     },
     forbidschedule: function (event) {
       axios
-        .post("http://127.0.0.1:5000/forbidschedule", {
+        .post("/forbidschedule", {
           schedule_id: event.schedule_id,
         })
         .then((response) => {
@@ -336,7 +398,7 @@ export default {
     },
     startschedule: function (event) {
       axios
-        .post("http://127.0.0.1:5000/startschedule", {
+        .post("/startschedule", {
           schedule_id: event.schedule_id,
         })
         .then((response) => {

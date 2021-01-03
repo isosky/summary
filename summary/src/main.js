@@ -15,33 +15,35 @@ Vue.use(ElementUI)
 Vue.use(VueRouter)
 
 const routes = [{
-    path: '/task',
-    component: task
-  },
-  {
-    path: '/yysyh',
-    component: yysyh
-  },
-  {
-    path: '/yyshero',
-    component: yyshero
-  },
-  {
-    path: '/schedule',
-    component: schedule
+  path: '/task',
+  component: task
+},
+{
+  path: '/yysyh',
+  component: yysyh
+},
+{
+  path: '/yyshero',
+  component: yyshero
+},
+{
+  path: '/schedule',
+  component: schedule
 
-  },
-  {
-    path: '/syssetting',
-    component: syssetting
+},
+{
+  path: '/syssetting',
+  component: syssetting
 
-  }
+}
 ]
 
 
 const router = new VueRouter({
   routes
 })
+
+axios.defaults.baseURL = 'http://81.70.25.54:5000';
 
 const app = new Vue({
   router,
@@ -54,7 +56,7 @@ const app = new Vue({
     gofirstpage: function (event) {
       // 2020-07-05 从数据库中获得
       // TODO 搞个yys的题库，现在的这个命中率太丢人了
-      axios.get("http://127.0.0.1:5000/getfirstpage").then(response => {
+      axios.get("/getfirstpage").then(response => {
         if (response.status == 200) {
           // console.log(response);
           // 添加完成后，需要重新刷新一下面板
@@ -65,7 +67,7 @@ const app = new Vue({
 
     },
     initschedule: function (event) {
-      axios.get("http://127.0.0.1:5000/initschedule").then(response => {
+      axios.get("/initschedule").then(response => {
         if (response.status == 200) {
           // console.log(response);
           // 添加完成后，需要重新刷新一下面板

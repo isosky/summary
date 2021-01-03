@@ -11,38 +11,52 @@
           <!-- <div>asd</div> -->
           <el-row :gutter="20">
             <el-col :span="8">
-              <div class="grid-content bg-purple" align="center">6星式神:{{sixss}}</div>
+              <div class="grid-content bg-purple" align="center">
+                6星式神:{{ sixss }}
+              </div>
             </el-col>
             <el-col :span="8">
-              <div class="grid-content bg-purple-light" align="center">6星御魂:{{sixyh}}</div>
+              <div class="grid-content bg-purple-light" align="center">
+                6星御魂:{{ sixyh }}
+              </div>
             </el-col>
             <el-col :span="8">
-              <div class="grid-content bg-purple" align="center">御魂总分:{{yhsum}}</div>
+              <div class="grid-content bg-purple" align="center">
+                御魂总分:{{ yhsum }}
+              </div>
             </el-col>
           </el-row>
           <el-row :gutter="20">
             <el-col :span="4" v-for="item in yys_role_now" :key="item.id">
               <!-- <span class="demonstration">{{ fit }}</span> -->
-              <el-image style="width: 40px; height: 40px;left:10px" :src="item.rurl" :fit="full"></el-image>
-              <div class="grid-content bg-purple" align="center">{{item.value}}</div>
-              <div class="grid-content bg-purple-light" align="center">{{item.zc}}</div>
+              <el-image
+                style="width: 40px; height: 40px; left: 10px"
+                :src="item.rurl"
+                :fit="full"
+              ></el-image>
+              <div class="grid-content bg-purple" align="center">
+                {{ item.value }}
+              </div>
+              <div class="grid-content bg-purple-light" align="center">
+                {{ item.zc }}
+              </div>
             </el-col>
           </el-row>
           <el-row :gutter="5"></el-row>
         </el-tabs>
       </el-col>
       <el-col :span="18">
-        <div id="yys_yhscore_line" style="height:300px"></div>
+        <div id="yys_yhscore_line" style="height: 300px"></div>
       </el-col>
     </el-row>
     <el-row :gutter="5">
       <el-col :span="16">
         <el-row :gutter="5">
-          <div id="yys_yhtypescore_bar" style="height:300px"></div>
+          <div id="yys_yhtypescore_bar" style="height: 300px"></div>
         </el-row>
         <el-row :gutter="5">
           <el-col :span="6">
-            <div id="yys_yhtypenum_radar" style="height:300px"></div>
+            <div id="yys_yhtypenum_radar" style="height: 300px"></div>
           </el-col>
           <el-col :span="18">
             <!-- <div id="yys_yhtypetop10" style="height:300px"></div> -->
@@ -59,7 +73,7 @@
       </el-col>
 
       <el-col :span="8">
-        <div id="yys_yhtype_sunburst" style="height:600px"></div>
+        <div id="yys_yhtype_sunburst" style="height: 600px"></div>
       </el-col>
     </el-row>
   </div>
@@ -89,61 +103,61 @@ export default {
       yys_yhscore_line_chart: "",
       yys_yhscore_line_option: {
         tooltip: {
-          trigger: "axis"
+          trigger: "axis",
         },
         legend: {
-          left: "left"
+          left: "left",
         },
         xAxis: {
           type: "category",
           splitLine: { show: false },
-          data: []
+          data: [],
         },
         yAxis: {
           type: "value",
-          min: "dataMin"
+          min: "dataMin",
         },
         grid: {
           left: "3%",
           right: "4%",
           bottom: "3%",
-          containLabel: true
+          containLabel: true,
         },
-        series: []
+        series: [],
       },
       role_name: "scrapy",
       yys_yhtypescore_bar_chart: "",
       yys_yhtypescore_bar_chart_data: "",
       yys_yhtypescore_bar_option: {
         tooltip: {
-          trigger: "axis"
+          trigger: "axis",
         },
         xAxis: {
           type: "category",
           axisLabel: { rotate: 45 },
-          data: []
+          data: [],
         },
         yAxis: {
-          type: "value"
+          type: "value",
         },
         grid: {
           left: "2%",
           right: "2%",
           bottom: "5%",
           top: "5%",
-          containLabel: true
+          containLabel: true,
         },
         series: [
           {
             label: {
               show: true,
               color: "#000",
-              position: "top"
+              position: "top",
             },
             type: "bar",
-            data: []
-          }
-        ]
+            data: [],
+          },
+        ],
       },
       yh_name: "雪幽魂",
       yys_yhtypenum_radar_chart: "",
@@ -151,7 +165,7 @@ export default {
       yys_yhtypenum_radar_title_data: "",
       yys_yhtypenum_radar_option: {
         title: {
-          text: ""
+          text: "",
         },
         radar: {
           // name: {
@@ -167,8 +181,8 @@ export default {
             { name: "三号位" },
             { name: "四号位" },
             { name: "五号位" },
-            { name: "六号位" }
-          ]
+            { name: "六号位" },
+          ],
         },
         series: [
           {
@@ -179,14 +193,14 @@ export default {
                 value: [],
                 label: {
                   show: true,
-                  formatter: function(params) {
+                  formatter: function (params) {
                     return params.value;
-                  }
-                }
-              }
-            ]
-          }
-        ]
+                  },
+                },
+              },
+            ],
+          },
+        ],
       },
       yys_yhtype_sunburst_chart: "",
       yys_yhtype_sunburst_chart_data: "",
@@ -199,14 +213,14 @@ export default {
           sort: null,
           radius: [0, "90%"],
           label: {
-            rotate: "radial"
-          }
-        }
+            rotate: "radial",
+          },
+        },
       },
-      yys_yhtypetop10: "一号位"
+      yys_yhtypetop10: "一号位",
     };
   },
-  mounted: function() {
+  mounted: function () {
     this.yys_yhscore_line_chart = echarts.init(
       document.getElementById("yys_yhscore_line"),
       "white",
@@ -232,8 +246,8 @@ export default {
     this.freshall();
   },
   methods: {
-    freshyhscore: function() {
-      axios.get("http://127.0.0.1:5000/yys_getyhscore").then(response => {
+    freshyhscore: function () {
+      axios.get("/yys_getyhscore").then((response) => {
         if (response.status == 200) {
           // console.log(response);
           this.yys_yhscore_line_option.legend.data = response.data.legend;
@@ -246,8 +260,8 @@ export default {
         }
       });
     },
-    freshyhtypescore: function() {
-      axios.get("http://127.0.0.1:5000/yys_getyhtypescore").then(response => {
+    freshyhtypescore: function () {
+      axios.get("/yys_getyhtypescore").then((response) => {
         if (response.status == 200) {
           // console.log(response);
           this.yys_yhtypenum_radar_title_data = response.data.yh_type_nums;
@@ -261,7 +275,7 @@ export default {
           );
           // 其实就是增加一个指向就好了，不然下面的this用的是echarts，不是vue的this
           let _this = this;
-          this.yys_yhtypescore_bar_chart.on("click", function(params) {
+          this.yys_yhtypescore_bar_chart.on("click", function (params) {
             // console.log(_this);
             _this.yh_name = params.name;
             // console.log(_this.yh_name);
@@ -269,8 +283,8 @@ export default {
         }
       });
     },
-    freshyhtypenum: function() {
-      axios.get("http://127.0.0.1:5000/yys_getyhtypenum").then(response => {
+    freshyhtypenum: function () {
+      axios.get("/yys_getyhtypenum").then((response) => {
         if (response.status == 200) {
           // console.log(response);
           this.yys_yhtypenum_radar_chart_data = response.data.series;
@@ -287,38 +301,36 @@ export default {
         }
       });
     },
-    freshyhtypesunburst: function() {
-      axios
-        .get("http://127.0.0.1:5000/yys_getyhtypesunburst")
-        .then(response => {
-          if (response.status == 200) {
-            // console.log(response);
-            this.yys_yhtype_sunburst_chart_data = response.data.series;
-            this.yys_yhtype_sunburst_option.series.data = this.yys_yhtype_sunburst_chart_data[
-              this.role_name
-            ][this.yh_name];
-            this.yys_yhtype_sunburst_chart.setOption(
-              this.yys_yhtype_sunburst_option
-            );
-          }
-        });
+    freshyhtypesunburst: function () {
+      axios.get("/yys_getyhtypesunburst").then((response) => {
+        if (response.status == 200) {
+          // console.log(response);
+          this.yys_yhtype_sunburst_chart_data = response.data.series;
+          this.yys_yhtype_sunburst_option.series.data = this.yys_yhtype_sunburst_chart_data[
+            this.role_name
+          ][this.yh_name];
+          this.yys_yhtype_sunburst_chart.setOption(
+            this.yys_yhtype_sunburst_option
+          );
+        }
+      });
     },
-    setrole: function() {
+    setrole: function () {
       // console.log(this.yys_role_data);
       this.sixss = this.yys_role_data[this.role_name].sixss;
       this.sixyh = this.yys_role_data[this.role_name].sixyh;
       this.yhsum = this.yys_role_data[this.role_name].yhsum;
       this.yys_role_now = this.yys_role_data[this.role_name].speed;
     },
-    initrole: function() {
-      axios.get("http://127.0.0.1:5000/yys_getyysrole").then(response => {
+    initrole: function () {
+      axios.get("/yys_getyysrole").then((response) => {
         if (response.status == 200) {
           console.log(response);
           this.yys_role_data = response.data.res;
           console.log("**********");
           for (let i in this.yys_role_data) {
             // console.log(i);
-            this.yys_role_data[i].speed.forEach(item => {
+            this.yys_role_data[i].speed.forEach((item) => {
               item.rurl = require("../assets/suit/" + item.url);
               // console.log(item);
             });
@@ -327,7 +339,7 @@ export default {
         }
       });
     },
-    freshall: function() {
+    freshall: function () {
       this.initrole();
       this.freshyhscore();
       this.freshyhtypescore();
@@ -341,10 +353,10 @@ export default {
       ];
       this.yys_yhtypescore_bar_chart.setOption(this.yys_yhtypescore_bar_option);
       this.setrole();
-    }
+    },
   },
   watch: {
-    yh_name: function(val) {
+    yh_name: function (val) {
       // console.log(
       //   this.role_name,
       //   this.yh_name
@@ -363,8 +375,8 @@ export default {
         this.role_name
       ][this.yh_name];
       this.yys_yhtype_sunburst_chart.setOption(this.yys_yhtype_sunburst_option);
-    }
-  }
+    },
+  },
 };
 </script>
 

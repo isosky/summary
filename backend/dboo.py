@@ -153,13 +153,13 @@ def gettimedata():
     cur_year = time.localtime()[0]
     cur_month = time.localtime()[1]
     if cur_month == 1:
-        r = [str(cur_year-1)+'-12', str(cur_year)+'-01']
+        r = [str(cur_year-1)+'-12', str(cur_year)+'-02']
     elif cur_month == 12:
         r = [str(cur_year)+'-'+str(cur_month-1),
-             str(cur_year+1)+'-01']
+             str(cur_year+1)+'-02']
     else:
         r = [str(cur_year)+'-'+str(cur_month-1),
-             str(cur_year)+'-'+str(cur_month+1)]
+             str(cur_year)+'-'+str(cur_month+2)]
     conn.commit()
     conn.close()
     return {'result': result, 'range': r}

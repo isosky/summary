@@ -11,6 +11,8 @@
               <el-select
                 @change="updatesuboption"
                 clearable
+                filterable
+                allow-create
                 v-model="task_select"
                 style="width: 120px"
                 placeholder="请选择"
@@ -39,20 +41,24 @@
                 ></el-option>
               </el-select>
               <el-date-picker
-                :picker-options="{'firstDayOfWeek': 1}"
+                :picker-options="{ firstDayOfWeek: 1 }"
                 v-model="new_edate"
                 value-format="yyyy-MM-dd"
                 type="date"
-                style="width:150px"
+                style="width: 150px"
                 placeholder="ddl"
               ></el-date-picker>
-              <el-input v-model="task_title" style="width: 300px" placeholder="请输入内容"></el-input>
+              <el-input
+                v-model="task_title"
+                style="width: 300px"
+                placeholder="请输入内容"
+              ></el-input>
               <el-button @click="addtask">提交</el-button>
               <el-button @click="resetall">重置</el-button>
             </el-row>
             <el-row :gutter="5">
               <el-date-picker
-                :picker-options="{'firstDayOfWeek': 1}"
+                :picker-options="{ firstDayOfWeek: 1 }"
                 v-model="querytimerange"
                 type="daterange"
                 range-separator="至"
@@ -78,20 +84,58 @@
             height="750"
             :cell-style="isoverdate"
             style="width: 100%"
-            :default-sort="{prop: 'tetime'  ,order: 'ascending'}"
+            :default-sort="{ prop: 'tetime', order: 'ascending' }"
             @cell-click="showprocess"
           >
-            <el-table-column fixed prop="etime" sortable label="DDL" width="95"></el-table-column>
-            <el-table-column prop="subject" label="分类" width="60"></el-table-column>
-            <el-table-column prop="subsub" label="二级分类" width="80"></el-table-column>
+            <el-table-column
+              fixed
+              prop="etime"
+              sortable
+              label="DDL"
+              width="95"
+            ></el-table-column>
+            <el-table-column
+              prop="subject"
+              label="分类"
+              width="60"
+            ></el-table-column>
+            <el-table-column
+              prop="subsub"
+              label="二级分类"
+              width="80"
+            ></el-table-column>
             <el-table-column prop="title" label="标题"></el-table-column>
-            <el-table-column prop="num_process" label="进展" width="60"></el-table-column>
+            <el-table-column
+              prop="num_process"
+              label="进展"
+              width="60"
+            ></el-table-column>
             <el-table-column label="操作" width="170">
               <template slot-scope="scope">
-                <el-button @click="diashowprocess(scope.row)" type="text" size="small">更新</el-button>
-                <el-button @click="finishtask(scope.row)" type="text" size="small">完成</el-button>
-                <el-button @click="updatetask(scope.row)" type="text" size="small">修改</el-button>
-                <el-button @click="deletetask(scope.row)" type="text" size="small">删除</el-button>
+                <el-button
+                  @click="diashowprocess(scope.row)"
+                  type="text"
+                  size="small"
+                  >更新</el-button
+                >
+                <el-button
+                  @click="finishtask(scope.row)"
+                  type="text"
+                  size="small"
+                  >完成</el-button
+                >
+                <el-button
+                  @click="updatetask(scope.row)"
+                  type="text"
+                  size="small"
+                  >修改</el-button
+                >
+                <el-button
+                  @click="deletetask(scope.row)"
+                  type="text"
+                  size="small"
+                  >删除</el-button
+                >
               </template>
             </el-table-column>
           </el-table>
@@ -101,36 +145,60 @@
       <el-col :span="10">
         <el-row :gutter="5">
           <el-col :span="12">
-            <div id="b_task" style="height:220px"></div>
+            <div id="b_task" style="height: 220px"></div>
           </el-col>
           <el-col :span="12">
-            <div id="task_pie_summary" style="height:220px"></div>
+            <div id="task_pie_summary" style="height: 220px"></div>
           </el-col>
         </el-row>
         <el-tabs v-model="tabs_select" :lazy="true" type="border-card">
           <el-tab-pane name="summary" label="统计">
-            <div id="task_summary" style="height:500px"></div>
+            <div id="task_summary" style="height: 500px"></div>
           </el-tab-pane>
           <el-tab-pane name="process" label="进展">
-            <el-table :data="tableprocess" border height="500" style="width: 100%">
-              <el-table-column prop="stime" label="日期" width="100"></el-table-column>
-              <el-table-column prop="content" label="内容" width="400"></el-table-column>
-              <el-table-column prop="isfinish" label="状态" width="100"></el-table-column>
+            <el-table
+              :data="tableprocess"
+              border
+              height="500"
+              style="width: 100%"
+            >
+              <el-table-column
+                prop="stime"
+                label="日期"
+                width="100"
+              ></el-table-column>
+              <el-table-column
+                prop="content"
+                label="内容"
+                width="400"
+              ></el-table-column>
+              <el-table-column
+                prop="isfinish"
+                label="状态"
+                width="100"
+              ></el-table-column>
               <el-table-column label="操作" width="170">
                 <template slot-scope="scope">
-                  <el-button @click="showupdateprocess(scope.row)" type="text" size="small">修改</el-button>
                   <el-button
-                    v-if="scope.row.isfinish=='完成'"
+                    @click="showupdateprocess(scope.row)"
+                    type="text"
+                    size="small"
+                    >修改</el-button
+                  >
+                  <el-button
+                    v-if="scope.row.isfinish == '完成'"
                     @click="resetprocess(scope.row)"
                     type="text"
                     size="small"
-                  >待做</el-button>
+                    >待做</el-button
+                  >
                   <el-button
-                    v-if="scope.row.isfinish=='待做'"
+                    v-if="scope.row.isfinish == '待做'"
                     @click="finishprocess(scope.row)"
                     type="text"
                     size="small"
-                  >完成</el-button>
+                    >完成</el-button
+                  >
                 </template>
               </el-table-column>
             </el-table>
@@ -140,13 +208,18 @@
     </el-row>
     <!-- 各种弹出框 -->
     <!-- 更新 -->
-    <el-dialog @close="closedialog" title="提示" :visible.sync="dialogpVisible" width="30%">
-      <div>{{v_task_content}}</div>
+    <el-dialog
+      @close="closedialog"
+      title="提示"
+      :visible.sync="dialogpVisible"
+      width="30%"
+    >
+      <div>{{ v_task_content }}</div>
       <el-input
         v-model="input_process"
         type="textarea"
         style="width: 500px"
-        :autosize="{ minRows: 5}"
+        :autosize="{ minRows: 5 }"
         placeholder="请输入进展"
       ></el-input>
       <span slot="footer" class="dialog-footer">
@@ -156,14 +229,19 @@
     </el-dialog>
 
     <!-- 完成 -->
-    <el-dialog @close="closedialog" title="提示" :visible.sync="dialogsVisible" width="30%">
-      <div>{{v_task_content}}</div>
+    <el-dialog
+      @close="closedialog"
+      title="提示"
+      :visible.sync="dialogsVisible"
+      width="30%"
+    >
+      <div>{{ v_task_content }}</div>
       <el-input
         v-model="input_finish"
         type="textarea"
         placeholder="请输入完成情况"
         style="width: 500px"
-        :autosize="{ minRows: 5}"
+        :autosize="{ minRows: 5 }"
       ></el-input>
       <span slot="footer" class="dialog-footer">
         <el-button @click="dialogsVisible = false">取 消</el-button>
@@ -172,13 +250,18 @@
     </el-dialog>
 
     <!-- 修改 -->
-    <el-dialog @close="closedialog" title="确认修改任务？？" :visible.sync="dialoguVisible" width="40%">
+    <el-dialog
+      @close="closedialog"
+      title="确认修改任务？？"
+      :visible.sync="dialoguVisible"
+      width="40%"
+    >
       <el-date-picker
-        :picker-options="{'firstDayOfWeek': 1}"
+        :picker-options="{ firstDayOfWeek: 1 }"
         v-model="duetime"
         value-format="yyyy-MM-dd"
         type="date"
-        style="width:150px"
+        style="width: 150px"
       ></el-date-picker>
       <!-- 修改任务面板里面的一级分类 -->
       <el-select
@@ -219,7 +302,12 @@
     </el-dialog>
 
     <!-- 删除 -->
-    <el-dialog @close="closedialog" title="确认删除任务？？" :visible.sync="dialogcVisible" width="30%">
+    <el-dialog
+      @close="closedialog"
+      title="确认删除任务？？"
+      :visible.sync="dialogcVisible"
+      width="30%"
+    >
       <span slot="footer" class="dialog-footer">
         <el-button @click="dialogcVisible = false">取 消</el-button>
         <el-button type="primary" @click="dialogdelete">确 定</el-button>
@@ -227,14 +315,19 @@
     </el-dialog>
 
     <!-- 修改process -->
-    <el-dialog @close="closedialog" title="提示" :visible.sync="dialogprocessVisible" width="30%">
-      <div>{{process_content}}</div>
+    <el-dialog
+      @close="closedialog"
+      title="提示"
+      :visible.sync="dialogprocessVisible"
+      width="30%"
+    >
+      <div>{{ process_content }}</div>
       <el-input
         v-model="process_content"
         type="textarea"
         placeholder="请输入完成情况"
         style="width: 500px"
-        :autosize="{ minRows: 5}"
+        :autosize="{ minRows: 5 }"
       ></el-input>
       <span slot="footer" class="dialog-footer">
         <el-button @click="dialogprocessVisible = false">取 消</el-button>
@@ -518,7 +611,7 @@ export default {
     },
     // 初始化分类的下拉列表
     initoption: function (event) {
-      axios.get("http://127.0.0.1:5000/initoption").then((response) => {
+      axios.get("/initoption").then((response) => {
         if (response.status == 200) {
           // console.log(response);
           this.task_sub_all_option = [];
@@ -552,7 +645,7 @@ export default {
     },
     setbar: function (event) {
       // console.log('setbar');
-      axios.get("http://127.0.0.1:5000/gettimedata").then((response) => {
+      axios.get("/gettimedata").then((response) => {
         // console.log(response.data.result);
         if (response.status == 200) {
           // console.log(response.data.result);
@@ -565,7 +658,7 @@ export default {
       });
     },
     settasksummary_bar: function (event) {
-      axios.get("http://127.0.0.1:5000/gettasksummary_bar").then((response) => {
+      axios.get("/gettasksummary_bar").then((response) => {
         if (response.status == 200) {
           // 柱形图
           // console.log(response.data);
@@ -605,7 +698,7 @@ export default {
     dialogaddprocess: function (event) {
       // console.log(this.s_task_id);
       axios
-        .post("http://127.0.0.1:5000/addprocess", {
+        .post("/addprocess", {
           task_id: this.s_task_id,
           content: this.input_process,
         })
@@ -625,7 +718,7 @@ export default {
     addtask: function (event) {
       if (this.new_edate != "" && this.task_title) {
         axios
-          .post("http://127.0.0.1:5000/addtask", {
+          .post("/addtask", {
             subject: this.task_select,
             subsub: this.task_sub_select,
             title: this.task_title,
@@ -658,7 +751,7 @@ export default {
       }
 
       axios
-        .post("http://127.0.0.1:5000/querytask", {
+        .post("/querytask", {
           query: this.task_title,
           subject: this.task_select,
           subsub: this.task_sub_select,
@@ -672,7 +765,7 @@ export default {
       // console.log(this.s_task_id);
       this.dialogsVisible = false;
       axios
-        .post("http://127.0.0.1:5000/finishtask", {
+        .post("/finishtask", {
           task_id: this.s_task_id,
           input_finish: this.input_finish,
         })
@@ -698,7 +791,7 @@ export default {
     dialogupdate: function (event) {
       // console.log(this.s_task_id);
       axios
-        .post("http://127.0.0.1:5000/updatetask", {
+        .post("/updatetask", {
           task_id: this.s_task_id,
           subject: this.task_select,
           subsub: this.task_sub_select,
@@ -716,7 +809,7 @@ export default {
         });
     },
     removetask: function (event) {
-      axios.get("http://127.0.0.1:5000/removetask").then((response) => {
+      axios.get("/removetask").then((response) => {
         // console.log(response);
       });
     },
@@ -730,7 +823,7 @@ export default {
       // console.log(this.s_task_id);
       this.dialogcVisible = false;
       axios
-        .post("http://127.0.0.1:5000/deletetask", {
+        .post("/deletetask", {
           task_id: this.s_task_id,
         })
         .then((response) => {
@@ -774,7 +867,7 @@ export default {
     // TODO 更新主任务的数据
     getprocess: function (task_id) {
       axios
-        .post("http://127.0.0.1:5000/getprocess", {
+        .post("/getprocess", {
           task_id: task_id,
         })
         .then((response) => {
@@ -791,7 +884,7 @@ export default {
     },
     resetprocess: function (event) {
       axios
-        .post("http://127.0.0.1:5000/resetprocess", {
+        .post("/resetprocess", {
           process_id: event.process_id,
         })
         .then((response) => {
@@ -807,7 +900,7 @@ export default {
     },
     finishprocess: function (event) {
       axios
-        .post("http://127.0.0.1:5000/finishprocess", {
+        .post("/finishprocess", {
           process_id: event.process_id,
         })
         .then((response) => {
@@ -828,7 +921,7 @@ export default {
     },
     updateprocess: function (event) {
       axios
-        .post("http://127.0.0.1:5000/updateprocess", {
+        .post("/updateprocess", {
           process_id: this.process_id,
           content: this.process_content,
         })

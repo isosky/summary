@@ -35,17 +35,17 @@ export default {
         { value: "yysyh", label: "yysyh" },
         { value: "yyshero", label: "yyshero" },
         { value: "schedule", label: "schedule" },
-        { value: "syssetting", label: "syssetting" }
-      ]
+        { value: "syssetting", label: "syssetting" },
+      ],
     };
   },
-  mounted: function() {
+  mounted: function () {
     this.getfirstpage();
     this.getiswork();
   },
   methods: {
-    getiswork: function() {
-      axios.get("http://127.0.0.1:5000/getiswork").then(response => {
+    getiswork: function () {
+      axios.get("/getiswork").then((response) => {
         if (response.status == 200) {
           if (response.data.iswork == 1) {
             this.iswork = true;
@@ -55,33 +55,33 @@ export default {
         }
       });
     },
-    setiswork: function() {
+    setiswork: function () {
       console.log(this.iswork);
       axios
-        .post("http://127.0.0.1:5000/setiswork", {
-          iswork: this.iswork
+        .post("/setiswork", {
+          iswork: this.iswork,
         })
-        .then(response => {
+        .then((response) => {
           this.getiswork();
         });
     },
-    getfirstpage: function() {
-      axios.get("http://127.0.0.1:5000/getfirstpage").then(response => {
+    getfirstpage: function () {
+      axios.get("/getfirstpage").then((response) => {
         if (response.status == 200) {
           this.firstpage = response.data.firstpage;
         }
       });
     },
-    setfristpage: function() {
+    setfristpage: function () {
       axios
-        .post("http://127.0.0.1:5000/setfirstpage", {
-          firstpage: this.firstpage
+        .post("/setfirstpage", {
+          firstpage: this.firstpage,
         })
-        .then(response => {
+        .then((response) => {
           this.getfirstpage();
         });
-    }
-  }
+    },
+  },
 };
 </script>
 
