@@ -248,7 +248,7 @@
 import axios from "axios";
 var echarts = require("echarts");
 export default {
-  data: function() {
+  data: function () {
     return {
       activeName: "",
       tabs_select: "summary",
@@ -262,20 +262,20 @@ export default {
           min: 0,
           max: 10,
           inRange: {
-            color: ["#ebedf0", "#c6e48b", "#7bc96f", "#239a3b", "#196127"]
-          }
+            color: ["#ebedf0", "#c6e48b", "#7bc96f", "#239a3b", "#196127"],
+          },
         },
         calendar: {
           range: ["2020-06", "2020-08"],
           dayLabel: {
-            firstDay: 1 // 从周一开始
-          }
+            firstDay: 1, // 从周一开始
+          },
         },
         series: {
           type: "heatmap",
           coordinateSystem: "calendar",
-          data: []
-        }
+          data: [],
+        },
       },
       // 统计柱形图
       task_summary_option: {
@@ -283,22 +283,22 @@ export default {
           trigger: "axis",
           axisPointer: {
             // 坐标轴指示器，坐标轴触发有效
-            type: "shadow" // 默认为直线，可选为：'line' | 'shadow'
-          }
+            type: "shadow", // 默认为直线，可选为：'line' | 'shadow'
+          },
         },
         color: ["black", "red", "Orange", "green"],
         legend: {
-          data: ["逾期", "待做逾期", "待做", "正常完成"]
+          data: ["逾期", "待做逾期", "待做", "正常完成"],
         },
         grid: {
-          left: 80
+          left: 80,
         },
         xAxis: {
-          type: "value"
+          type: "value",
         },
         yAxis: {
           type: "category",
-          data: []
+          data: [],
         },
         series: [
           {
@@ -309,14 +309,14 @@ export default {
               normal: {
                 show: true,
                 position: "insideRight",
-                formatter: function(num) {
+                formatter: function (num) {
                   if (num.value == 0) {
                     return "";
                   }
-                }
-              }
+                },
+              },
             },
-            data: []
+            data: [],
           },
           {
             name: "待做逾期",
@@ -326,14 +326,14 @@ export default {
               normal: {
                 show: true,
                 position: "insideRight",
-                formatter: function(num) {
+                formatter: function (num) {
                   if (num.value == 0) {
                     return "";
                   }
-                }
-              }
+                },
+              },
             },
-            data: []
+            data: [],
           },
           {
             name: "待做",
@@ -343,14 +343,14 @@ export default {
               normal: {
                 show: true,
                 position: "insideRight",
-                formatter: function(num) {
+                formatter: function (num) {
                   if (num.value == 0) {
                     return "";
                   }
-                }
-              }
+                },
+              },
             },
-            data: []
+            data: [],
           },
           {
             name: "正常完成",
@@ -360,27 +360,27 @@ export default {
               normal: {
                 show: true,
                 position: "insideRight",
-                formatter: function(num) {
+                formatter: function (num) {
                   if (num.value == 0) {
                     return "";
                   }
-                }
-              }
+                },
+              },
             },
-            data: []
-          }
-        ]
+            data: [],
+          },
+        ],
       },
       // pie图
       tab_pie_option: {
         title: {
           text: "任务统计",
-          x: "center"
+          x: "center",
         },
         color: ["black", "red", "Orange", "green"],
         tooltip: {
           trigger: "item",
-          formatter: "{a} <br/>{b} : {c} ({d}%)"
+          formatter: "{a} <br/>{b} : {c} ({d}%)",
         },
         // legend: {
         //     data: ['逾期', '待做', '正常完成']
@@ -396,22 +396,22 @@ export default {
               normal: {
                 show: true,
                 position: "insideRight",
-                formatter: "{b}：{c}"
-              }
-            }
-          }
-        ]
+                formatter: "{b}：{c}",
+              },
+            },
+          },
+        ],
       },
       // left input
       select_option: [
         {
           value: "step",
-          label: "步数"
+          label: "步数",
         },
         {
           value: "weight",
-          label: "体重"
-        }
+          label: "体重",
+        },
       ],
       // right input
       task_select: "",
@@ -447,9 +447,9 @@ export default {
               }
               end.setTime(end.getTime() - 3600 * 1000 * 24 * 1);
               picker.$emit("pick", [start, end]);
-            }
-          }
-        ]
+            },
+          },
+        ],
       },
       querytimerange: "",
       isqueryall: true,
@@ -479,46 +479,46 @@ export default {
       now_time: new Date().getTime(),
       task_chart: "",
       tasksummary_chart: "",
-      tasksummary_pie_chart: ""
+      tasksummary_pie_chart: "",
     };
   },
-  mounted: function() {
+  mounted: function () {
     console.log(this);
     // console.log('asdasdasda');
     // console.log(this.tableData);
     this.task_chart = echarts.init(document.getElementById("b_task"), "white", {
-      renderer: "canvas"
+      renderer: "canvas",
     });
     this.tasksummary_chart = echarts.init(
       document.getElementById("task_summary"),
       "white",
       {
-        renderer: "canvas"
+        renderer: "canvas",
       }
     );
     this.tasksummary_pie_chart = echarts.init(
       document.getElementById("task_pie_summary"),
       "white",
       {
-        renderer: "canvas"
+        renderer: "canvas",
       }
     );
     this.freshright();
   },
   methods: {
-    freshright: function(event) {
+    freshright: function (event) {
       this.initoption();
       this.setbar();
       this.settasksummary_bar();
       this.querytask(false);
     },
-    resetall: function() {
+    resetall: function () {
       this.task_title = "";
       this.freshright();
     },
     // 初始化分类的下拉列表
-    initoption: function(event) {
-      axios.get("http://127.0.0.1:5000/initoption").then(response => {
+    initoption: function (event) {
+      axios.get("http://127.0.0.1:5000/initoption").then((response) => {
         if (response.status == 200) {
           // console.log(response);
           this.task_sub_all_option = [];
@@ -531,7 +531,7 @@ export default {
       });
     },
     // 更新二级下拉列表
-    updatesuboption: function(event) {
+    updatesuboption: function (event) {
       // console.log('update option');
       this.task_sub_select = "";
       if (this.task_select != "" && this.task_sub_all_option != []) {
@@ -544,15 +544,15 @@ export default {
             // console.log(temp[i]);
             this.task_sub_select_option.push({
               value: temp[i],
-              label: temp[i]
+              label: temp[i],
             });
           }
         }
       }
     },
-    setbar: function(event) {
+    setbar: function (event) {
       // console.log('setbar');
-      axios.get("http://127.0.0.1:5000/gettimedata").then(response => {
+      axios.get("http://127.0.0.1:5000/gettimedata").then((response) => {
         // console.log(response.data.result);
         if (response.status == 200) {
           // console.log(response.data.result);
@@ -564,8 +564,8 @@ export default {
         }
       });
     },
-    settasksummary_bar: function(event) {
-      axios.get("http://127.0.0.1:5000/gettasksummary_bar").then(response => {
+    settasksummary_bar: function (event) {
+      axios.get("http://127.0.0.1:5000/gettasksummary_bar").then((response) => {
         if (response.status == 200) {
           // 柱形图
           // console.log(response.data);
@@ -595,24 +595,24 @@ export default {
       });
     },
     // 展示进展面板
-    diashowprocess: function(event) {
+    diashowprocess: function (event) {
       this.dialogpVisible = true;
       this.v_task_content = event.title;
       this.s_task_id = event.task_id;
     },
 
     // 调用进展接口
-    dialogaddprocess: function(event) {
+    dialogaddprocess: function (event) {
       // console.log(this.s_task_id);
       axios
         .post("http://127.0.0.1:5000/addprocess", {
           task_id: this.s_task_id,
-          content: this.input_process
+          content: this.input_process,
         })
-        .then(response => {
+        .then((response) => {
           this.$message({
             message: "更新成功",
-            type: "success"
+            type: "success",
           });
           this.input_process = "";
           this.dialogpVisible = false;
@@ -622,16 +622,16 @@ export default {
         });
     },
     // 添加任务
-    addtask: function(event) {
+    addtask: function (event) {
       if (this.new_edate != "" && this.task_title) {
         axios
           .post("http://127.0.0.1:5000/addtask", {
             subject: this.task_select,
             subsub: this.task_sub_select,
             title: this.task_title,
-            edate: this.new_edate
+            edate: this.new_edate,
           })
-          .then(response => {
+          .then((response) => {
             // console.log(response);
             this.task_title = "";
             this.new_edate = "";
@@ -642,14 +642,14 @@ export default {
           });
       }
     },
-    finishtask: function(event) {
+    finishtask: function (event) {
       // console.log(event.task_id);
       this.dialogsVisible = true;
       this.s_task_id = event.task_id;
       this.v_task_content = event.title;
     },
     // 查询任务
-    querytask: function(isquery) {
+    querytask: function (isquery) {
       let isqueryall;
       if (isquery == false) {
         isqueryall = false;
@@ -662,21 +662,21 @@ export default {
           query: this.task_title,
           subject: this.task_select,
           subsub: this.task_sub_select,
-          isqueryall: isqueryall
+          isqueryall: isqueryall,
         })
-        .then(response => {
+        .then((response) => {
           this.tableData = response.data.arrays;
         });
     },
-    dialogcommit: function(event) {
+    dialogcommit: function (event) {
       // console.log(this.s_task_id);
       this.dialogsVisible = false;
       axios
         .post("http://127.0.0.1:5000/finishtask", {
           task_id: this.s_task_id,
-          input_finish: this.input_finish
+          input_finish: this.input_finish,
         })
-        .then(response => {
+        .then((response) => {
           // console.log(response);
           this.input_finish = "";
           this.freshright();
@@ -684,7 +684,7 @@ export default {
     },
 
     // 展示修改任务面板
-    updatetask: function(event) {
+    updatetask: function (event) {
       this.dialoguVisible = true;
       // console.log(event);
       this.task_select = event.subject;
@@ -695,7 +695,7 @@ export default {
     },
 
     // 调用修改任务接口
-    dialogupdate: function(event) {
+    dialogupdate: function (event) {
       // console.log(this.s_task_id);
       axios
         .post("http://127.0.0.1:5000/updatetask", {
@@ -703,9 +703,9 @@ export default {
           subject: this.task_select,
           subsub: this.task_sub_select,
           title: this.dutitle,
-          etime: this.duetime
+          etime: this.duetime,
         })
-        .then(response => {
+        .then((response) => {
           this.dialoguVisible = false;
           this.task_title = "";
           this.new_edate = "";
@@ -715,30 +715,30 @@ export default {
           this.freshright();
         });
     },
-    removetask: function(event) {
-      axios.get("http://127.0.0.1:5000/removetask").then(response => {
+    removetask: function (event) {
+      axios.get("http://127.0.0.1:5000/removetask").then((response) => {
         // console.log(response);
       });
     },
-    deletetask: function(event) {
+    deletetask: function (event) {
       // console.log(event.task_id);
       this.dialogcVisible = true;
       this.s_task_id = event.task_id;
     },
 
-    dialogdelete: function(event) {
+    dialogdelete: function (event) {
       // console.log(this.s_task_id);
       this.dialogcVisible = false;
       axios
         .post("http://127.0.0.1:5000/deletetask", {
-          task_id: this.s_task_id
+          task_id: this.s_task_id,
         })
-        .then(response => {
+        .then((response) => {
           // console.log(response);
           this.freshright();
         });
     },
-    isoverdate: function({ row, column, rowIndex, columnIndex }) {
+    isoverdate: function ({ row, column, rowIndex, columnIndex }) {
       if (columnIndex == 0) {
         let temp = new Date(row.tetime + " 23:59:59").getTime();
         // console.log(row);
@@ -750,12 +750,12 @@ export default {
         }
       }
     },
-    closedialog: function(event) {
+    closedialog: function (event) {
       this.task_select = "";
       this.task_sub_select = "";
       this.process_content = "";
     },
-    showprocess: function(row, column, cell, event) {
+    showprocess: function (row, column, cell, event) {
       if (column !== undefined && column.label != "进展") {
         this.tabs_select = "summary";
         return;
@@ -772,12 +772,12 @@ export default {
       }
     },
     // TODO 更新主任务的数据
-    getprocess: function(task_id) {
+    getprocess: function (task_id) {
       axios
         .post("http://127.0.0.1:5000/getprocess", {
-          task_id: task_id
+          task_id: task_id,
         })
-        .then(response => {
+        .then((response) => {
           this.tableprocess = response.data.arrays;
           for (let i in this.tableprocess) {
             if (this.tableprocess[i].isfinish == 1) {
@@ -789,62 +789,62 @@ export default {
           this.s_task_id = "";
         });
     },
-    resetprocess: function(event) {
+    resetprocess: function (event) {
       axios
         .post("http://127.0.0.1:5000/resetprocess", {
-          process_id: event.process_id
+          process_id: event.process_id,
         })
-        .then(response => {
+        .then((response) => {
           if (response.status == 200) {
             this.$message({
               message: "禁用成功",
-              type: "success"
+              type: "success",
             });
             console.log(event);
             this.getprocess(event.task_id);
           }
         });
     },
-    finishprocess: function(event) {
+    finishprocess: function (event) {
       axios
         .post("http://127.0.0.1:5000/finishprocess", {
-          process_id: event.process_id
+          process_id: event.process_id,
         })
-        .then(response => {
+        .then((response) => {
           if (response.status == 200) {
             this.$message({
               message: "启用成功",
-              type: "success"
+              type: "success",
             });
             this.getprocess(event.task_id);
           }
         });
     },
-    showupdateprocess: function(event) {
+    showupdateprocess: function (event) {
       this.dialogprocessVisible = true;
       this.process_content = event.content;
       this.process_id = event.process_id;
       this.s_task_id = event.task_id;
     },
-    updateprocess: function(event) {
+    updateprocess: function (event) {
       axios
         .post("http://127.0.0.1:5000/updateprocess", {
           process_id: this.process_id,
-          content: this.process_content
+          content: this.process_content,
         })
-        .then(response => {
+        .then((response) => {
           if (response.status == 200) {
             this.$message({
               message: "启用成功",
-              type: "success"
+              type: "success",
             });
             this.getprocess(this.s_task_id);
             this.s_task_id = "";
             this.dialogprocessVisible = false;
           }
         });
-    }
-  }
+    },
+  },
 };
 </script>
 

@@ -6,8 +6,8 @@ dir = "C://Users//fengy//AppData//Local//Packages//Microsoft.Windows.ContentDeli
 dir_h = "f://lockscreen_h"
 dir_w = "f://lockscreen_w"
 
-def checkdir():
 
+def checkdir():
 
     if not os.path.exists(dir_h):
         os.mkdir(dir_h)
@@ -17,7 +17,7 @@ def checkdir():
 
 
 def initmd5s():
-    md5s =[]
+    md5s = []
     for root, dirs, files in os.walk(dir_h, topdown=False):
         for name in files:
             with open(os.path.join(root, name), 'rb') as f:
@@ -49,12 +49,12 @@ def getlocksreen():
                 # print(md5)
                 if md5 not in md5s:
                     image = Image.open(os.path.join(root, name))
-                    if image.width==1080:
+                    if image.width == 1080:
                         # print(os.path.join(dir_h,name+'.jpg'))
-                        image.save(os.path.join(dir_h,name+'.jpg'))
-                    elif image.width==1920:
-                        image.save(os.path.join(dir_w,name+'.jpg'))
-                    temp+=1
+                        image.save(os.path.join(dir_h, name+'.jpg'))
+                    elif image.width == 1920:
+                        image.save(os.path.join(dir_w, name+'.jpg'))
+                    temp += 1
     print("新增了"+str(temp)+"张图片")
 
 # print('s')
