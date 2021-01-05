@@ -21,10 +21,10 @@ base_url = 'https://bbs.nga.cn/thread.php?fid=-7'
 
 # url = 'http://bbs.nga.cn/read.php?tid=%s&page=%d' % (game_id, page)
 
-test_url = 'http://bbs.nga.cn/read.php?tid=%s&page=%d' % (24966724, 2)
+test_url = 'http://bbs.nga.cn/read.php?tid=%s&page=%d' % (24972648, 1)
 
 # https://img.nga.178.com/attachments/./mon_202101/04/-7Q5-2wvK27T1kShs-134.jpg.medium.jpg
-attach_url = 'https://img.nga.178.com/attachments/'
+attach_url = 'https://img.nga.178.com/attachments'
 
 
 def get_headers():
@@ -54,31 +54,79 @@ def get_headers():
     return headers
 
 
-if __name__ == "__main__":
-    # text = requests.get(url, headers=get_headers(
-    # ), proxies=self.GetProxies(), timeout=10).content.decode('gbk', 'ignore')
-    text = requests.get(test_url, headers=get_headers()
-                        ).content.decode('gbk', 'ignore').encode('utf8')
-    # with open('a.html', 'wb') as f:
-    #     f.write(text)
-    print(test_url)
-    with open('a.html', 'rb') as f:
-        text = f.read().decode("utf8")
-        p0 = re.compile(
-            "\<span\sid\=\'postcontent(\d*)\'\sclass\=\'postcontent\subbcode\'\>(.*)\<\/span\>")
-        items = re.findall(p0, text)
-        print(len(items))
-        imgs = []
-        for i in items:
-            print(i)
-            img0 = re.compile("\[img\](.*)\[\/img\]")
-            pimgs = re.findall(img0, i[1])
-            if pimgs:
-                imgs.append(list(pimgs))
+def strreplace(x):
+    x = re.sub(re.compile('<.*?>', re.S), '', x)
+    x = re.sub(re.compile('\n'), ' ', x)
+    x = re.sub(re.compile('\r'), ' ', x)
+    x = re.sub(re.compile('\r\n'), ' ', x)
+    x = re.sub(re.compile('[\r\n]'), ' ', x)
+    x = re.sub(re.compile('\s{2,}'), ' ', x)
+    return x.strip()
 
-        for i in imgs:
-            # print(i)
-            for a in i:
-                if 'attachments' not in a:
-                    a = attach_url + str(a[1:])
-                print(a)
+
+def getonepage(tid, page):
+    t_url = 'http://bbs.nga.cn/read.php?tid=%s&page=%d' % (
+        tid, page)
+    print(t_url)
+    text = requests.get(t_url, headers=get_headers()
+                        ).content.decode('gbk', 'ignore')
+    # with open('ad.html', 'wb') as f:
+    #     f.write(text)
+    # print("*"*10)
+    # with open('ac.html', 'rb') as f:
+    imgs = []
+    # text = f.read().decode("utf8")
+    # print(text)
+    p0 = re.compile(
+        r"<a href='nuke\.php\?func=ucp&uid=(\d+?)' id='postauthor(\d+).*?title='reply time'>(.*?)</span>.*?<span id='postcontent\d+?' class='postcontent ubbcode'>(.*?)</span>", re.S)
+    p1 = re.compile(
+        r"<a href='nuke\.php\?func=ucp&uid=(\d+?)' id='postauthor(\d+).*?title='reply time'>(.*?)</span>.*?<p id='postcontent\d+?' class='postcontent ubbcode'>(.*?)</p>", re.S)
+    items = re.findall(p0, text)
+    items.extend(re.findall(p1, text))
+    print(len(items))
+    print("*"*10)
+    for i in items:
+        time = str(i[2])+':00'
+        comments = strreplace(i[3])
+        img0 = re.compile(r"\[img\]([^\[]*)\[\/img\]")
+        pimgs = re.findall(img0, comments)
+        if pimgs:
+            print(i[1], pimgs)
+            if len(pimgs) > 1:
+                for pi in pimgs:
+                    if 'attachments' not in pi:
+                        temp = attach_url + str(pi[1:])
+                    else:
+                        temp = pi
+                    imgs.append((i[1], temp))
+            else:
+                if 'attachments' not in pimgs[0]:
+                    temp = attach_url + str(pimgs[0][1:])
+                else:
+                    temp = pimgs[0]
+                imgs.append((i[1], temp))
+
+    print("*" * 10)
+    for i in imgs:
+        print(i)
+
+
+def getlist():
+    page_url = 'https://bbs.nga.cn/thread.php?fid=-7&page=%d' % (1)
+    text = requests.get(page_url, headers=get_headers()
+                        ).content.decode('gbk', 'ignore')
+    # with open('lad.html', 'wb') as f:
+    #     f.write(text)
+    # print("*" * 10)
+    pl = re.compile(r"<td class='c1'><a id='t_rc1_\d*' title='打开新窗口' href='\/read.php\?tid=(\d*)'.*?(\d*)<\/a><\/td>.*?class='topic'>(.*?)</a>.*?a href='\/nuke.php\?func=ucp&uid=(\d*)", re.S)
+    temp_items = re.findall(pl, text)
+    if temp_items:
+        items = [list(x) for x in temp_items]
+        for i in items:
+            i.append(int(int(i[1]) / 20) + 1)
+            print(i)
+
+
+if __name__ == "__main__":
+    # getonepage(24972648, 1)
+    getlist()
