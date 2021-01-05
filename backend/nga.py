@@ -10,13 +10,21 @@ import csv
 import json
 import sys
 
+
+# 爬所有id，评论，图片放到mysql中
+# 已经爬过的，记录时间和楼层
+# 加入判断主题是否放空
+# 按版统计
+
+
 base_url = 'https://bbs.nga.cn/thread.php?fid=-7'
 
 # url = 'http://bbs.nga.cn/read.php?tid=%s&page=%d' % (game_id, page)
 
-test_url = 'https://bbs.nga.cn/read.php?tid=24947479'
+test_url = 'http://bbs.nga.cn/read.php?tid=%s&page=%d' % (24966724, 2)
 
-# https://img.nga.178.com/attachments/mon_202101/03/-7Q5-k3gsZcT1kSg0-sg.jpg.medium.jpg
+# https://img.nga.178.com/attachments/./mon_202101/04/-7Q5-2wvK27T1kShs-134.jpg.medium.jpg
+attach_url = 'https://img.nga.178.com/attachments/'
 
 
 def get_headers():
@@ -50,7 +58,27 @@ if __name__ == "__main__":
     # text = requests.get(url, headers=get_headers(
     # ), proxies=self.GetProxies(), timeout=10).content.decode('gbk', 'ignore')
     text = requests.get(test_url, headers=get_headers()
-                        ).content.decode('gbk', 'ignore')
-    with open('a.html', 'w') as f:
-        f.write(text)
-    # print(text)
+                        ).content.decode('gbk', 'ignore').encode('utf8')
+    # with open('a.html', 'wb') as f:
+    #     f.write(text)
+    print(test_url)
+    with open('a.html', 'rb') as f:
+        text = f.read().decode("utf8")
+        p0 = re.compile(
+            "\<span\sid\=\'postcontent(\d*)\'\sclass\=\'postcontent\subbcode\'\>(.*)\<\/span\>")
+        items = re.findall(p0, text)
+        print(len(items))
+        imgs = []
+        for i in items:
+            print(i)
+            img0 = re.compile("\[img\](.*)\[\/img\]")
+            pimgs = re.findall(img0, i[1])
+            if pimgs:
+                imgs.append(list(pimgs))
+
+        for i in imgs:
+            # print(i)
+            for a in i:
+                if 'attachments' not in a:
+                    a = attach_url + str(a[1:])
+                print(a)
