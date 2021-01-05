@@ -9,15 +9,18 @@ from multiprocessing.dummy import Pool
 import csv
 import json
 import sys
+from config import mysql_config
+import pymysql
 
 
 # 爬所有id，评论，图片放到mysql中
 # 已经爬过的，记录时间和楼层
 # 加入判断主题是否放空
 # 按版统计
+# 基于python的queue 来实现一下同步
 
 
-base_url = 'https://bbs.nga.cn/thread.php?fid=-7'
+# base_url = 'https://bbs.nga.cn/thread.php?fid=-7'
 
 # url = 'http://bbs.nga.cn/read.php?tid=%s&page=%d' % (game_id, page)
 
@@ -64,25 +67,37 @@ def strreplace(x):
     return x.strip()
 
 
+def initdb():
+    db = pymysql.connect(
+        host=mysql_config['host'], user=mysql_config['user'], password=mysql_config['passwd'], db=mysql_config['db'], port=mysql_config['port'])
+    cursor = db.cursor()
+    cursor.execute('SELECT VERSION()')
+    data = cursor.fetchone()
+    print('Database version:', data)
+    db.commit()
+    db.close()
+
+
 def getonepage(tid, page):
     t_url = 'http://bbs.nga.cn/read.php?tid=%s&page=%d' % (
         tid, page)
     print(t_url)
     text = requests.get(t_url, headers=get_headers()
                         ).content.decode('gbk', 'ignore')
-    # with open('ad.html', 'wb') as f:
-    #     f.write(text)
+    with open('ae.html', 'wb') as f:
+        f.write(text.encode('utf8'))
     # print("*"*10)
     # with open('ac.html', 'rb') as f:
     imgs = []
     # text = f.read().decode("utf8")
     # print(text)
     p0 = re.compile(
-        r"<a href='nuke\.php\?func=ucp&uid=(\d+?)' id='postauthor(\d+).*?title='reply time'>(.*?)</span>.*?<span id='postcontent\d+?' class='postcontent ubbcode'>(.*?)</span>", re.S)
+        r"<span id='posterinfo[^0]\d*' class='posterinfo'>.*?<a href='nuke\.php\?func=ucp&uid=(\d+?)' id='postauthor(\d+).*?title='reply time'>(.*?)</span>.*?<span id='postcontent\d+?' class='postcontent ubbcode'>(.*?)</span>", re.S)
     p1 = re.compile(
         r"<a href='nuke\.php\?func=ucp&uid=(\d+?)' id='postauthor(\d+).*?title='reply time'>(.*?)</span>.*?<p id='postcontent\d+?' class='postcontent ubbcode'>(.*?)</p>", re.S)
     items = re.findall(p0, text)
-    items.extend(re.findall(p1, text))
+    if page == 1:
+        items.extend(re.findall(p1, text))
     print(len(items))
     print("*"*10)
     for i in items:
@@ -90,6 +105,7 @@ def getonepage(tid, page):
         comments = strreplace(i[3])
         img0 = re.compile(r"\[img\]([^\[]*)\[\/img\]")
         pimgs = re.findall(img0, comments)
+        print(i)
         if pimgs:
             print(i[1], pimgs)
             if len(pimgs) > 1:
@@ -118,15 +134,23 @@ def getlist():
     # with open('lad.html', 'wb') as f:
     #     f.write(text)
     # print("*" * 10)
-    pl = re.compile(r"<td class='c1'><a id='t_rc1_\d*' title='打开新窗口' href='\/read.php\?tid=(\d*)'.*?(\d*)<\/a><\/td>.*?class='topic'>(.*?)</a>.*?a href='\/nuke.php\?func=ucp&uid=(\d*)", re.S)
+    pl = re.compile(r"<td class='c1'><a id='t_rc1_\d*' title='打开新窗口' href='\/read.php\?tid=(\d*)'.*?(\d*)<\/a><\/td>.*?class='topic'>(.*?)</a>(.*?)a href='\/nuke.php\?func=ucp&uid=(\d*)", re.S)
+    ps = re.compile(r"class='silver'>(.*?)</a>", re.S)
     temp_items = re.findall(pl, text)
     if temp_items:
         items = [list(x) for x in temp_items]
         for i in items:
+            temp_ps = re.findall(ps, i[3])
+            if temp_ps:
+                i.append(temp_ps[0][1:-1])
+            else:
+                i.append('')
             i.append(int(int(i[1]) / 20) + 1)
+            del(i[3])
             print(i)
 
 
 if __name__ == "__main__":
     # getonepage(24972648, 1)
-    getlist()
+    # getlist()
+    initdb()
