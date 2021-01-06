@@ -155,7 +155,6 @@ def getonepage(tid, page, rp):
         temp.insert(0, tid)
         if int(i[1]) >= rp:
             temp_data.append(temp)
-        print("经过计算，追加：", len(temp_data))
         # 结束增加
         if pimgs:
             # print(i[1], pimgs)
@@ -183,6 +182,7 @@ def getonepage(tid, page, rp):
 
     print("*" * 10)
     print("增加 %s 回复" % (tid))
+    print("经过计算，追加：", len(temp_data))
     db = database()
     db.add_nga_reply(temp_data)
 
@@ -240,6 +240,10 @@ def caltask(pd, tq):
     db = database()
     temp = db.get_nga_post()
     for i in pd.keys():
+        if i == '18809689':
+            continue
+        if int(pd[i]) > 2000:
+            continue
         if i in temp.keys():
             page_min = int(temp[i] / 20) + 1
             page_max = int(int(pd[i]) / 20) + 1
@@ -259,6 +263,7 @@ if __name__ == "__main__":
     page_dict = {}
     getlist(page_dict)
     caltask(page_dict, task_queue)
+    print('queue size is :', task_queue.qsize())
     while not task_queue.empty():
         print('=' * 10)
         t = task_queue.get()
