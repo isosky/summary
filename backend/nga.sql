@@ -15,7 +15,7 @@ CREATE TABLE nga_reply(
     poster_id VARCHAR(15) COMMENT '回复id',
     replys INT COMMENT '楼层',
     reply_time DATETIME COMMENT '评论时间',
-    reply_content VARCHAR(2000) COMMENT '评论',
+    reply_content text COMMENT '评论',
     PRIMARY KEY (post_id, replys)
 );
 drop table nga_attach;
@@ -30,3 +30,6 @@ CREATE table nga_attach(
 -- insert into nga_post (post_id,replies,post_title,poster_id,sub) values ('24978680',123,'','','') 
 -- on duplicate key update replies=VALUES(replies);
 -- select * from nga_post where post_id='24978680';
+truncate table nga_post;
+truncate table nga_reply;
+truncate table nga_attach;

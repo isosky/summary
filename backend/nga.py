@@ -20,12 +20,6 @@ import time
 # 基于python的queue 来实现一下同步
 
 
-# base_url = 'https://bbs.nga.cn/thread.php?fid=-7'
-
-# url = 'http://bbs.nga.cn/read.php?tid=%s&page=%d' % (game_id, page)
-
-test_url = 'http://bbs.nga.cn/read.php?tid=%s&page=%d' % (24972648, 1)
-
 # https://img.nga.178.com/attachments/./mon_202101/04/-7Q5-2wvK27T1kShs-134.jpg.medium.jpg
 attach_url = 'https://img.nga.178.com/attachments'
 
@@ -81,9 +75,10 @@ class database(object):
         self.db.close()
 
     def update_nga_post(self, pid, ctime):
-        sql = 'update nga_post set collect_time = %s where post_id =%s' % (
+        sql = "update nga_post set collect_time = '%s' where post_id =%s" % (
             ctime, pid)
-        self.cursor.executemany(sql)
+        # print(sql)
+        self.cursor.execute(sql)
         self.db.commit()
         self.cursor.close()
         self.db.close()
@@ -157,20 +152,18 @@ def getonepage(tid, page):
     print("*" * 10)
 
     if imgs:
-        # for i in imgs:
-        #     print(i)
         print("*" * 10)
-        print("增加附件")
+        print("增加 %s 附件，总计 %s " % (tid, str(len(imgs))))
         db = database()
         db.add_nga_attach(imgs)
 
     print("*" * 10)
-    print("增加回复")
+    print("增加 %s 回复" % (tid))
     db = database()
     db.add_nga_reply(temp_data)
 
     print("*" * 10)
-    print("更新日期")
+    print("更新 %s 日期" % (tid))
     now = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
     db = database()
     db.update_nga_post(tid, now)
@@ -202,14 +195,19 @@ def getlist():
         db = database()
         db.add_nga_post(items)
 
+        # TODO 增量抓取
         for i in items:
+            if i[0] == '18809689':
+                continue
+            if int(i[1]) > 2000:
+                continue
             pages = int(int(i[1]) / 20) + 1
+            print('*' * 10)
+            print('开始抓取：', i[0], '共有：', pages, '页')
             for p in range(pages):
                 getonepage(i[0], p)
                 time.sleep(5)
 
 
 if __name__ == "__main__":
-    # getonepage(24975437, 1)
-    # print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
     getlist()
