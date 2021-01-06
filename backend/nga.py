@@ -4,7 +4,7 @@
 import requests
 import random
 import re
-from multiprocessing.dummy import Pool
+import threading
 import csv
 import json
 import sys
@@ -103,7 +103,7 @@ class database(object):
 
     def get_nga_post(self):
         temp = {}
-        sql = 'select post_id from nga_post where is_finish!=1 or is_finish is null'
+        sql = 'select post_id from nga_post where collect_time is null'
         self.cursor.execute(sql)
         data = self.cursor.fetchall()
         for i in data:
@@ -222,19 +222,6 @@ def getlist(page_dict):
 
         # TODO 移除无效的page
 
-        # # TODO 增量抓取
-        # for i in items:
-        #     if i[0] == '18809689':
-        #         continue
-        #     if int(i[1]) > 2000:
-        #         continue
-        #     pages = int(int(i[1]) / 20) + 1
-        #     print('*' * 10)
-        #     print('开始抓取：', i[0], '共有：', pages, '页')
-        #     for p in range(pages)[1:]:
-        #         getonepage(i[0], p)
-        #         time.sleep(5)
-
 
 def caltask(pd, tq):
     db = database()
@@ -256,6 +243,28 @@ def caltask(pd, tq):
             page_max = int(int(pd[i]) / 20) + 1
             for p in range(1, page_max):
                 tq.put([i, p, 0])
+    for i in temp.keys():
+        if i not in pd.keys():
+            page_max = int(int(temp[i]) / 20) + 1
+            for p in range(1, page_max):
+                tq.put([i, p, 0])
+
+
+class myThread(threading.Thread):
+    def __init__(self, threadID, name, tq):
+        threading.Thread.__init__(self)
+        self.threadID = threadID
+        self.name = name
+        self.task_queue = tq
+
+    def run(self):
+        while not self.task_queue.empty():
+            print("开始线程：" + self.name)
+            t = self.task_queue.get()
+            getonepage(t[0], t[1], t[2])
+            print('=' * 10)
+            print('休息5秒')
+            time.sleep(5)
 
 
 if __name__ == "__main__":
@@ -264,10 +273,12 @@ if __name__ == "__main__":
     getlist(page_dict)
     caltask(page_dict, task_queue)
     print('queue size is :', task_queue.qsize())
-    while not task_queue.empty():
-        print('=' * 10)
-        t = task_queue.get()
-        getonepage(t[0], t[1], t[2])
-        print('=' * 10)
-        print('休息5秒')
-        time.sleep(5)
+    # t = []
+    # for i in range(int(task_queue.qsize()/20)):
+    #     t.append(myThread(1, "Thread" + str(i), task_queue))
+
+    # for i in t:
+    #     i.start()
+
+    # for i in t:
+    #     i.join()
