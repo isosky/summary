@@ -11,6 +11,7 @@ import sys
 from config import mysql_config
 import pymysql
 import time
+from queue import Queue, LifoQueue
 
 
 # 爬所有id，评论，图片放到mysql中
@@ -85,7 +86,10 @@ class database(object):
 
     def add_nga_reply(self, data):
         sql = 'insert into nga_reply (post_id,poster_id,replys,reply_time,reply_content) values (%s,%s,%s,%s,%s) on duplicate key update replys=VALUES(replys)'
-        self.cursor.executemany(sql, data)
+        try:
+            self.cursor.executemany(sql, data)
+        finally:
+            pass
         self.db.commit()
         self.cursor.close()
         self.db.close()
@@ -97,8 +101,26 @@ class database(object):
         self.cursor.close()
         self.db.close()
 
+    def get_nga_post(self):
+        temp = {}
+        sql = 'select post_id from nga_post where is_finish!=1 or is_finish is null'
+        self.cursor.execute(sql)
+        data = self.cursor.fetchall()
+        for i in data:
+            temp[i[0]] = 0
+        sql = 'select post_id,max(replys) as lastnew from nga_reply group by post_id'
+        self.cursor.execute(sql)
+        data = self.cursor.fetchall()
+        for i in data:
+            temp[i[0]] = i[1]
+        self.cursor.close()
+        self.db.close()
+        # for i in temp.keys():
+        #     print(i, temp[i])
+        return temp
 
-def getonepage(tid, page):
+
+def getonepage(tid, page, rp):
     t_url = 'http://bbs.nga.cn/read.php?tid=%s&page=%d' % (
         tid, page)
     print('*' * 10)
@@ -131,7 +153,9 @@ def getonepage(tid, page):
         # 增加主题id
         temp = list(i)
         temp.insert(0, tid)
-        temp_data.append(temp)
+        if int(i[1]) >= rp:
+            temp_data.append(temp)
+        print("经过计算，追加：", len(temp_data))
         # 结束增加
         if pimgs:
             # print(i[1], pimgs)
@@ -172,7 +196,7 @@ def getonepage(tid, page):
     print("抓取结束")
 
 
-def getlist():
+def getlist(page_dict):
     page_url = 'https://bbs.nga.cn/thread.php?fid=-7&page=%d' % (1)
     text = requests.get(page_url, headers=get_headers()
                         ).content.decode('gbk', 'ignore')
@@ -181,6 +205,7 @@ def getlist():
     # print("*" * 10)
     pl = re.compile(r"<td class='c1'><a id='t_rc1_\d*' title='打开新窗口' href='\/read.php\?tid=(\d*)'.*?(\d*)<\/a><\/td>.*?class='topic'>(.*?)</a>(.*?)a href='\/nuke.php\?func=ucp&uid=(\d*)", re.S)
     ps = re.compile(r"class='silver'>(.*?)</a>", re.S)
+    # ['24936998', '99', '[单机向]挂机/放置游戏整理和推荐(更新各游戏图片预览)', '60061086', '游戏综合讨论']
     temp_items = re.findall(pl, text)
     if temp_items:
         items = [list(x) for x in temp_items]
@@ -190,24 +215,54 @@ def getlist():
                 i.append(temp_ps[0][1:-1])
             else:
                 i.append('')
-            del(i[3])
-            # print(i)
+            del (i[3])
+            page_dict[i[0]] = int(i[1])
         db = database()
         db.add_nga_post(items)
 
-        # TODO 增量抓取
-        for i in items:
-            if i[0] == '18809689':
-                continue
-            if int(i[1]) > 2000:
-                continue
-            pages = int(int(i[1]) / 20) + 1
-            print('*' * 10)
-            print('开始抓取：', i[0], '共有：', pages, '页')
-            for p in range(pages):
-                getonepage(i[0], p)
-                time.sleep(5)
+        # TODO 移除无效的page
+
+        # # TODO 增量抓取
+        # for i in items:
+        #     if i[0] == '18809689':
+        #         continue
+        #     if int(i[1]) > 2000:
+        #         continue
+        #     pages = int(int(i[1]) / 20) + 1
+        #     print('*' * 10)
+        #     print('开始抓取：', i[0], '共有：', pages, '页')
+        #     for p in range(pages)[1:]:
+        #         getonepage(i[0], p)
+        #         time.sleep(5)
+
+
+def caltask(pd, tq):
+    db = database()
+    temp = db.get_nga_post()
+    for i in pd.keys():
+        if i in temp.keys():
+            page_min = int(temp[i] / 20) + 1
+            page_max = int(int(pd[i]) / 20) + 1
+            if page_min != page_max:
+                for p in range(page_min, page_max):
+                    tq.put([i, p, temp[i]])
+            else:
+                tq.put([i, page_max, temp[i]])
+        else:
+            page_max = int(int(pd[i]) / 20) + 1
+            for p in range(1, page_max):
+                tq.put([i, p, 0])
 
 
 if __name__ == "__main__":
-    getlist()
+    task_queue = Queue()
+    page_dict = {}
+    getlist(page_dict)
+    caltask(page_dict, task_queue)
+    while not task_queue.empty():
+        print('=' * 10)
+        t = task_queue.get()
+        getonepage(t[0], t[1], t[2])
+        print('=' * 10)
+        print('休息5秒')
+        time.sleep(5)
