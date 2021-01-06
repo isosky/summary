@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import requests
-import time
 import random
 import re
 from multiprocessing.dummy import Pool
@@ -11,6 +10,7 @@ import json
 import sys
 from config import mysql_config
 import pymysql
+import time
 
 
 # 爬所有id，评论，图片放到mysql中
@@ -67,28 +67,54 @@ def strreplace(x):
     return x.strip()
 
 
-def initdb():
-    db = pymysql.connect(
-        host=mysql_config['host'], user=mysql_config['user'], password=mysql_config['passwd'], db=mysql_config['db'], port=mysql_config['port'])
-    cursor = db.cursor()
-    cursor.execute('SELECT VERSION()')
-    data = cursor.fetchone()
-    print('Database version:', data)
-    db.commit()
-    db.close()
+class database(object):
+    def __init__(self):
+        self.db = pymysql.connect(
+            host=mysql_config['host'], user=mysql_config['user'], password=mysql_config['passwd'], db=mysql_config['db'], port=mysql_config['port'])
+        self.cursor = self.db.cursor()
+
+    def add_nga_post(self, data):
+        sql = 'insert into nga_post (post_id,replies,post_title,poster_id,sub) values (%s,%s,%s,%s,%s) on duplicate key update replies=VALUES(replies)'
+        self.cursor.executemany(sql, data)
+        self.db.commit()
+        self.cursor.close()
+        self.db.close()
+
+    def update_nga_post(self, pid, ctime):
+        sql = 'update nga_post set collect_time = %s where post_id =%s' % (
+            ctime, pid)
+        self.cursor.executemany(sql)
+        self.db.commit()
+        self.cursor.close()
+        self.db.close()
+
+    def add_nga_reply(self, data):
+        sql = 'insert into nga_reply (post_id,poster_id,replys,reply_time,reply_content) values (%s,%s,%s,%s,%s) on duplicate key update replys=VALUES(replys)'
+        self.cursor.executemany(sql, data)
+        self.db.commit()
+        self.cursor.close()
+        self.db.close()
+
+    def add_nga_attach(self, data):
+        sql = 'insert into nga_attach (post_id,poster_id,replys,attach_url) values (%s,%s,%s,%s) on duplicate key update replys=VALUES(replys)'
+        self.cursor.executemany(sql, data)
+        self.db.commit()
+        self.cursor.close()
+        self.db.close()
 
 
 def getonepage(tid, page):
     t_url = 'http://bbs.nga.cn/read.php?tid=%s&page=%d' % (
         tid, page)
-    print(t_url)
+    print('*' * 10)
+    print('开始抓取：', t_url)
+    # print(t_url)
     text = requests.get(t_url, headers=get_headers()
                         ).content.decode('gbk', 'ignore')
     with open('ae.html', 'wb') as f:
         f.write(text.encode('utf8'))
     # print("*"*10)
     # with open('ac.html', 'rb') as f:
-    imgs = []
     # text = f.read().decode("utf8")
     # print(text)
     p0 = re.compile(
@@ -98,33 +124,59 @@ def getonepage(tid, page):
     items = re.findall(p0, text)
     if page == 1:
         items.extend(re.findall(p1, text))
-    print(len(items))
-    print("*"*10)
+    print("帖子id:", tid, ',第', page, '页,共有:', len(items), '条')
+    print("*" * 10)
+    temp_data = []
+    imgs = []
     for i in items:
-        time = str(i[2])+':00'
+        # time = str(i[2])+':00'
         comments = strreplace(i[3])
         img0 = re.compile(r"\[img\]([^\[]*)\[\/img\]")
         pimgs = re.findall(img0, comments)
-        print(i)
+        # 增加主题id
+        temp = list(i)
+        temp.insert(0, tid)
+        temp_data.append(temp)
+        # 结束增加
         if pimgs:
-            print(i[1], pimgs)
+            # print(i[1], pimgs)
             if len(pimgs) > 1:
                 for pi in pimgs:
                     if 'attachments' not in pi:
                         temp = attach_url + str(pi[1:])
                     else:
                         temp = pi
-                    imgs.append((i[1], temp))
+                    imgs.append([tid, i[0], i[1], temp])
             else:
                 if 'attachments' not in pimgs[0]:
                     temp = attach_url + str(pimgs[0][1:])
                 else:
                     temp = pimgs[0]
-                imgs.append((i[1], temp))
+                imgs.append([tid, i[0], i[1], temp])
 
     print("*" * 10)
-    for i in imgs:
-        print(i)
+
+    if imgs:
+        # for i in imgs:
+        #     print(i)
+        print("*" * 10)
+        print("增加附件")
+        db = database()
+        db.add_nga_attach(imgs)
+
+    print("*" * 10)
+    print("增加回复")
+    db = database()
+    db.add_nga_reply(temp_data)
+
+    print("*" * 10)
+    print("更新日期")
+    now = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    db = database()
+    db.update_nga_post(tid, now)
+
+    print("*" * 10)
+    print("抓取结束")
 
 
 def getlist():
@@ -145,12 +197,19 @@ def getlist():
                 i.append(temp_ps[0][1:-1])
             else:
                 i.append('')
-            i.append(int(int(i[1]) / 20) + 1)
             del(i[3])
-            print(i)
+            # print(i)
+        db = database()
+        db.add_nga_post(items)
+
+        for i in items:
+            pages = int(int(i[1]) / 20) + 1
+            for p in range(pages):
+                getonepage(i[0], p)
+                time.sleep(5)
 
 
 if __name__ == "__main__":
-    # getonepage(24972648, 1)
-    # getlist()
-    initdb()
+    # getonepage(24975437, 1)
+    # print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    getlist()
