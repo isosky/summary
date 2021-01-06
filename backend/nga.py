@@ -128,11 +128,9 @@ def getonepage(tid, page, rp):
     # print(t_url)
     text = requests.get(t_url, headers=get_headers()
                         ).content.decode('gbk', 'ignore')
-    with open('ae.html', 'wb') as f:
-        f.write(text.encode('utf8'))
-    # print("*"*10)
-    # with open('ac.html', 'rb') as f:
-    # text = f.read().decode("utf8")
+    # with open('ae.html', 'wb') as f:
+    #     f.write(text.encode('utf8'))
+    # return
     # print(text)
     p0 = re.compile(
         r"<span id='posterinfo[^0]\d*' class='posterinfo'>.*?<a href='nuke\.php\?func=ucp&uid=(\d+?)' id='postauthor(\d+).*?title='reply time'>(.*?)</span>.*?<span id='postcontent\d+?' class='postcontent ubbcode'>(.*?)</span>", re.S)
@@ -153,8 +151,12 @@ def getonepage(tid, page, rp):
         # 增加主题id
         temp = list(i)
         temp.insert(0, tid)
+        # ['24912769', '42128530', '11', '2021-01-03 14:09', '有有有 太有了']
+        if sys.getsizeof(temp[4]) > 50000:
+            temp[4] = temp[4][:10000]
         if int(i[1]) >= rp:
             temp_data.append(temp)
+
         # 结束增加
         if pimgs:
             # print(i[1], pimgs)
@@ -227,6 +229,7 @@ def caltask(pd, tq):
     db = database()
     temp = db.get_nga_post()
     for i in pd.keys():
+        # print(i, pd[i])
         if i == '18809689':
             continue
         if int(pd[i]) > 2000:
@@ -273,12 +276,12 @@ if __name__ == "__main__":
     getlist(page_dict)
     caltask(page_dict, task_queue)
     print('queue size is :', task_queue.qsize())
-    # t = []
-    # for i in range(int(task_queue.qsize()/20)):
-    #     t.append(myThread(1, "Thread" + str(i), task_queue))
+    t = []
+    for i in range(int(task_queue.qsize()/20)):
+        t.append(myThread(1, "Thread" + str(i), task_queue))
 
-    # for i in t:
-    #     i.start()
+    for i in t:
+        i.start()
 
-    # for i in t:
-    #     i.join()
+    for i in t:
+        i.join()
