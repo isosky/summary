@@ -103,16 +103,16 @@ class database(object):
 
     def get_nga_post(self):
         temp = {}
-        sql = 'select post_id from nga_post where collect_time is null'
+        sql = 'select post_id,replies from nga_post where is_finish is null'
         self.cursor.execute(sql)
         data = self.cursor.fetchall()
         for i in data:
-            temp[i[0]] = 0
+            temp[i[0]] = {'max': i[1], 'min': 0}
         sql = 'select post_id,max(replys) as lastnew from nga_reply group by post_id'
         self.cursor.execute(sql)
         data = self.cursor.fetchall()
         for i in data:
-            temp[i[0]] = i[1]
+            temp[i[0]]['min'] = i[1]
         self.cursor.close()
         self.db.close()
         # for i in temp.keys():
@@ -198,7 +198,7 @@ def getonepage(tid, page, rp):
     print("抓取结束")
 
 
-def getlist(page_dict):
+def getlist():
     page_url = 'https://bbs.nga.cn/thread.php?fid=-7&page=%d' % (1)
     text = requests.get(page_url, headers=get_headers()
                         ).content.decode('gbk', 'ignore')
@@ -218,39 +218,27 @@ def getlist(page_dict):
             else:
                 i.append('')
             del (i[3])
-            page_dict[i[0]] = int(i[1])
+            # page_dict[i[0]] = int(i[1])
         db = database()
         db.add_nga_post(items)
 
         # TODO 移除无效的page
 
 
-def caltask(pd, tq):
+# 当前量和采集量之间的差距
+# 采集的时候，可能大于的
+def caltask(tq):
     db = database()
     temp = db.get_nga_post()
-    for i in pd.keys():
-        # print(i, pd[i])
-        if i == '18809689':
-            continue
-        if int(pd[i]) > 2000:
-            continue
-        if i in temp.keys():
-            page_min = int(temp[i] / 20) + 1
-            page_max = int(int(pd[i]) / 20) + 1
-            if page_min != page_max:
-                for p in range(page_min, page_max):
-                    tq.put([i, p, temp[i]])
-            else:
-                tq.put([i, page_max, temp[i]])
-        else:
-            page_max = int(int(pd[i]) / 20) + 1
-            for p in range(1, page_max):
-                tq.put([i, p, 0])
     for i in temp.keys():
-        if i not in pd.keys():
-            page_max = int(int(temp[i]) / 20) + 1
-            for p in range(1, page_max):
-                tq.put([i, p, 0])
+        if temp[i]['max'] > 3000:
+            continue
+        if temp[i]['min'] == temp[i]['max']:
+            continue
+        page_min = int(temp[i]['min'] / 20) + 1
+        page_max = int(temp[i]['max'] / 20) + 2
+        for p in range(page_min, page_max):
+            tq.put([i, p, temp[i]['min']])
 
 
 class myThread(threading.Thread):
@@ -268,16 +256,26 @@ class myThread(threading.Thread):
             print('=' * 10)
             print('休息5秒')
             time.sleep(5)
+        print("="*20)
+        print("结束线程：" + self.name)
+        print("="*20)
+
+
+def testss(tq):
+    while not tq.empty():
+        i = tq.get()
+        if i[0] == '24992995':
+            print('1')
 
 
 if __name__ == "__main__":
     task_queue = Queue()
-    page_dict = {}
-    getlist(page_dict)
-    caltask(page_dict, task_queue)
+    getlist()
+    caltask(task_queue)
     print('queue size is :', task_queue.qsize())
+    # testss(task_queue)
     t = []
-    for i in range(int(task_queue.qsize()/20)):
+    for i in range(int(task_queue.qsize()/30)):
         t.append(myThread(1, "Thread" + str(i), task_queue))
 
     for i in t:
@@ -285,3 +283,5 @@ if __name__ == "__main__":
 
     for i in t:
         i.join()
+
+    # getonepage('19317848', 1, 0)

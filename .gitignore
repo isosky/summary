@@ -120,3 +120,4 @@ yys*.py
 
 backend/nohup.out
 backend/start.sh
+backend/config.py
