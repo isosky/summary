@@ -75,10 +75,13 @@ class database(object):
         self.cursor.close()
         self.db.close()
 
-    def update_nga_post(self, pid, ctime):
+    def update_nga_post(self, pid, ctime, mr):
         sql = "update nga_post set collect_time = '%s' where post_id =%s" % (
             ctime, pid)
         # print(sql)
+        self.cursor.execute(sql)
+        sql = "update nga_post set replies = case when replies > %s then replies else %s end where post_id = '%s';" % (
+            mr, mr, pid)
         self.cursor.execute(sql)
         self.db.commit()
         self.cursor.close()
@@ -143,6 +146,7 @@ def getonepage(tid, page, rp):
     print("*" * 10)
     temp_data = []
     imgs = []
+    mr = 0
     for i in items:
         # time = str(i[2])+':00'
         comments = strreplace(i[3])
@@ -154,9 +158,9 @@ def getonepage(tid, page, rp):
         # ['24912769', '42128530', '11', '2021-01-03 14:09', '有有有 太有了']
         if sys.getsizeof(temp[4]) > 50000:
             temp[4] = temp[4][:10000]
-        if int(i[1]) >= rp:
+        if int(i[1]) > rp or i[1] == 0:
             temp_data.append(temp)
-
+        mr = max(int(i[1]), rp)
         # 结束增加
         if pimgs:
             # print(i[1], pimgs)
@@ -176,23 +180,26 @@ def getonepage(tid, page, rp):
 
     print("*" * 10)
 
+    # 将图片资源写入到mysql中
     if imgs:
         print("*" * 10)
         print("增加 %s 附件，总计 %s " % (tid, str(len(imgs))))
         db = database()
         db.add_nga_attach(imgs)
 
+    # 将回复写入到mysql中
     print("*" * 10)
     print("增加 %s 回复" % (tid))
     print("经过计算，追加：", len(temp_data))
     db = database()
     db.add_nga_reply(temp_data)
 
+    # 更新列表
     print("*" * 10)
     print("更新 %s 日期" % (tid))
     now = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
     db = database()
-    db.update_nga_post(tid, now)
+    db.update_nga_post(tid, now, mr)
 
     print("*" * 10)
     print("抓取结束")
@@ -233,7 +240,7 @@ def caltask(tq):
     for i in temp.keys():
         if temp[i]['max'] > 3000:
             continue
-        if temp[i]['min'] == temp[i]['max']:
+        if temp[i]['min'] == temp[i]['max'] and temp[i]['max'] != 0:
             continue
         page_min = int(temp[i]['min'] / 20) + 1
         page_max = int(temp[i]['max'] / 20) + 2
@@ -241,7 +248,7 @@ def caltask(tq):
             tq.put([i, p, temp[i]['min']])
 
 
-class myThread(threading.Thread):
+class costThread(threading.Thread):
     def __init__(self, threadID, name, tq):
         threading.Thread.__init__(self)
         self.threadID = threadID
@@ -252,36 +259,55 @@ class myThread(threading.Thread):
         while not self.task_queue.empty():
             print("开始线程：" + self.name)
             t = self.task_queue.get()
+            print(self.name, '还有', self.task_queue.qsize(), '个任务')
             getonepage(t[0], t[1], t[2])
             print('=' * 10)
-            print('休息5秒')
-            time.sleep(5)
+            print('休息10秒')
+            time.sleep(10)
+            if self.task_queue.qsize() < 20:
+                print(self.name, "等待休眠")
+                time.sleep(60)
         print("="*20)
-        print("结束线程：" + self.name)
+        print("结束线程：" + self.name, "还有多少个任务", self.task_queue.qsize())
         print("="*20)
 
 
-def testss(tq):
-    while not tq.empty():
-        i = tq.get()
-        if i[0] == '24992995':
-            print('1')
+class postThread(threading.Thread):
+    def __init__(self, threadID, name, tq):
+        threading.Thread.__init__(self)
+        self.threadID = threadID
+        self.name = name
+        self.task_queue = tq
+
+    def run(self):
+        while self.task_queue.qsize() < 40:
+            print("~"*20)
+            getlist()
+            caltask(self.task_queue)
+            print("当前任务数量为：", self.task_queue.qsize(), '开始休眠')
+            time.sleep(self.task_queue.qsize())
+            print("当前任务数量为：", self.task_queue.qsize())
+            print("~"*20)
 
 
 if __name__ == "__main__":
     task_queue = Queue()
-    getlist()
-    caltask(task_queue)
+    # getlist()
+    # caltask(task_queue)
     print('queue size is :', task_queue.qsize())
     # testss(task_queue)
-    t = []
-    for i in range(int(task_queue.qsize()/30)):
-        t.append(myThread(1, "Thread" + str(i), task_queue))
+    t = [postThread(99, 'post', task_queue)]
+    print("准备启动：10 个线程")
+    for i in range(10):
+        t.append(costThread(i, "Thread" + str(i), task_queue))
 
+    time.sleep(5)
     for i in t:
+        i.setDaemon(True)
         i.start()
+        time.sleep(0.5)
 
     for i in t:
         i.join()
 
-    # getonepage('19317848', 1, 0)
+    # getonepage('25003227', 1, 0)
