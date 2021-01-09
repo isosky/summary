@@ -102,7 +102,7 @@ class database(object):
         sql = 'insert into nga_attach (post_id,poster_id,replys,attach_url) values (%s,%s,%s,%s) on duplicate key update replys=VALUES(replys)'
         for i in data:
             try:
-                self.cursor.executemany(sql, data[i])
+                self.cursor.executemany(sql, i)
                 self.db.commit()
             except Exception as identifier:
                 print(identifier)
