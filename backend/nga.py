@@ -8,7 +8,8 @@ import threading
 import csv
 import json
 import sys
-from config import mysql_config
+import os
+from config import mysql_config, img_path
 import pymysql
 import time
 from queue import Queue, LifoQueue
@@ -121,6 +122,21 @@ class database(object):
         # for i in temp.keys():
         #     print(i, temp[i])
         return temp
+
+    def get_nga_attach(self, tq):
+        sql = 'select distinct attach_url from nga_attach where is_download=0'
+        self.cursor.execute(sql)
+        data = self.cursor.fetchall()
+        for i in data:
+            tq.put(i[0])
+
+    def update_nga_attach(self, img_url):
+        sql = "update nga_attach set is_download=1 where attach_url='%s'" % (
+            img_url)
+        self.cursor.execute(sql)
+        self.db.commit()
+        self.cursor.close()
+        self.db.close()
 
 
 def getonepage(tid, page, rp):
@@ -290,18 +306,97 @@ class postThread(threading.Thread):
             print("~"*20)
 
 
-if __name__ == "__main__":
-    task_queue = Queue()
-    # getlist()
-    # caltask(task_queue)
-    print('queue size is :', task_queue.qsize())
-    # testss(task_queue)
-    t = [postThread(99, 'post', task_queue)]
-    print("准备启动：10 个线程")
-    for i in range(10):
-        t.append(costThread(i, "Thread" + str(i), task_queue))
+def getoneimg(img_url):
+    temp = img_url.split('/')
+    temp_dir = os.path.join(img_path, temp[4])
+    if not os.path.exists(temp_dir):
+        os.mkdir(temp_dir)
 
-    time.sleep(5)
+    tg = requests.get(img_url)
+    # print(tg)
+    if tg.status_code == 200:
+        text = tg.content
+        with open(os.path.join(temp_dir, temp[-1]), 'wb') as f:
+            f.write(text)
+        db = database()
+        db.update_nga_attach(img_url)
+
+
+class imggetThread(threading.Thread):
+    def __init__(self, threadID, name, tq):
+        threading.Thread.__init__(self)
+        self.threadID = threadID
+        self.name = name
+        self.task_queue = tq
+
+    def run(self):
+        while True:
+            if not self.task_queue.empty():
+                print(self.name, "当前任务数量为：", self.task_queue.qsize(), '开始抓取')
+                temp = self.task_queue.get()
+                getoneimg(temp)
+                time.sleep(10)
+            # print("当前任务数量为：", self.task_queue.qsize(), '开始休眠')
+            # time.sleep(10)
+
+
+class imgpostThread(threading.Thread):
+    def __init__(self, threadID, name, tq):
+        threading.Thread.__init__(self)
+        self.threadID = threadID
+        self.name = name
+        self.task_queue = tq
+
+    def run(self):
+        while True:
+            if self.task_queue.empty():
+                print(self.name, "当前任务数量为：", self.task_queue.qsize(), '开始获得任务')
+                db = database()
+                db.get_nga_attach(self.task_queue)
+                print(self.name, "当前任务数量为：", self.task_queue.qsize(), '开始抓取')
+                # temp = img_queue.get()
+                # print(temp)
+            print("当前任务数量为：", self.task_queue.qsize(), '开始休眠')
+            time.sleep(10)
+
+
+if __name__ == "__main__":
+    # task_queue = Queue()
+    # # getlist()
+    # # caltask(task_queue)
+    # print('queue size is :', task_queue.qsize())
+    # # testss(task_queue)
+    # t = [postThread(99, 'post', task_queue)]
+    # print("准备启动：10 个线程")
+    # for i in range(10):
+    #     t.append(costThread(i, "Thread" + str(i), task_queue))
+
+    # time.sleep(5)
+    # for i in t:
+    #     i.setDaemon(True)
+    #     i.start()
+    #     time.sleep(0.5)
+
+    # for i in t:
+    #     i.join()
+
+    # getonepage('25003227', 1, 0)
+
+    # test_url = 'https://img.nga.178.com/attachments/mon_201904/09/bwQ5-3k68X15ZbaT3cSb4-69.gif'
+    # getoneimg(test_url)
+    img_queue = Queue()
+    t = [imgpostThread(90, 'get img', img_queue)]
+
+    # t[0].setDaemon(True)
+    # t[0].start()
+    # time.sleep(5)
+
+    # temp = img_queue.get()
+    # print(temp)
+
+    for i in range(31, 41):
+        t.append(imggetThread(i, "Thread" + str(i), img_queue))
+
     for i in t:
         i.setDaemon(True)
         i.start()
@@ -309,5 +404,3 @@ if __name__ == "__main__":
 
     for i in t:
         i.join()
-
-    # getonepage('25003227', 1, 0)
