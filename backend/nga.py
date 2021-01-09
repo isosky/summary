@@ -102,6 +102,7 @@ class database(object):
         sql = 'insert into nga_attach (post_id,poster_id,replys,attach_url) values (%s,%s,%s,%s) on duplicate key update replys=VALUES(replys)'
         for i in data:
             try:
+                print(i)
                 self.cursor.executemany(sql, i)
                 self.db.commit()
             except Exception as identifier:
@@ -371,9 +372,9 @@ if __name__ == "__main__":
     t = [postThread(99, 'post', task_queue)]
     t.append(imgpostThread(90, 'get img', img_queue))
 
-    print("准备启动：5 个|抓图|线程")
-    for i in range(31, 41):
-        t.append(imggetThread(i, "Thread" + str(i), img_queue))
+    # print("准备启动：5 个|抓图|线程")
+    # for i in range(31, 36):
+    #     t.append(imggetThread(i, "Thread" + str(i), img_queue))
 
     print("准备启动：10 个|抓帖子|线程")
     for i in range(10):
