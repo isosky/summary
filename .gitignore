@@ -109,3 +109,15 @@ venv.bak/
 
 
 temp.py
+
+*.json
+*.jpg
+*.png
+
+yys*.py
+
+
+
+backend/nohup.out
+backend/start.sh
+backend/config.py

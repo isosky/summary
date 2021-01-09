@@ -1,14 +1,21 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+# import getlockscreen as ls
 import json
 
 from flask import Flask, render_template, request
 from flask_cors import CORS
 
 import dboo as dboo
+import dboo_yys as dboo_yys
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
 
 # TODO 将所有的json格式化放到app.py里面
+
+
 @app.route('/')
 def mainroute():
     return render_template("index.html")
@@ -17,47 +24,6 @@ def mainroute():
 @app.route('/data_add')
 def data_add():
     return render_template("data_add.html")
-
-
-@app.route('/data_add_v', methods=['POST'])
-def data_add_v():
-    # print(request.get_data())
-    json_data = json.loads(request.get_data())
-    arg_data = json_data['data']
-    arg_type = json_data['type']
-    # print(arg_data, arg_type)
-    if arg_type == 'step':
-        if arg_data:
-            temp = arg_data.split(';')
-            # result = []
-            for i in temp:
-                ttt = i.split(',')
-                # print(ttt)
-                if len(ttt) > 1:
-                    dboo.step_add_one(ttt[0], ttt[1])
-        return json.dumps({"result": dboo.getstep()})
-    if arg_type == 'weight':
-        if arg_data:
-            temp = arg_data.split(';')
-            # result = []
-            for i in temp:
-                ttt = i.split(',')
-                # print(ttt)
-                if len(ttt) > 1:
-                    dboo.weight_add_one(ttt[0], ttt[1])
-        return json.dumps({"result": dboo.getweight()})
-
-
-@app.route('/getstep')
-def getstep():
-    temp = dboo.getstep(False)
-    return json.dumps(temp)
-
-
-@app.route('/getweight')
-def getweight():
-    temp = dboo.getweight(False)
-    return json.dumps(temp)
 
 
 @app.route('/addtask', methods=['POST'])
@@ -108,11 +74,6 @@ def deletetask():
     return json.dumps({'result': True})
 
 
-@app.route('/gettasksummary')
-def gettasksummary():
-    return dboo.gettasksummary()
-
-
 @app.route('/querytask', methods=['POST'])
 def querytask():
     json_data = json.loads(request.get_data())
@@ -157,6 +118,7 @@ def addprocess():
 
 
 # 更新
+# TODO 把这个任务的最新状态反馈一下
 @app.route('/getprocess', methods=['POST'])
 def getprocess():
     json_data = json.loads(request.get_data())
@@ -183,9 +145,19 @@ def finishprocess():
     return json.dumps({'status': dboo.finishprocess(process_id)})
 
 
+@app.route('/updateprocess', methods=['POST'])
+def updateprocess():
+    json_data = json.loads(request.get_data())
+    process_id = json_data['process_id']
+    content = json_data['content']
+    # print(process_id)
+    return json.dumps({'status': dboo.updateprocess(process_id, content)})
+
 # #####################################
 # 定义schedule的函数
 # #####################################
+
+
 @app.route('/initschedule')
 def initschedule():
     return json.dumps(dboo.initschedule())
@@ -246,5 +218,73 @@ def modifyschedule():
     return json.dumps({'status': dboo.modifyschedule(schedule_id, subject, subsub, schedule_type, schedule_frequence, content)})
 
 
+# #####################################
+# 定义schedule的函数
+# #####################################
+@app.route('/setiswork', methods=['POST'])
+def setiswork():
+    json_data = json.loads(request.get_data())
+    iswork = json_data['iswork']
+    dboo.setiswork(iswork)
+    return json.dumps({'result': True})
+
+
+@app.route('/getiswork')
+def getiswork():
+    res = dboo.getiswork()
+    return json.dumps({'iswork': res})
+
+
+# #####################################
+# 定义yys的函数
+# #####################################
+@app.route('/yys_getyhscore')
+def yys_getyhscore():
+    res = dboo_yys.getyhscore()
+    return json.dumps(res)
+
+
+@app.route('/yys_getyhtypescore')
+def yys_getyhtypescore():
+    res = dboo_yys.getyhtypescore()
+    return json.dumps(res)
+
+
+@app.route('/yys_getyhtypenum')
+def yys_getyhtypenum():
+    res = dboo_yys.getyhtypenum()
+    return json.dumps(res)
+
+
+@app.route('/yys_getyhtypesunburst')
+def yys_getyhtypesunburst():
+    res = dboo_yys.getyhtypesunburst()
+    return json.dumps(res)
+
+
+@app.route('/yys_getyysrole')
+def yys_getyysrole():
+    res = dboo_yys.getyysrole()
+    return json.dumps(res)
+
+
+# #####################################
+# 定义全局的函数
+# #####################################
+@app.route('/getfirstpage')
+def getfirstpage():
+    res = dboo.getfirstpage()
+    return json.dumps(res)
+
+
+@app.route('/setfirstpage', methods=['POST'])
+def setfirstpage():
+    json_data = json.loads(request.get_data())
+    firstpage = json_data['firstpage']
+    dboo.setfirstpage(firstpage)
+    return json.dumps({'result': True})
+
+
 if __name__ == '__main__':
-    app.run()
+    # ls.getlocksreen()
+    app.run(host='0.0.0.0', port=5000, debug=True)
