@@ -100,8 +100,14 @@ class database(object):
 
     def add_nga_attach(self, data):
         sql = 'insert into nga_attach (post_id,poster_id,replys,attach_url) values (%s,%s,%s,%s) on duplicate key update replys=VALUES(replys)'
-        self.cursor.executemany(sql, data)
-        self.db.commit()
+        for i in data:
+            try:
+                self.cursor.executemany(sql, data[i])
+                self.db.commit()
+            except Exception as identifier:
+                print(identifier)
+            finally:
+                self.db.commit()
         self.cursor.close()
         self.db.close()
 
@@ -142,9 +148,10 @@ class database(object):
 def getonepage(tid, page, rp):
     t_url = 'http://bbs.nga.cn/read.php?tid=%s&page=%d' % (
         tid, page)
-    print('*' * 10)
+    # print('*' * 10)
     print('开始抓取：', t_url)
     # print(t_url)
+    # TODO 增加爬取结果的校验
     text = requests.get(t_url, headers=get_headers()
                         ).content.decode('gbk', 'ignore')
     # with open('ae.html', 'wb') as f:
@@ -158,8 +165,8 @@ def getonepage(tid, page, rp):
     items = re.findall(p0, text)
     if page == 1:
         items.extend(re.findall(p1, text))
-    print("帖子id:", tid, ',第', page, '页,共有:', len(items), '条')
-    print("*" * 10)
+    # print("帖子id:", tid, ',第', page, '页,共有:', len(items), '条')
+    # print("*" * 10)
     temp_data = []
     imgs = []
     mr = 0
@@ -194,31 +201,31 @@ def getonepage(tid, page, rp):
                     temp = pimgs[0]
                 imgs.append([tid, i[0], i[1], temp])
 
-    print("*" * 10)
+    # print("*" * 10)
 
     # 将图片资源写入到mysql中
     if imgs:
-        print("*" * 10)
-        print("增加 %s 附件，总计 %s " % (tid, str(len(imgs))))
+        # print("*" * 10)
+        # print("增加 %s 附件，总计 %s " % (tid, str(len(imgs))))
         db = database()
         db.add_nga_attach(imgs)
 
     # 将回复写入到mysql中
-    print("*" * 10)
-    print("增加 %s 回复" % (tid))
-    print("经过计算，追加：", len(temp_data))
+    # print("*" * 10)
+    # print("增加 %s 回复" % (tid))
+    # print("经过计算，追加：", len(temp_data))
     db = database()
     db.add_nga_reply(temp_data)
 
     # 更新列表
-    print("*" * 10)
-    print("更新 %s 日期" % (tid))
+    # print("*" * 10)
+    # print("更新 %s 日期" % (tid))
     now = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
     db = database()
     db.update_nga_post(tid, now, mr)
 
-    print("*" * 10)
-    print("抓取结束")
+    # print("*" * 10)
+    # print("抓取结束")
 
 
 def getlist():
@@ -272,20 +279,15 @@ class costThread(threading.Thread):
         self.task_queue = tq
 
     def run(self):
-        while not self.task_queue.empty():
+        while True:
             print("开始线程：" + self.name)
-            t = self.task_queue.get()
-            print(self.name, '还有', self.task_queue.qsize(), '个任务')
-            getonepage(t[0], t[1], t[2])
-            print('=' * 10)
-            print('休息10秒')
-            time.sleep(10)
-            if self.task_queue.qsize() < 20:
-                print(self.name, "等待休眠")
-                time.sleep(60)
-        print("="*20)
-        print("结束线程：" + self.name, "还有多少个任务", self.task_queue.qsize())
-        print("="*20)
+            if self.task_queue.qsize() > 20:
+                t = self.task_queue.get()
+                print(self.name, '还有', self.task_queue.qsize(), '个任务')
+                getonepage(t[0], t[1], t[2])
+                time.sleep(10)
+            print(self.name, "等待休眠")
+            time.sleep(60)
 
 
 class postThread(threading.Thread):
@@ -296,14 +298,14 @@ class postThread(threading.Thread):
         self.task_queue = tq
 
     def run(self):
-        while self.task_queue.qsize() < 40:
-            print("~"*20)
-            getlist()
-            caltask(self.task_queue)
-            print("当前任务数量为：", self.task_queue.qsize(), '开始休眠')
-            time.sleep(self.task_queue.qsize())
-            print("当前任务数量为：", self.task_queue.qsize())
-            print("~"*20)
+        while True:
+            if self.task_queue.qsize() < 40:
+                print("~"*20)
+                getlist()
+                caltask(self.task_queue)
+                print("当前任务数量为：", self.task_queue.qsize(), '开始休眠')
+                print("~" * 20)
+            time.sleep(20)
 
 
 def getoneimg(img_url):
@@ -361,41 +363,21 @@ class imgpostThread(threading.Thread):
 
 
 if __name__ == "__main__":
-    # task_queue = Queue()
-    # # getlist()
-    # # caltask(task_queue)
-    # print('queue size is :', task_queue.qsize())
-    # # testss(task_queue)
-    # t = [postThread(99, 'post', task_queue)]
-    # print("准备启动：10 个线程")
-    # for i in range(10):
-    #     t.append(costThread(i, "Thread" + str(i), task_queue))
-
-    # time.sleep(5)
-    # for i in t:
-    #     i.setDaemon(True)
-    #     i.start()
-    #     time.sleep(0.5)
-
-    # for i in t:
-    #     i.join()
-
-    # getonepage('25003227', 1, 0)
-
-    # test_url = 'https://img.nga.178.com/attachments/mon_201904/09/bwQ5-3k68X15ZbaT3cSb4-69.gif'
-    # getoneimg(test_url)
+    task_queue = Queue()
     img_queue = Queue()
-    t = [imgpostThread(90, 'get img', img_queue)]
+    getlist()
+    caltask(task_queue)
+    print('queue size is :', task_queue.qsize())
+    t = [postThread(99, 'post', task_queue)]
+    t.append(imgpostThread(90, 'get img', img_queue))
 
-    # t[0].setDaemon(True)
-    # t[0].start()
-    # time.sleep(5)
-
-    # temp = img_queue.get()
-    # print(temp)
-
+    print("准备启动：5 个|抓图|线程")
     for i in range(31, 41):
         t.append(imggetThread(i, "Thread" + str(i), img_queue))
+
+    print("准备启动：10 个|抓帖子|线程")
+    for i in range(10):
+        t.append(costThread(i, "Thread" + str(i), task_queue))
 
     for i in t:
         i.setDaemon(True)
