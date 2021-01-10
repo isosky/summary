@@ -624,8 +624,8 @@ def modifyschedule(schedule_id, subject, subsub, schedule_type, schedule_frequen
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
     netxtime = schedulecalnexttime(schedule_type, schedule_frequence, None)
-    c.execute("update schedule set subject=?,subsub=?,schedule_type=?,schedule_frequence=?,nexttime=? where schedule_id=?", [
-              subject, subsub, schedule_type, schedule_frequence, netxtime, schedule_id])
+    c.execute("update schedule set subject=?,subsub=?,schedule_type=?,schedule_frequence=?,nexttime=?,content=? where schedule_id=?", [
+              subject, subsub, schedule_type, schedule_frequence, netxtime, content, schedule_id])
     conn.commit()
     conn.close()
     return True
