@@ -23,9 +23,8 @@ CREATE table nga_attach(
     post_id varchar(200) COMMENT 'id',
     poster_id VARCHAR(15) COMMENT '回复id',
     replys INT COMMENT '楼层',
-    attach_url varchar(100) COMMENT '附件链接',
-    is_download INT default 0 COMMENT '是否下载',
-    PRIMARY KEY (post_id, replys, attach_url)
+    attach_url varchar(100) PRIMARY KEY COMMENT '附件链接',
+    is_download INT default 0 COMMENT '是否下载'
 );
 -- insert into nga_post (post_id,replies,post_title,poster_id,sub) values ('24978680',123,'','','') 
 -- on duplicate key update replies=VALUES(replies);
