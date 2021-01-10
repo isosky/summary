@@ -598,6 +598,16 @@ export default {
         renderer: "canvas",
       }
     );
+    this.tasksummary_chart.on("click", function (params) {
+      console.log(params["name"]);
+      let temp = params["name"];
+      // subject: this.task_select,
+      // subsub: this.task_sub_select,
+      that.task_select = temp.split("-")[0];
+      that.task_sub_select = temp.split("-")[1];
+      // that.query_date = params["data"][0];
+      that.querytask(true);
+    });
     this.tasksummary_pie_chart = echarts.init(
       document.getElementById("task_pie_summary"),
       "white",
