@@ -521,6 +521,9 @@ export default {
       tableData: [],
       tableprocess: [],
 
+      //
+      query_date: "",
+
       // 查询
       pickerOptions: {
         shortcuts: [
@@ -577,10 +580,16 @@ export default {
   },
   mounted: function () {
     console.log(this);
+    let that = this;
     // console.log('asdasdasda');
     // console.log(this.tableData);
     this.task_chart = echarts.init(document.getElementById("b_task"), "white", {
       renderer: "canvas",
+    });
+    this.task_chart.on("click", function (params) {
+      // console.log(params["data"][0]);
+      that.query_date = params["data"][0];
+      that.querytask(true);
     });
     this.tasksummary_chart = echarts.init(
       document.getElementById("task_summary"),
@@ -602,6 +611,7 @@ export default {
     freshright: function (event) {
       this.initoption();
       this.setbar();
+      this.query_date = "";
       this.settasksummary_bar();
       this.querytask(false);
     },
@@ -749,12 +759,12 @@ export default {
       } else {
         isqueryall = this.isqueryall;
       }
-
       axios
         .post("/querytask", {
           query: this.task_title,
           subject: this.task_select,
           subsub: this.task_sub_select,
+          qt: this.query_date,
           isqueryall: isqueryall,
         })
         .then((response) => {

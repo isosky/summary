@@ -9,8 +9,8 @@ import sqlite3
 import time
 import calendar
 
-if os.path.exists("C:/Users/isowang/OneDrive/文档/tmss.db"):
-    dbf = "C:/Users/isowang/OneDrive/文档/tmss.db"
+if os.path.exists("F:/OneDrive/文档/tmss.db"):
+    dbf = "F:/OneDrive/文档/tmss.db"
 elif os.path.exists("C:/Users/fengy/OneDrive/文档/tmss.db"):
     dbf = "C:/Users/fengy/OneDrive/文档/tmss.db"
 else:
@@ -20,10 +20,11 @@ iswork = None
 # TODO 要放到数据库里面
 subject_work = {'游戏': 0, '自己': 0, '学习': 1, '项目': 1, '公司': 1, '产品': 1}
 
-
 # #####################################
 # 定义全局的函数
 # #####################################
+
+
 def getfirstpage():
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
@@ -223,7 +224,7 @@ def gettasksummary():
     return json.dumps({'res_delay': res_delay, 'res_today': res_today, 'res_todo': res_todo})
 
 
-def querytask(query, subject, subsub, isqueryall):
+def querytask(query, subject, subsub, qt, isqueryall):
     global iswork
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
@@ -238,9 +239,16 @@ def querytask(query, subject, subsub, isqueryall):
     if subsub != '':
         sql += " and subsub=? "
         params_list.append(subsub)
+    if qt != '':
+        sql += " and ftime like ?"
+        qt = '%'+qt+'%'
+        params_list.append(qt)
 
     sql += " and iswork>=? order by etime,task_id"
     params_list.append(iswork)
+    # print('*'*10)
+    # print(sql)
+    # print(params_list)
     cursor = c.execute(sql, params_list)
     # 得到所有进展清单
     process = getallprocess()
@@ -250,6 +258,7 @@ def querytask(query, subject, subsub, isqueryall):
                 'title': row[3], 'etime': row[4][5:], 'stime': row[5], 'tetime': row[4], 'isfinish': row[6]}
         if row[0] in process.keys():
             temp['num_process'] = process[row[0]]
+        # print(temp)
         result.append(temp)
     # temp = cursor
     conn.close()
@@ -661,6 +670,6 @@ def setiswork(isw):
 
 if __name__ == '__main__':
     getiswork()
-    print(gettasksummary_bar())
+    print(querytask('', '', '', '2021-01-03', True))
 else:
     getiswork()
