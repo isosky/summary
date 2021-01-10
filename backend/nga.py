@@ -152,8 +152,15 @@ def getonepage(tid, page, rp):
     print('开始抓取：', t_url)
     # print(t_url)
     # TODO 增加爬取结果的校验
-    text = requests.get(t_url, headers=get_headers()
-                        ).content.decode('gbk', 'ignore')
+    try:
+        text = requests.get(t_url, headers=get_headers()
+                            ).content.decode('gbk', 'ignore')
+    except Exception as identifier:
+        print(identifier)
+        return
+    finally:
+        pass
+
     # with open('ae.html', 'wb') as f:
     #     f.write(text.encode('utf8'))
     # return
@@ -315,14 +322,20 @@ def getoneimg(img_url):
     if not os.path.exists(temp_dir):
         os.mkdir(temp_dir)
 
-    tg = requests.get(img_url)
+    try:
+        tg = requests.get(img_url)
+        if tg.status_code == 200:
+            text = tg.content
+            with open(os.path.join(temp_dir, temp[-1]), 'wb') as f:
+                f.write(text)
+            db = database()
+            db.update_nga_attach(img_url)
+    except Exception as identifier:
+        print(identifier)
+    finally:
+        return
+
     # print(tg)
-    if tg.status_code == 200:
-        text = tg.content
-        with open(os.path.join(temp_dir, temp[-1]), 'wb') as f:
-            f.write(text)
-        db = database()
-        db.update_nga_attach(img_url)
 
 
 class imggetThread(threading.Thread):
