@@ -626,6 +626,8 @@ def modifyschedule(schedule_id, subject, subsub, schedule_type, schedule_frequen
     netxtime = schedulecalnexttime(schedule_type, schedule_frequence, None)
     c.execute("update schedule set subject=?,subsub=?,schedule_type=?,schedule_frequence=?,nexttime=?,content=? where schedule_id=?", [
               subject, subsub, schedule_type, schedule_frequence, netxtime, content, schedule_id])
+    c.execute(
+        "update task set title=? where task_id in (select task_id from schedule_task where schedule_id=?)", [content, schedule_id])
     conn.commit()
     conn.close()
     return True
