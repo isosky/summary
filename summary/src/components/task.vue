@@ -621,6 +621,9 @@ export default {
     freshright: function (event) {
       this.initoption();
       this.setbar();
+      this.task_title = "";
+      this.task_select = "";
+      this.task_sub_select = "";
       this.query_date = "";
       this.settasksummary_bar();
       this.querytask(false);
