@@ -18,14 +18,14 @@ const routes = [{
   path: '/task',
   component: task
 },
-{
-  path: '/yysyh',
-  component: yysyh
-},
-{
-  path: '/yyshero',
-  component: yyshero
-},
+// {
+//   path: '/yysyh',
+//   component: yysyh
+// },
+// {
+//   path: '/yyshero',
+//   component: yyshero
+// },
 {
   path: '/schedule',
   component: schedule

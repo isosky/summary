@@ -220,7 +220,7 @@ def modifyschedule():
 
 
 # #####################################
-# 定义schedule的函数
+# 定义sys的函数
 # #####################################
 @app.route('/setiswork', methods=['POST'])
 def setiswork():
