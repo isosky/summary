@@ -84,7 +84,7 @@
         >
           <el-button @click="resetall">重置</el-button>
         </el-col>
-        <div class="grid-content bg-purple">
+        <div class="grid-content">
           <el-table
             :data="tableData"
             border

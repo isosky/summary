@@ -13,14 +13,6 @@
               <i class="el-icon-s-claim"></i>
               <span slot="title">任务管理</span>
             </el-menu-item>
-            <!-- <el-menu-item index="2">
-              <i class="el-icon-s-data"></i>
-              <span slot="title">yys御魂</span>
-            </el-menu-item>
-            <el-menu-item index="3">
-              <i class="el-icon-aim"></i>
-              <span slot="title">yys角色</span> -->
-            </el-menu-item>
             <el-menu-item index="2">
               <i class="el-icon-time"></i>
               <span slot="title">定时任务</span>
