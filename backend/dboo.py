@@ -106,10 +106,10 @@ def getallprocess():
     c = conn.cursor()
 
     cursor = c.execute(
-        "select task_id,count(*) from task_process group by task_id")
+        "select task_id,count(*) from task_process where  isfinish=0 group by task_id")
     pfa = dict(cursor)
     cursor = c.execute(
-        "select task_id,count(*) from task_process where isfinish=1 group by task_id")
+        "select task_id,count(*) from task_process where isfinish=1  and  isfinish=0 group by task_id")
     pff = dict(cursor)
     result = {}
     for i in pfa.keys():
@@ -321,14 +321,14 @@ def gettasksummary_bar():
 
     # normal
     cursor = c.execute(
-        "select subject,subsub,count(*) from task where ftime<date(etime,'+1 day') and isfinish=1 and iswork>=? and etime>? group by subject,subsub", [iswork, t])
+        "select subject,subsub,count(*) from task where ftime<date(etime,'+1 day') and isabandon=0 and isfinish=1 and iswork>=? and etime>? group by subject,subsub", [iswork, t])
     yAxisnormal = {}
     for i in cursor:
         yAxisnormal[i[0]+'-'+i[1]] = i[2]
 
     # overdue
     cursor = c.execute(
-        "select subject,subsub,count(*) from task where ftime>=date(etime,'+1 day')  and iswork>=? and etime>? group by subject,subsub", [iswork, t])
+        "select subject,subsub,count(*) from task where ftime>=date(etime,'+1 day') and isabandon=0 and iswork>=? and etime>? group by subject,subsub", [iswork, t])
     yAxisoverdue = {}
     for i in cursor:
         yAxisoverdue[i[0]+'-'+i[1]] = i[2]
@@ -468,9 +468,10 @@ def initschedule(force=False):
         c.execute("update sys_cfg set value =? where id=1", [d])
         conn.commit()
         # 删除无效的task
-        deleterows = removetask()
+        # TODO 带验证删除
+        # deleterows = removetask()
         conn.close()
-        return {'status': 1, 'message': '新增了：'+str(len(res))+'条计划任务，可查看详情。删除了：'+str(len(deleterows))+'条无效任务', 'lastchecktime': lastcheck}
+        return {'status': 1, 'message': '新增了：'+str(len(res))+'条计划任务，可查看详情。lastchecktime : ' + lastcheck}
     else:
         return {'status': 0, 'message': '今日已检查', 'lastchecktime': lastcheck}
 

@@ -5,78 +5,85 @@
       <!-- 左侧面板 -->
       <el-col :span="14">
         <!-- 任务管理条 -->
-        <el-collapse v-model="activeName" accordion>
-          <el-collapse-item title="任务管理（添加&查询）" name="1">
-            <el-row :gutter="5">
-              <el-select
-                @change="updatesuboption"
-                clearable
-                filterable
-                allow-create
-                v-model="task_select"
-                style="width: 120px"
-                placeholder="请选择"
-              >
-                <el-option
-                  v-for="item in task_select_option"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                ></el-option>
-              </el-select>
-              <!-- <el-input v-model="task_sub_select" style="width: 100px" placeholder="二级分类"></el-input> -->
-              <el-select
-                v-model="task_sub_select"
-                filterable
-                clearable
-                allow-create
-                style="width: 120px"
-                placeholder="请选择"
-              >
-                <el-option
-                  v-for="item in task_sub_select_option"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                ></el-option>
-              </el-select>
-              <el-date-picker
-                :picker-options="{ firstDayOfWeek: 1 }"
-                v-model="new_edate"
-                value-format="yyyy-MM-dd"
-                type="date"
-                style="width: 150px"
-                placeholder="ddl"
-              ></el-date-picker>
-              <el-input
-                v-model="task_title"
-                style="width: 300px"
-                placeholder="请输入内容"
-              ></el-input>
-              <el-button @click="addtask">提交</el-button>
-              <el-button @click="resetall">重置</el-button>
-            </el-row>
-            <el-row :gutter="5">
-              <el-date-picker
-                :picker-options="{ firstDayOfWeek: 1 }"
-                v-model="querytimerange"
-                type="daterange"
-                range-separator="至"
-                start-placeholder="开始日期"
-                end-placeholder="结束日期"
-                align="right"
-              ></el-date-picker>
-              <el-switch
-                v-model="isqueryall"
-                active-color="#13ce66"
-                inactive-color="#ff4949"
-                active-text="全部"
-                inactive-text="待做"
-              ></el-switch>
-              <el-button @click="querytask">查询</el-button>
-            </el-row>
-          </el-collapse-item>
-        </el-collapse>
+        <el-col :span="22">
+          <el-collapse v-model="activeName" accordion>
+            <el-collapse-item title="任务管理（添加&查询）" name="1">
+              <el-row :gutter="5">
+                <el-select
+                  @change="updatesuboption"
+                  clearable
+                  filterable
+                  allow-create
+                  v-model="task_select"
+                  style="width: 120px"
+                  placeholder="请选择"
+                >
+                  <el-option
+                    v-for="item in task_select_option"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  ></el-option>
+                </el-select>
+                <!-- <el-input v-model="task_sub_select" style="width: 100px" placeholder="二级分类"></el-input> -->
+                <el-select
+                  v-model="task_sub_select"
+                  filterable
+                  clearable
+                  allow-create
+                  style="width: 120px"
+                  placeholder="请选择"
+                >
+                  <el-option
+                    v-for="item in task_sub_select_option"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  ></el-option>
+                </el-select>
+                <el-date-picker
+                  :picker-options="{ firstDayOfWeek: 1 }"
+                  v-model="new_edate"
+                  value-format="yyyy-MM-dd"
+                  type="date"
+                  style="width: 150px"
+                  placeholder="ddl"
+                ></el-date-picker>
+                <el-input
+                  v-model="task_title"
+                  style="width: 300px"
+                  placeholder="请输入内容"
+                ></el-input>
+                <el-button @click="addtask">提交</el-button>
+              </el-row>
+              <el-row :gutter="5">
+                <el-date-picker
+                  :picker-options="{ firstDayOfWeek: 1 }"
+                  v-model="querytimerange"
+                  type="daterange"
+                  range-separator="至"
+                  start-placeholder="开始日期"
+                  end-placeholder="结束日期"
+                  align="right"
+                ></el-date-picker>
+                <el-switch
+                  v-model="isqueryall"
+                  active-color="#13ce66"
+                  inactive-color="#ff4949"
+                  active-text="全部"
+                  inactive-text="待做"
+                ></el-switch>
+                <el-button @click="querytask">查询</el-button>
+              </el-row>
+            </el-collapse-item>
+          </el-collapse>
+        </el-col>
+        <el-col
+          :span="2"
+          style="text-align: center; vertical-align: middle; line-height: 3"
+        >
+          <el-button @click="resetall">重置</el-button>
+        </el-col>
         <div class="grid-content bg-purple">
           <el-table
             :data="tableData"
