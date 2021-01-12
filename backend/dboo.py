@@ -130,9 +130,6 @@ def getprocess(task_id):
     for row in cursor:
         result.append({'stime': row[0][0:10], 'content': row[1],
                        'isfinish': row[2], 'process_id': row[3], 'task_id': row[4]})
-    # temp = c.execute(
-    #         "select isfinish,count(*) as c from task_process where process_id=? group by isfinish order by 1", [process_id])
-    # res[process_id] = str(temp[0][1])+'/'+str(temp[1][1])
     conn.close()
     return result
 
@@ -149,9 +146,7 @@ def gettaskprocess(task_id):
     cursor = c.execute(
         "select '%s' , count(*) as c from task_process where task_id='%s' " % (task_id, task_id))
     a = dict(cursor)
-    print(f, a)
     res['num_process'] = str(f[str(task_id)]) + '/' + str(a[str(task_id)])
-    print(res)
     conn.close()
     return res
 
@@ -266,8 +261,11 @@ def querytask(query, subject, subsub, qt, isqueryall):
         qt = '%'+qt+'%'
         params_list.append(qt)
 
-    sql += " and iswork>=? order by etime,task_id"
+    t = calbegin()
+
+    sql += " and iswork>=? and etime>? order by etime,task_id"
     params_list.append(iswork)
+    params_list.append(t)
     # print('*'*10)
     # print(sql)
     # print(params_list)
@@ -304,18 +302,24 @@ def removetask():
     return str(result)
 
 
-# 统计的柱形图
-def gettasksummary_bar():
-    global iswork
+def calbegin():
     cur_year = time.localtime()[0]
     cur_month = time.localtime()[1]
-    if cur_month == 12:
+    if cur_month == 1:
         t = str(cur_year-1)+'-12-01'
     else:
         if cur_month < 10:
             t = str(cur_year)+'-0'+str(cur_month-1)+'-01'
         else:
-            t = str(cur_year)+'-'+str(cur_month)-1+'-01'
+            t = str(cur_year) + '-' + str(cur_month) - 1 + '-01'
+    return t
+
+# 统计的柱形图
+
+
+def gettasksummary_bar():
+    global iswork
+    t = calbegin()
     # print(t)
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
@@ -692,9 +696,12 @@ def setiswork(isw):
 
 
 if __name__ == '__main__':
-    temp = getallprocess()
-    for i in temp:
-        print(i, temp[i])
-    # print(querytask('', '', '', '2021-01-03', True))
+    getiswork()
+    initoption()
+    temp = gettasksummary_bar()
+    print(temp)
 else:
-    getallprocess()
+    getiswork()
+    # initoption()
+    # temp = gettasksummary_bar()
+    # print(temp)
