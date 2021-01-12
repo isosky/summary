@@ -909,6 +909,14 @@ export default {
               this.tableprocess[i].isfinish = "待做";
             }
           }
+          // console.log(response.data);
+          // console.log(this.tableData);
+          for (var i in this.tableData) {
+            // console.log(i);
+            if (this.tableData[i].task_id == response.data.status.k) {
+              this.tableData[i].num_process = response.data.status.num_process;
+            }
+          }
           this.s_task_id = "";
         });
     },

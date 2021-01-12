@@ -124,7 +124,9 @@ def addprocess():
 def getprocess():
     json_data = json.loads(request.get_data())
     task_id = json_data['task_id']
-    return json.dumps({'arrays': dboo.getprocess(task_id)})
+    temp = dboo.getprocess(task_id)
+    temp_s = dboo.gettaskprocess(task_id)
+    return json.dumps({'arrays': temp, 'status': temp_s})
 
 
 # #####################################

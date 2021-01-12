@@ -109,14 +109,14 @@ def getallprocess():
         "select task_id,count(*) from task_process where  isfinish=0 group by task_id")
     pfa = dict(cursor)
     cursor = c.execute(
-        "select task_id,count(*) from task_process where isfinish=1  and  isfinish=0 group by task_id")
+        "select task_id,count(*) from task_process group by task_id")
     pff = dict(cursor)
     result = {}
     for i in pfa.keys():
         if i in pff.keys():
-            result[i] = str(pfa[i]) + '/'+str(pfa[i])
+            result[i] = str(pfa[i]) + '/'+str(pff[i])
         else:
-            result[i] = '0/'+str(pfa[i])
+            result[i] = '0/'+str(pff[i])
     conn.close()
     return result
 
@@ -130,8 +130,30 @@ def getprocess(task_id):
     for row in cursor:
         result.append({'stime': row[0][0:10], 'content': row[1],
                        'isfinish': row[2], 'process_id': row[3], 'task_id': row[4]})
+    # temp = c.execute(
+    #         "select isfinish,count(*) as c from task_process where process_id=? group by isfinish order by 1", [process_id])
+    # res[process_id] = str(temp[0][1])+'/'+str(temp[1][1])
     conn.close()
     return result
+
+
+def gettaskprocess(task_id):
+    res = {}
+    res['k'] = task_id
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    cursor = c.execute(
+        "select '%s' ,count(*) as c from task_process where task_id='%s' and isfinish=1" % (task_id, task_id))
+    f = dict(cursor)
+
+    cursor = c.execute(
+        "select '%s' , count(*) as c from task_process where task_id='%s' " % (task_id, task_id))
+    a = dict(cursor)
+    print(f, a)
+    res['num_process'] = str(f[str(task_id)]) + '/' + str(a[str(task_id)])
+    print(res)
+    conn.close()
+    return res
 
 
 def parsetime(timestring, timeformat):
@@ -471,7 +493,7 @@ def initschedule(force=False):
         # TODO 带验证删除
         # deleterows = removetask()
         conn.close()
-        return {'status': 1, 'message': '新增了：'+str(len(res))+'条计划任务，可查看详情。lastchecktime : ' + lastcheck}
+        return {'status': 1, 'message': '新增了：'+str(len(res)) + '条计划任务，可查看详情。lastchecktime:' + lastcheck}
     else:
         return {'status': 0, 'message': '今日已检查', 'lastchecktime': lastcheck}
 
@@ -670,7 +692,9 @@ def setiswork(isw):
 
 
 if __name__ == '__main__':
-    getiswork()
-    print(querytask('', '', '', '2021-01-03', True))
+    temp = getallprocess()
+    for i in temp:
+        print(i, temp[i])
+    # print(querytask('', '', '', '2021-01-03', True))
 else:
-    getiswork()
+    getallprocess()
