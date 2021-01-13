@@ -106,7 +106,7 @@ def getallprocess():
     c = conn.cursor()
 
     cursor = c.execute(
-        "select task_id,count(*) from task_process where  isfinish=0 group by task_id")
+        "select task_id,count(*) from task_process where isfinish=1 group by task_id")
     pfa = dict(cursor)
     cursor = c.execute(
         "select task_id,count(*) from task_process group by task_id")
@@ -700,8 +700,7 @@ if __name__ == '__main__':
     initoption()
     temp = getallprocess()
     print(temp)
+    temp = querytask('', '', '', '', False)
+    print(temp)
 else:
     getiswork()
-    # initoption()
-    # temp = gettasksummary_bar()
-    # print(temp)
