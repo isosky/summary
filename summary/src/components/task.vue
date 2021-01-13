@@ -596,6 +596,9 @@ export default {
     this.task_chart.on("click", function (params) {
       // console.log(params["data"][0]);
       that.query_date = params["data"][0];
+      that.task_title = "";
+      that.task_select = "";
+      that.task_sub_select = "";
       that.querytask(true);
     });
     this.tasksummary_chart = echarts.init(
@@ -612,6 +615,8 @@ export default {
       // subsub: this.task_sub_select,
       that.task_select = temp.split("-")[0];
       that.task_sub_select = temp.split("-")[1];
+      that.task_title = "";
+      that.query_date = "";
       // that.query_date = params["data"][0];
       that.querytask(true);
     });
