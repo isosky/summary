@@ -44,9 +44,7 @@ export default {
   },
   methods: {
     moveto: function (index) {
-      // if (index != 3) {
       this.$router.push(this.routers[index - 1]);
-      // }
     },
   },
 };

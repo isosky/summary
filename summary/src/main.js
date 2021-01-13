@@ -39,9 +39,16 @@ const routes = [{
 ]
 
 
+
+
 const router = new VueRouter({
   routes
 })
+
+const originalPush = VueRouter.prototype.push
+VueRouter.prototype.push = function push(location) {
+  return originalPush.call(this, location).catch(err => err)
+}
 
 // axios.defaults.baseURL = 'http://localhost:5000';
 axios.defaults.baseURL = 'http://81.70.25.54:5000';
@@ -59,10 +66,8 @@ const app = new Vue({
       // TODO 搞个yys的题库，现在的这个命中率太丢人了
       axios.get("/getfirstpage").then(response => {
         if (response.status == 200) {
-          // console.log(response);
-          // 添加完成后，需要重新刷新一下面板
           let temp = '/' + response.data.firstpage
-          this.$router.push(temp)
+          this.$router.push(temp);
         }
       });
 
