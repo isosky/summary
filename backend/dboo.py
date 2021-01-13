@@ -112,8 +112,8 @@ def getallprocess():
         "select task_id,count(*) from task_process group by task_id")
     pff = dict(cursor)
     result = {}
-    for i in pfa.keys():
-        if i in pff.keys():
+    for i in pff.keys():
+        if i in pfa.keys():
             result[i] = str(pfa[i]) + '/'+str(pff[i])
         else:
             result[i] = '0/'+str(pff[i])
@@ -698,7 +698,7 @@ def setiswork(isw):
 if __name__ == '__main__':
     getiswork()
     initoption()
-    temp = gettasksummary_bar()
+    temp = getallprocess()
     print(temp)
 else:
     getiswork()

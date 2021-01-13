@@ -54,7 +54,7 @@
                   style="width: 300px"
                   placeholder="请输入内容"
                 ></el-input>
-                <el-button @click="addtask">提交</el-button>
+                <el-button @click="addtask" type="success">提交</el-button>
               </el-row>
               <el-row :gutter="5">
                 <el-date-picker
@@ -73,7 +73,7 @@
                   active-text="全部"
                   inactive-text="待做"
                 ></el-switch>
-                <el-button @click="querytask">查询</el-button>
+                <el-button @click="querytask" type="success">查询</el-button>
               </el-row>
             </el-collapse-item>
           </el-collapse>
@@ -82,7 +82,7 @@
           :span="2"
           style="text-align: center; vertical-align: middle; line-height: 3"
         >
-          <el-button @click="resetall">重置</el-button>
+          <el-button @click="resetall" type="warning">重置</el-button>
         </el-col>
         <div class="grid-content">
           <el-table

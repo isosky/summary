@@ -70,7 +70,6 @@ const app = new Vue({
           this.$router.push(temp);
         }
       });
-
     },
     initschedule: function (event) {
       axios.get("/initschedule").then(response => {
