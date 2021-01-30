@@ -3,7 +3,7 @@
   <div id="app">
     <el-row :gutter="5">
       <!-- 左侧面板 -->
-      <el-col :span="14">
+      <el-col :span="12">
         <!-- 任务管理条 -->
         <el-col :span="19">
           <el-collapse v-model="activeName" accordion>
@@ -51,21 +51,13 @@
                 ></el-date-picker>
                 <el-input
                   v-model="task_title"
-                  style="width: 300px"
+                  style="width: 280px"
                   placeholder="请输入内容"
                 ></el-input>
-                <el-button @click="addtask" type="success">提交</el-button>
               </el-row>
               <el-row :gutter="5">
-                <el-date-picker
-                  :picker-options="{ firstDayOfWeek: 1 }"
-                  v-model="querytimerange"
-                  type="daterange"
-                  range-separator="至"
-                  start-placeholder="开始日期"
-                  end-placeholder="结束日期"
-                  align="right"
-                ></el-date-picker>
+                <el-button @click="addtask" type="success">提交</el-button>
+
                 <el-switch
                   v-model="isqueryall"
                   active-color="#13ce66"
@@ -150,12 +142,15 @@
         </div>
       </el-col>
       <!-- 右侧面板 -->
-      <el-col :span="10">
+      <el-col :span="12">
         <el-row :gutter="5">
-          <el-col :span="12">
+          <el-col :span="8">
             <div id="b_task" style="height: 220px"></div>
           </el-col>
-          <el-col :span="12">
+          <el-col :span="8">
+            <div id="task_pie_subject" style="height: 220px"></div>
+          </el-col>
+          <el-col :span="8">
             <div id="task_pie_summary" style="height: 220px"></div>
           </el-col>
         </el-row>
@@ -489,8 +484,50 @@ export default {
           },
         ],
       },
-      // pie图
-      tab_pie_option: {
+      // pie subject图
+      tab_subject_pie_option: {
+        title: {
+          text: "类型统计",
+          x: "center",
+        },
+        color: [
+          "#5470c6",
+          "#91cc75",
+          "#fac858",
+          "#ee6666",
+          "#73c0de",
+          "#3ba272",
+          "#fc8452",
+          "#9a60b4",
+          "#ea7ccc",
+        ],
+        tooltip: {
+          trigger: "item",
+          formatter: "{a} <br/>{b} : {c} ({d}%)",
+        },
+        series: [
+          {
+            name: "任务情况",
+            type: "pie",
+            radius: "55%",
+            center: ["50%", "60%"],
+            // roseType: "area",
+            itemStyle: {
+              borderRadius: 18,
+            },
+            data: [],
+            label: {
+              normal: {
+                show: true,
+                position: "insideRight",
+                formatter: "{b}：{c}",
+              },
+            },
+          },
+        ],
+      },
+      // pie summary图
+      tab_summary_pie_option: {
         title: {
           text: "任务统计",
           x: "center",
@@ -571,7 +608,6 @@ export default {
           },
         ],
       },
-      querytimerange: "",
       isqueryall: true,
 
       // dialog process
@@ -599,6 +635,7 @@ export default {
       now_time: new Date().getTime(),
       task_chart: "",
       tasksummary_chart: "",
+      tasksubject_pie_chart: "",
       tasksummary_pie_chart: "",
     };
   },
@@ -637,6 +674,13 @@ export default {
       // that.query_date = params["data"][0];
       that.querytask(true);
     });
+    this.tasksubject_pie_chart = echarts.init(
+      document.getElementById("task_pie_subject"),
+      "white",
+      {
+        renderer: "canvas",
+      }
+    );
     this.tasksummary_pie_chart = echarts.init(
       document.getElementById("task_pie_summary"),
       "white",
@@ -726,18 +770,23 @@ export default {
           this.task_summary_option.series[4].data =
             response.data.yAxisabandon_list;
           this.tasksummary_chart.setOption(this.task_summary_option);
+          // pie subject图
+          this.tab_subject_pie_option.series[0].data =
+            response.data.pie_subject_data;
+          this.tasksubject_pie_chart.setOption(this.tab_subject_pie_option);
 
-          // 饼图
-          this.tab_pie_option.series[0].data = response.data.piedata;
-          this.tab_pie_option.title.text =
+          // pie summary图
+          this.tab_summary_pie_option.series[0].data =
+            response.data.pie_summary_data;
+          this.tab_summary_pie_option.title.text =
             "完成率:" +
             response.data.percent[0] +
             "%，逾期率:" +
             response.data.percent[1] +
             "%";
-          this.tab_pie_option.title.subtext =
+          this.tab_summary_pie_option.title.subtext =
             "总统计数:" + response.data.sum_task + "个";
-          this.tasksummary_pie_chart.setOption(this.tab_pie_option);
+          this.tasksummary_pie_chart.setOption(this.tab_summary_pie_option);
         }
       });
     },

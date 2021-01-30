@@ -440,13 +440,18 @@ def gettasksummary_bar():
         overdue_percent = 0
         finish_percent = 0
 
+    cursor = c.execute(" select subject, count(*) from task group by subject")
+    pie_subject_data = []
+    for i in cursor:
+        pie_subject_data.append({'name': i[0], 'value': i[1]})
+
     # 饼图数据
-    piedata = [{'value': sum_overdue, 'name': '逾期'}, {'value': sum_todooverdue, 'name': '待做逾期'}, {'value': sum_todo, 'name': '待做'}, {
+    pie_summary_data = [{'value': sum_overdue, 'name': '逾期'}, {'value': sum_todooverdue, 'name': '待做逾期'}, {'value': sum_todo, 'name': '待做'}, {
         'value': sum_normal, 'name': '正常完成'}, {'value': sum_abandon, 'name': '作废'}]
 
     # 柱形堆叠图数据
     result = {'sum_task': sum_task, 'percent': [finish_percent, overdue_percent], 'yAxisdata': yAxisdata, 'yAxistodo_list': yAxistodo_list,
-              'yAxisnormal_list': yAxisnormal_list, 'yAxisoverdue_list': yAxisoverdue_list, 'yAxistodooverdue_list': yAxistodooverdue_list, 'yAxisabandon_list': yAxisabandon_list, 'piedata': piedata}
+              'yAxisnormal_list': yAxisnormal_list, 'yAxisoverdue_list': yAxisoverdue_list, 'yAxistodooverdue_list': yAxistodooverdue_list, 'yAxisabandon_list': yAxisabandon_list, 'pie_summary_data': pie_summary_data, 'pie_subject_data': pie_subject_data}
     # print('tongji')
     conn.close()
     return result
