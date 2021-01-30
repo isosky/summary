@@ -408,7 +408,7 @@ def gettasksummary_bar():
     sum_todooverdue = sum(yAxistodooverdue_list)
     sum_abandon = sum(yAxisabandon_list)
 
-    sum_task = sum_todo + sum_normal + sum_overdue + sum_todooverdue
+    sum_task = sum_todo + sum_normal + sum_overdue + sum_todooverdue + sum_abandon
 
     if sum_task != 0:
         overdue_percent = round(
