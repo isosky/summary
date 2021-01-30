@@ -85,6 +85,11 @@ def querytask():
     return json.dumps({'arrays': dboo.querytask(query, subject, subsub, qt, isqueryall)})
 
 
+@app.route('/querytask_week')
+def querytask_week():
+    return json.dumps({'arrays': dboo.querytask_week()})
+
+
 @app.route('/updatetask', methods=['POST'])
 def updatetask():
     json_data = json.loads(request.get_data())

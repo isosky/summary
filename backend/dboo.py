@@ -289,6 +289,28 @@ def querytask(query, subject, subsub, qt, isqueryall):
     return result
 
 
+# 只查询本周
+def querytask_week():
+    global iswork
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    sql = "select task_id,subject,subsub,title,etime,stime,isfinish from task where isabandon=0 and iswork >= ? AND etime <= ? AND isfinish =0 "
+    today = datetime.datetime.today()
+    etime = datetime.datetime.strftime(
+        today + datetime.timedelta(7 - today.weekday() - 1), "%Y-%m-%d")
+    cursor = c.execute(sql, [iswork, etime])
+    process = getallprocess()
+    result = []
+    for row in cursor:
+        temp = {'task_id': row[0], 'subject': row[1], 'subsub': row[2],
+                'title': row[3], 'etime': row[4][5:], 'stime': row[5], 'tetime': row[4], 'isfinish': row[6]}
+        if row[0] in process.keys():
+            temp['num_process'] = process[row[0]]
+        result.append(temp)
+    conn.close()
+    return result
+
+
 def calday():
     today = datetime.date.today()
     return [(today - datetime.timedelta(days=today.weekday())).strftime('%Y%m%d'), (today - datetime.timedelta(days=today.weekday()-6)).strftime('%Y%m%d')]
@@ -750,7 +772,7 @@ def deletesubject(subjectid):
 
 if __name__ == '__main__':
     getiswork()
-    temp = initoption()
+    temp = querytask_week()
     print(temp)
 else:
     getiswork()

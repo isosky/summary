@@ -5,7 +5,7 @@
       <!-- 左侧面板 -->
       <el-col :span="14">
         <!-- 任务管理条 -->
-        <el-col :span="22">
+        <el-col :span="19">
           <el-collapse v-model="activeName" accordion>
             <el-collapse-item title="任务管理（添加&查询）" name="1">
               <el-row :gutter="5">
@@ -79,9 +79,10 @@
           </el-collapse>
         </el-col>
         <el-col
-          :span="2"
+          :span="5"
           style="text-align: center; vertical-align: middle; line-height: 3"
         >
+          <el-button @click="querytask_week" type="warning">本周待做</el-button>
           <el-button @click="resetall" type="warning">重置</el-button>
         </el-col>
         <div class="grid-content">
@@ -813,6 +814,13 @@ export default {
         .then((response) => {
           this.tableData = response.data.arrays;
         });
+    },
+    querytask_week: function () {
+      axios.get("/querytask_week").then((response) => {
+        if (response.status == 200) {
+          this.tableData = response.data.arrays;
+        }
+      });
     },
     dialogcommit: function (event) {
       // console.log(this.s_task_id);
