@@ -238,6 +238,42 @@ def getiswork():
     return json.dumps({'iswork': res})
 
 
+@app.route('/getfirstpage')
+def getfirstpage():
+    res = dboo.getfirstpage()
+    return json.dumps(res)
+
+
+@app.route('/setfirstpage', methods=['POST'])
+def setfirstpage():
+    json_data = json.loads(request.get_data())
+    firstpage = json_data['firstpage']
+    dboo.setfirstpage(firstpage)
+    return json.dumps({'result': True})
+
+
+@app.route('/getsubject')
+def getsubject():
+    res = dboo.getsubject()
+    return json.dumps(res)
+
+
+@app.route('/addsubject', methods=['POST'])
+def addsubject():
+    json_data = json.loads(request.get_data())
+    subjectname = json_data['subjectname']
+    subjectvalue = json_data['subjectvalue']
+    dboo.addsubject(subjectname, subjectvalue)
+    return json.dumps({'result': True})
+
+
+@app.route('/deletesubject', methods=['POST'])
+def deletesubject():
+    json_data = json.loads(request.get_data())
+    subjectid = json_data['subjectid']
+    dboo.deletesubject(subjectid)
+    return json.dumps({'result': True})
+
 # #####################################
 # 定义yys的函数
 # #####################################
@@ -274,18 +310,6 @@ def yys_getyysrole():
 # #####################################
 # 定义全局的函数
 # #####################################
-@app.route('/getfirstpage')
-def getfirstpage():
-    res = dboo.getfirstpage()
-    return json.dumps(res)
-
-
-@app.route('/setfirstpage', methods=['POST'])
-def setfirstpage():
-    json_data = json.loads(request.get_data())
-    firstpage = json_data['firstpage']
-    dboo.setfirstpage(firstpage)
-    return json.dumps({'result': True})
 
 
 if __name__ == '__main__':

@@ -702,6 +702,36 @@ def setiswork(isw):
     conn.close()
 
 
+def getsubject():
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    temp = []
+    cursor = c.execute(
+        "select id, name,value from sys_cfg where type = 'subject'")
+    for i in cursor:
+        temp.append({'subjectid': i[0], 'name': i[1], 'value': i[2]})
+    conn.commit()
+    conn.close()
+    return temp
+
+
+def addsubject(subjectname, subjectvalue):
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    c.execute("insert into  sys_cfg ('type','name','value') values ('subject',?,?)", [
+              subjectname, subjectvalue])
+    conn.commit()
+    conn.close()
+
+
+def deletesubject(subjectid):
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    c.execute("delete from sys_cfg where id=?", [subjectid])
+    conn.commit()
+    conn.close()
+
+
 if __name__ == '__main__':
     getiswork()
     temp = initoption()
