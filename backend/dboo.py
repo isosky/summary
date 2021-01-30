@@ -16,9 +16,9 @@ elif os.path.exists("C:/Users/fengy/OneDrive/文档/tmss.db"):
 else:
     dbf = "/data/wangtr/data/tmss.db"
 
+subject_work = {}
 iswork = None
-# TODO 要放到数据库里面
-subject_work = {'游戏': 0, '自己': 0, '学习': 1, '项目': 1, '公司': 1, '产品': 1}
+
 
 # #####################################
 # 定义全局的函数
@@ -58,7 +58,6 @@ def initoption():
         "select subject,subsub,count(*) from task where isabandon=0 and iswork>=? group by subject,subsub order by 3 desc", [iswork])
     result = {}
     result_all = []
-    # TODO 将所有的分类都加上
     for row in cursor:
         if row[0] not in result.keys():
             result[row[0]] = []
@@ -66,6 +65,12 @@ def initoption():
         result[row[0]].append(row[1])
     cursor = c.execute("select value from sys_cfg where id=1")
     lastchecktime = cursor.fetchone()[0]
+    # 将多的一级分类补上
+    cursor = c.execute("select name from sys_cfg where type = 'subject'")
+    for i in cursor:
+        if i[0] not in result.keys():
+            result_all.append({'value': i[0], 'label': i[0]})
+            result[i[0]] = []
     conn.close()
     return [result, result_all, lastchecktime]
 
@@ -104,7 +109,6 @@ def gettasknow():
 def getallprocess():
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
-
     cursor = c.execute(
         "select task_id,count(*) from task_process where isfinish=1 group by task_id")
     pfa = dict(cursor)
@@ -673,12 +677,15 @@ def modifyschedule(schedule_id, subject, subsub, schedule_type, schedule_frequen
 # 定义全局的函数
 # #####################################
 def getiswork():
-    global iswork
+    global iswork, subject_work
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
     cursor = c.execute("select value from sys_cfg where id=2")
     iswork = cursor.fetchone()[0]
-    # print(iswork)
+
+    cursor = c.execute("select name,value from sys_cfg where type='subject'")
+    for i in cursor:
+        subject_work[i[0]] = int(i[1])
     conn.close()
     return iswork
 
@@ -697,10 +704,7 @@ def setiswork(isw):
 
 if __name__ == '__main__':
     getiswork()
-    initoption()
-    temp = getallprocess()
-    print(temp)
-    temp = querytask('', '', '', '', False)
+    temp = initoption()
     print(temp)
 else:
     getiswork()
