@@ -386,9 +386,9 @@ export default {
             type: "shadow", // 默认为直线，可选为：'line' | 'shadow'
           },
         },
-        color: ["black", "red", "Orange", "green"],
+        color: ["black", "red", "Orange", "green", "#939393"],
         legend: {
-          data: ["逾期", "待做逾期", "待做", "正常完成"],
+          data: ["逾期", "待做逾期", "待做", "正常完成", "作废"],
         },
         grid: {
           left: 80,
@@ -469,6 +469,23 @@ export default {
             },
             data: [],
           },
+          {
+            name: "作废",
+            type: "bar",
+            stack: "总量",
+            label: {
+              normal: {
+                show: true,
+                position: "insideRight",
+                formatter: function (num) {
+                  if (num.value == 0) {
+                    return "";
+                  }
+                },
+              },
+            },
+            data: [],
+          },
         ],
       },
       // pie图
@@ -477,7 +494,7 @@ export default {
           text: "任务统计",
           x: "center",
         },
-        color: ["black", "red", "Orange", "green"],
+        color: ["black", "red", "Orange", "green", "#939393"],
         tooltip: {
           trigger: "item",
           formatter: "{a} <br/>{b} : {c} ({d}%)",
@@ -517,7 +534,6 @@ export default {
       task_select: "",
       new_edate: "",
       task_title: "",
-      // TODO 从数据库获得
       task_select_option: [],
       // 二级分类
       task_sub_select: "",
@@ -586,7 +602,7 @@ export default {
     };
   },
   mounted: function () {
-    console.log(this);
+    // console.log(this);
     let that = this;
     // console.log('asdasdasda');
     // console.log(this.tableData);
@@ -706,6 +722,8 @@ export default {
             response.data.yAxistodo_list;
           this.task_summary_option.series[3].data =
             response.data.yAxisnormal_list;
+          this.task_summary_option.series[4].data =
+            response.data.yAxisabandon_list;
           this.tasksummary_chart.setOption(this.task_summary_option);
 
           // 饼图
@@ -866,6 +884,7 @@ export default {
           this.freshright();
         });
     },
+    // TODO 增加逾期的黑色显示
     isoverdate: function ({ row, column, rowIndex, columnIndex }) {
       if (columnIndex == 0) {
         let temp = new Date(row.tetime + " 23:59:59").getTime();
@@ -899,7 +918,6 @@ export default {
         this.getprocess(this.s_task_id);
       }
     },
-    // TODO 更新主任务的数据
     getprocess: function (task_id) {
       axios
         .post("/getprocess", {

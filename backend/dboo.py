@@ -318,7 +318,7 @@ def calbegin():
             t = str(cur_year) + '-' + str(cur_month) - 1 + '-01'
     return t
 
-# 统计的柱形图
+# 统计图
 
 
 def gettasksummary_bar():
@@ -361,12 +361,20 @@ def gettasksummary_bar():
         "select subject,subsub,count(*) from task where ftime>=date(etime,'+1 day') and isabandon=0 and iswork>=? and etime>? group by subject,subsub", [iswork, t])
     yAxisoverdue = {}
     for i in cursor:
-        yAxisoverdue[i[0]+'-'+i[1]] = i[2]
+        yAxisoverdue[i[0] + '-' + i[1]] = i[2]
+
+    # abandon
+    cursor = c.execute(
+        "select subject,subsub,count(*) from task where isabandon=1 and iswork>=? and etime>? group by subject,subsub", [iswork, t])
+    yAxisabandon = {}
+    for i in cursor:
+        yAxisabandon[i[0]+'-'+i[1]] = i[2]
 
     yAxistodo_list = []
     yAxisnormal_list = []
     yAxisoverdue_list = []
     yAxistodooverdue_list = []
+    yAxisabandon_list = []
 
     for subsub in yAxisdata:
         if subsub not in yAxistodo.keys():
@@ -389,26 +397,34 @@ def gettasksummary_bar():
         else:
             yAxistodooverdue_list.append(yAxistodooverdue[subsub])
 
+        if subsub not in yAxisabandon.keys():
+            yAxisabandon_list.append(0)
+        else:
+            yAxisabandon_list.append(yAxisabandon[subsub])
+
     sum_todo = sum(yAxistodo_list)
     sum_normal = sum(yAxisnormal_list)
     sum_overdue = sum(yAxisoverdue_list)
-    sum_todoovredue = sum(yAxistodooverdue_list)
+    sum_todooverdue = sum(yAxistodooverdue_list)
+    sum_abandon = sum(yAxisabandon_list)
 
-    sum_task = sum_todo + sum_normal + sum_overdue + sum_todoovredue
+    sum_task = sum_todo + sum_normal + sum_overdue + sum_todooverdue
 
     if sum_task != 0:
         overdue_percent = round(
-            (sum_overdue+sum_todoovredue) / sum_task * 100, 2)
+            (sum_overdue+sum_todooverdue) / sum_task * 100, 2)
         finish_percent = round((sum_overdue+sum_normal)/sum_task*100, 2)
     else:
         overdue_percent = 0
         finish_percent = 0
 
-    piedata = [{'value': sum_overdue, 'name': '逾期'}, {'value': sum_todoovredue, 'name': '待做逾期'}, {'value': sum_todo, 'name': '待做'}, {
-        'value': sum_normal, 'name': '正常完成'}]
+    # 饼图数据
+    piedata = [{'value': sum_overdue, 'name': '逾期'}, {'value': sum_todooverdue, 'name': '待做逾期'}, {'value': sum_todo, 'name': '待做'}, {
+        'value': sum_normal, 'name': '正常完成'}, {'value': sum_abandon, 'name': '作废'}]
 
+    # 柱形堆叠图数据
     result = {'sum_task': sum_task, 'percent': [finish_percent, overdue_percent], 'yAxisdata': yAxisdata, 'yAxistodo_list': yAxistodo_list,
-              'yAxisnormal_list': yAxisnormal_list, 'yAxisoverdue_list': yAxisoverdue_list, 'yAxistodooverdue_list': yAxistodooverdue_list, 'piedata': piedata}
+              'yAxisnormal_list': yAxisnormal_list, 'yAxisoverdue_list': yAxisoverdue_list, 'yAxistodooverdue_list': yAxistodooverdue_list, 'yAxisabandon_list': yAxisabandon_list, 'piedata': piedata}
     # print('tongji')
     conn.close()
     return result
