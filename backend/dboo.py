@@ -79,12 +79,19 @@ def initoption():
 # 定义task的函数
 # #####################################
 
-def addtask(subject, subsub, title, etime):
+def addtask(subject, subsub, title, etime, person):
+    # TODO bug 添加任务的时候，如果过期了，status不应该使用默认值
     global subject_work
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
     c.execute("insert into task (subject,subsub,title,etime,iswork) values (?,?,?,?,?)", [
               subject, subsub, title, etime, subject_work[subject]])
+    conn.commit()
+    temp = c.execute("select max(task_id) from task")
+    task_id = temp.fetchone()[0]
+    if person:
+        for i in person:
+            c.execute("insert into task_person values (?,?)", [task_id, i])
     conn.commit()
     conn.close()
     return gettasknow()
@@ -98,14 +105,27 @@ def gettasknow():
         "select task_id,subject,subsub,title,etime,stime,isfinish,status from task where isfinish=0 and isabandon=0 and iswork>=? order by etime,task_id", [iswork])
     result = []
     process = getallprocess()
+    person = getallperson()
     for row in cursor:
         temp = {'task_id': row[0], 'subject': row[1], 'subsub': row[2],
                 'title': row[3], 'etime': row[4][5:], 'stime': row[5], 'tetime': row[4], 'isfinish': row[6], 'status': row[7]}
         if row[0] in process.keys():
             temp['num_process'] = process[row[0]]
+        if row[0] in person.keys():
+            temp['num_person'] = person[row[0]]
         result.append(temp)
     # temp = cursor
-    print(len(result))
+    # print(len(result))
+    conn.close()
+    return result
+
+
+def getallperson():
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    cursor = c.execute(
+        "select task_id,count(*) from task_person group by task_id")
+    result = dict(cursor)
     conn.close()
     return result
 
@@ -296,12 +316,15 @@ def querytask(query, subject, subsub, qt, isqueryall):
     cursor = c.execute(sql, params_list)
     # 得到所有进展清单
     process = getallprocess()
+    person = getallperson()
     result = []
     for row in cursor:
         temp = {'task_id': row[0], 'subject': row[1], 'subsub': row[2],
                 'title': row[3], 'etime': row[4][5:], 'stime': row[5], 'tetime': row[4], 'isfinish': row[6], 'status': row[7]}
         if row[0] in process.keys():
             temp['num_process'] = process[row[0]]
+        if row[0] in person.keys():
+            temp['num_person'] = person[row[0]]
         # print(temp)
         result.append(temp)
     # temp = cursor
@@ -824,6 +847,19 @@ def getperson():
     return temp
 
 
+def getperson_option():
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    temp = []
+    cursor = c.execute(
+        "select person_id,company,name from person order by 2,3")
+    for i in cursor:
+        temp.append({'value': i[0], 'label': i[1]+'-' + i[2]})
+    conn.commit()
+    conn.close()
+    return temp
+
+
 def addperson(company, name):
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
@@ -841,9 +877,51 @@ def deleteperson(personid):
     conn.close()
 
 
+def getperson_data(task_id):
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    temp = c.execute(
+        "select person_id,company,name from person where person_id in (select person_id from task_person where task_id =?)", [task_id])
+    res = []
+    for row in temp:
+        res.append({"person_id": row[0], "company": row[1], "name": row[2]})
+    conn.commit()
+    conn.close()
+    return res
+
+
+def appendtaskperson(task_id, person_id):
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    temp = c.execute(
+        "select person_id from task_person where task_id=? ", [task_id])
+    temp = list(temp)
+    temp = [x[0] for x in temp]
+    newperson = [x for x in person_id if x not in temp]
+    if newperson:
+        for i in newperson:
+            c.execute(
+                "insert into task_person (task_id,person_id) values (?,?)", [task_id, i])
+    conn.commit()
+    conn.close()
+    res = getperson_data(task_id)
+    return res
+
+
+def deletetaskperson(task_id, person_id):
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    c.execute(
+        "delete from task_person where task_id=? and  person_id=? ", [task_id, person_id])
+    conn.commit()
+    conn.close()
+    res = getperson_data(task_id)
+    return res
+
+
 if __name__ == '__main__':
     getiswork()
-    temp = querytask_week()
+    temp = appendtaskperson(128, [1, 2, 4])
     print(temp)
 else:
     getiswork()

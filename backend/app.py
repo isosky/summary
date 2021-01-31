@@ -34,8 +34,10 @@ def addtask():
     arg_subsub = json_data['subsub']
     arg_title = json_data['title']
     arg_edate = json_data['edate']
+    arg_person = json_data['person']
     print(arg_subject, arg_title, arg_edate)
-    temp = dboo.addtask(arg_subject, arg_subsub, arg_title, arg_edate)
+    temp = dboo.addtask(arg_subject, arg_subsub,
+                        arg_title, arg_edate, arg_person)
     return json.dumps({'arrays': temp})
 
 
@@ -292,6 +294,12 @@ def getperson():
     return json.dumps(res)
 
 
+@app.route('/getperson_option')
+def getperson_option():
+    res = dboo.getperson_option()
+    return json.dumps(res)
+
+
 @app.route('/addperson', methods=['POST'])
 def addperson():
     json_data = json.loads(request.get_data())
@@ -307,6 +315,33 @@ def deleteperson():
     personid = json_data['personid']
     dboo.deleteperson(personid)
     return json.dumps({'result': True})
+
+
+@app.route('/getperson_data', methods=['POST'])
+def getperson_data():
+    json_data = json.loads(request.get_data())
+    task_id = json_data['task_id']
+    res = dboo.getperson_data(task_id)
+    return json.dumps(res)
+
+
+@app.route('/appendtaskperson', methods=['POST'])
+def appendtaskperson():
+    json_data = json.loads(request.get_data())
+    print(json_data)
+    task_id = json_data['task_id']
+    person_id = json_data['person_id']
+    res = dboo.appendtaskperson(task_id, person_id)
+    return json.dumps(res)
+
+
+@app.route('/deletetaskperson', methods=['POST'])
+def deletetaskperson():
+    json_data = json.loads(request.get_data())
+    task_id = json_data['task_id']
+    person_id = json_data['person_id']
+    res = dboo.deletetaskperson(task_id, person_id)
+    return json.dumps(res)
 
 # #####################################
 # 定义yys的函数

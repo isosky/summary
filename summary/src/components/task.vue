@@ -56,8 +56,22 @@
                 ></el-input>
               </el-row>
               <el-row :gutter="5">
+                <el-select
+                  v-model="person"
+                  filterable
+                  clearable
+                  multiple
+                  style="width: 400px"
+                  placeholder="请选择相关人员"
+                >
+                  <el-option
+                    v-for="item in person_option"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  ></el-option>
+                </el-select>
                 <el-button @click="addtask" type="success">提交</el-button>
-
                 <el-switch
                   v-model="isqueryall"
                   active-color="#13ce66"
@@ -105,6 +119,11 @@
               width="80"
             ></el-table-column>
             <el-table-column prop="title" label="标题"></el-table-column>
+            <el-table-column
+              prop="num_person"
+              label="人员"
+              width="60"
+            ></el-table-column>
             <el-table-column
               prop="num_process"
               label="进展"
@@ -205,6 +224,46 @@
                 </template>
               </el-table-column>
             </el-table>
+          </el-tab-pane>
+          <el-tab-pane name="person" label="人员">
+            <el-row :gutter="5">
+              <el-select
+                v-model="person"
+                filterable
+                clearable
+                multiple
+                style="width: 400px"
+                placeholder="请选择相关人员"
+              >
+                <el-option
+                  v-for="item in person_option"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                ></el-option>
+              </el-select>
+              <el-button @click="appendtaskperson" type="success"
+                >追加人员</el-button
+              >
+            </el-row>
+            <el-row :gutter="5">
+              <el-table :data="persondata" style="width: 100%">
+                <el-table-column prop="company" label="单位" width="180">
+                </el-table-column>
+                <el-table-column prop="name" label="名称" width="180">
+                </el-table-column>
+                <el-table-column label="操作" width="170">
+                  <template slot-scope="scope">
+                    <el-button
+                      @click="deletetaskperson(scope.row)"
+                      type="text"
+                      size="small"
+                      >删除</el-button
+                    >
+                  </template>
+                </el-table-column>
+              </el-table>
+            </el-row>
           </el-tab-pane>
         </el-tabs>
       </el-col>
@@ -585,29 +644,10 @@ export default {
       //
       query_date: "",
 
-      // 查询
-      pickerOptions: {
-        shortcuts: [
-          {
-            text: "本月",
-            onClick(picker) {
-              let now = new Date();
-              let start = new Date(now.getFullYear(), now.getMonth());
-              let end = "";
-              // console.log(now.getMonth());
-              if (now.getMonth() == "12") {
-                end = new Date(now.getFullYear() + 1, 1);
-                // console.log("ii", end);
-              } else {
-                end = new Date(now.getFullYear(), now.getMonth() + 1);
-                // console.log("ee", end);
-              }
-              end.setTime(end.getTime() - 3600 * 1000 * 24 * 1);
-              picker.$emit("pick", [start, end]);
-            },
-          },
-        ],
-      },
+      //
+      person: "",
+      person_option: "",
+
       isqueryall: true,
 
       // dialog process
@@ -637,6 +677,7 @@ export default {
       tasksummary_chart: "",
       tasksubject_pie_chart: "",
       tasksummary_pie_chart: "",
+      persondata: [],
     };
   },
   mounted: function () {
@@ -700,6 +741,7 @@ export default {
       this.query_date = "";
       this.settasksummary_bar();
       this.querytask(false);
+      this.getperson_option();
     },
     resetall: function () {
       this.task_title = "";
@@ -718,6 +760,42 @@ export default {
           this.updatesuboption();
         }
       });
+    },
+    getperson_option: function () {
+      axios.get("/getperson_option").then((response) => {
+        // console.log(response);
+        this.person_option = response.data;
+      });
+    },
+    deletetaskperson: function (event) {
+      axios
+        .post("/deletetaskperson", {
+          task_id: this.s_task_id,
+          person_id: event.person_id,
+        })
+        .then((response) => {
+          this.persondata = response.data;
+        });
+    },
+    appendtaskperson: function () {
+      axios
+        .post("/appendtaskperson", {
+          task_id: this.s_task_id,
+          person_id: this.person,
+        })
+        .then((response) => {
+          this.persondata = response.data;
+          this.person = "";
+        });
+    },
+    getperson_data: function (task_id) {
+      axios
+        .post("/getperson_data", {
+          task_id: task_id,
+        })
+        .then((response) => {
+          this.persondata = response.data;
+        });
     },
     // 更新二级下拉列表
     updatesuboption: function (event) {
@@ -820,12 +898,14 @@ export default {
     // 添加任务
     addtask: function (event) {
       if (this.new_edate != "" && this.task_title) {
+        // console.log(this.person);
         axios
           .post("/addtask", {
             subject: this.task_select,
             subsub: this.task_sub_select,
             title: this.task_title,
             edate: this.new_edate,
+            person: this.person,
           })
           .then((response) => {
             // console.log(response);
@@ -834,6 +914,7 @@ export default {
             this.task_select = "";
             this.task_select = "";
             this.task_sub_select = "";
+            this.person = "";
             this.freshright();
           });
       }
@@ -968,19 +1049,36 @@ export default {
       this.process_content = "";
     },
     showprocess: function (row, column, cell, event) {
-      if (column !== undefined && column.label != "进展") {
+      // console.log(column, row.task_id);
+      if (
+        column !== undefined &&
+        column.label != "进展" &&
+        column.label != "人员"
+      ) {
         this.tabs_select = "summary";
         return;
       }
       if (
         (column !== undefined && column.label == "进展") ||
-        (this.s_task_id != "" && !this.dialogpVisible)
+        (column == undefined && this.s_task_id != "" && !this.dialogpVisible)
       ) {
         if (row !== undefined) {
           this.s_task_id = row.task_id;
         }
         this.tabs_select = "process";
         this.getprocess(this.s_task_id);
+        return;
+      }
+      if (
+        (column !== undefined && column.label == "人员") ||
+        this.s_task_id != ""
+      ) {
+        if (row !== undefined) {
+          this.s_task_id = row.task_id;
+        }
+        this.tabs_select = "person";
+        this.getperson_data(this.s_task_id);
+        return;
       }
     },
     getprocess: function (task_id) {
@@ -997,8 +1095,6 @@ export default {
               this.tableprocess[i].isfinish = "待做";
             }
           }
-          // console.log(response.data);
-          // console.log(this.tableData);
           for (var i in this.tableData) {
             // console.log(i);
             if (this.tableData[i].task_id == response.data.status.k) {

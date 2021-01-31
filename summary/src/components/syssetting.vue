@@ -78,8 +78,8 @@
         <el-button @click="addperson">添加人员</el-button></el-row
       >
       </el-row>
-      <el-row :span="6"
-        ><el-table :data="persondata" style="width: 100%">
+      <el-row :span="6">
+        <el-table :data="persondata" style="width: 100%">
           <el-table-column prop="company" label="单位" width="180">
           </el-table-column>
           <el-table-column prop="name" label="名称" width="180">
@@ -165,7 +165,7 @@ export default {
     // person
     getcompany: function () {
       axios.get("/getcompany").then((response) => {
-        console.log(response);
+        // console.log(response);
         this.company_selector = response.data;
       });
     },
@@ -215,7 +215,7 @@ export default {
       });
     },
     setiswork: function () {
-      console.log(this.iswork);
+      // console.log(this.iswork);
       axios
         .post("/setiswork", {
           iswork: this.iswork,
