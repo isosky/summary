@@ -483,7 +483,8 @@ def gettasksummary_bar():
         overdue_percent = 0
         finish_percent = 0
 
-    cursor = c.execute(" select subject, count(*) from task group by subject")
+    cursor = c.execute(
+        " select subject, count(*) from task where iswork>=? and etime>? group by subject", [iswork, t])
     pie_subject_data = []
     for i in cursor:
         pie_subject_data.append({'name': i[0], 'value': i[1]})
