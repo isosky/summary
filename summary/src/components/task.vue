@@ -944,13 +944,21 @@ export default {
     // TODO 增加逾期的黑色显示
     isoverdate: function ({ row, column, rowIndex, columnIndex }) {
       if (columnIndex == 0) {
-        let temp = new Date(row.tetime + " 23:59:59").getTime();
         // console.log(row);
-        if (temp < this.now_time && row.isfinish == 0) {
+        if (row.status == 1) {
+          return "";
+        }
+        if (row.status == 3) {
           return "background-color:red;color:white";
         }
-        if (row.isfinish == 1) {
+        if (row.status == 2) {
           return "background-color:green;color:white";
+        }
+        if (row.status == 4) {
+          return "background-color:black;color:white";
+        }
+        if (row.status == 5) {
+          return "background-color:'#939393'";
         }
       }
     },

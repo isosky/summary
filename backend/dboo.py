@@ -46,7 +46,7 @@ def setfirstpage(fp):
 
 
 # #####################################
-# 定义task的函数
+# 定义全局的函数
 # #####################################
 
 
@@ -75,6 +75,10 @@ def initoption():
     return [result, result_all, lastchecktime]
 
 
+# #####################################
+# 定义task的函数
+# #####################################
+
 def addtask(subject, subsub, title, etime):
     global subject_work
     conn = sqlite3.connect(dbf)
@@ -91,12 +95,12 @@ def gettasknow():
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
     cursor = c.execute(
-        "select task_id,subject,subsub,title,etime,stime,isfinish from task where isfinish=0 and isabandon=0 and iswork>=? order by etime,task_id", [iswork])
+        "select task_id,subject,subsub,title,etime,stime,isfinish,status from task where isfinish=0 and isabandon=0 and iswork>=? order by etime,task_id", [iswork])
     result = []
     process = getallprocess()
     for row in cursor:
         temp = {'task_id': row[0], 'subject': row[1], 'subsub': row[2],
-                'title': row[3], 'etime': row[4][5:], 'stime': row[5], 'tetime': row[4], 'isfinish': row[6]}
+                'title': row[3], 'etime': row[4][5:], 'stime': row[5], 'tetime': row[4], 'isfinish': row[6], 'status': row[7]}
         if row[0] in process.keys():
             temp['num_process'] = process[row[0]]
         result.append(temp)
@@ -190,10 +194,18 @@ def gettimedata():
 def finishtask(task_id, input_finish):
     conn = sqlite3.connect(dbf)
     # 格式化成2016-03-20 11:45:39形式
-    etime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    ftime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
     c = conn.cursor()
-    c.execute('''update task set ftime=? ,isfinish=1 where task_id =? ''', [
-              etime, task_id])
+    temp = c.execute("select etime from task where task_id=?", [task_id])
+    etime = temp.fetchone()[0] + ' 23:59:59'
+    etime_ts = time.mktime(time.strptime(etime, "%Y-%m-%d %H:%M:%S"))
+    now_ts = time.time()
+    if now_ts > etime_ts:
+        status = 4
+    else:
+        status = 2
+    c.execute("update task set ftime=? ,isfinish=1,status=? where task_id =? ", [
+              ftime, status, task_id])
     c.execute("insert into task_process (task_id,content,isfinish) values (?,?,1)", [
         task_id, input_finish])
     conn.commit()
@@ -207,7 +219,8 @@ def deletetask(task_id):
     conn = sqlite3.connect(dbf)
     # 格式化成2016-03-20 11:45:39形式
     c = conn.cursor()
-    c.execute('''update task set isabandon=1 where task_id =? ''', [task_id])
+    c.execute(
+        '''update task set isabandon=1,status=5 where task_id =? ''', [task_id])
     conn.commit()
     conn.close()
 
@@ -216,8 +229,15 @@ def updatetask(task_id, subject, subsub, title, etime):
     conn = sqlite3.connect(dbf)
     # print(task_id, subsub, title, etime)
     c = conn.cursor()
-    c.execute('''update task set subject=?, subsub=? , title=? , etime=? where task_id =? ''', [
-              subject, subsub, title, etime, task_id])
+    etime_ts = time.mktime(time.strptime(
+        etime + ' 23:59:59', "%Y-%m-%d %H:%M:%S"))
+    now_ts = time.time()
+    if now_ts > etime_ts:
+        status = 3
+    else:
+        status = 1
+    c.execute('''update task set subject=?, subsub=? , title=? , etime=?,status=? where task_id =? ''', [
+              subject, subsub, title, etime, status, task_id])
     conn.commit()
     conn.close()
 
@@ -250,7 +270,7 @@ def querytask(query, subject, subsub, qt, isqueryall):
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
     query = '%'+query+'%'
-    sql = "select task_id,subject,subsub,title,etime,stime,isfinish from task where isabandon=0 and title like ?"
+    sql = "select task_id,subject,subsub,title,etime,stime,isfinish,status from task where isabandon=0 and title like ?"
     if not isqueryall:
         sql += " and isfinish = 0 "
     params_list = [query]
@@ -279,7 +299,7 @@ def querytask(query, subject, subsub, qt, isqueryall):
     result = []
     for row in cursor:
         temp = {'task_id': row[0], 'subject': row[1], 'subsub': row[2],
-                'title': row[3], 'etime': row[4][5:], 'stime': row[5], 'tetime': row[4], 'isfinish': row[6]}
+                'title': row[3], 'etime': row[4][5:], 'stime': row[5], 'tetime': row[4], 'isfinish': row[6], 'status': row[7]}
         if row[0] in process.keys():
             temp['num_process'] = process[row[0]]
         # print(temp)
@@ -294,7 +314,7 @@ def querytask_week():
     global iswork
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
-    sql = "select task_id,subject,subsub,title,etime,stime,isfinish from task where isabandon=0 and iswork >= ? AND etime <= ? AND isfinish =0 "
+    sql = "select task_id,subject,subsub,title,etime,stime,isfinish,status from task where isabandon=0 and iswork >= ? AND etime <= ? AND isfinish =0 "
     today = datetime.datetime.today()
     etime = datetime.datetime.strftime(
         today + datetime.timedelta(7 - today.weekday() - 1), "%Y-%m-%d")
@@ -303,7 +323,7 @@ def querytask_week():
     result = []
     for row in cursor:
         temp = {'task_id': row[0], 'subject': row[1], 'subsub': row[2],
-                'title': row[3], 'etime': row[4][5:], 'stime': row[5], 'tetime': row[4], 'isfinish': row[6]}
+                'title': row[3], 'etime': row[4][5:], 'stime': row[5], 'tetime': row[4], 'isfinish': row[6], 'status': row[7]}
         if row[0] in process.keys():
             temp['num_process'] = process[row[0]]
         result.append(temp)
@@ -539,6 +559,8 @@ def initschedule(force=False):
                       newnexttime, d, i['schedule_id']])
             conn.commit()
         c.execute("update sys_cfg set value =? where id=1", [d])
+        c.execute(
+            "update task set status=3 where etime<date() and isfinish=0 and isabandon=0")
         conn.commit()
         # 删除无效的task
         # TODO 带验证删除
