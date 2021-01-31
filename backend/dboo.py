@@ -9,21 +9,22 @@ import sqlite3
 import time
 import calendar
 
-if os.path.exists("C:/Users/isowang/OneDrive/文档/tmss.db"):
-    dbf = "C:/Users/isowang/OneDrive/文档/tmss.db"
+if os.path.exists("F:/OneDrive/文档/tmss.db"):
+    dbf = "F:/OneDrive/文档/tmss.db"
 elif os.path.exists("C:/Users/fengy/OneDrive/文档/tmss.db"):
     dbf = "C:/Users/fengy/OneDrive/文档/tmss.db"
 else:
     dbf = "/data/wangtr/data/tmss.db"
 
+subject_work = {}
 iswork = None
-# TODO 要放到数据库里面
-subject_work = {'游戏': 0, '自己': 0, '学习': 1, '项目': 1, '公司': 1, '产品': 1}
 
 
 # #####################################
 # 定义全局的函数
 # #####################################
+
+
 def getfirstpage():
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
@@ -45,7 +46,7 @@ def setfirstpage(fp):
 
 
 # #####################################
-# 定义task的函数
+# 定义全局的函数
 # #####################################
 
 
@@ -57,7 +58,6 @@ def initoption():
         "select subject,subsub,count(*) from task where isabandon=0 and iswork>=? group by subject,subsub order by 3 desc", [iswork])
     result = {}
     result_all = []
-    # TODO 将所有的分类都加上
     for row in cursor:
         if row[0] not in result.keys():
             result[row[0]] = []
@@ -65,16 +65,33 @@ def initoption():
         result[row[0]].append(row[1])
     cursor = c.execute("select value from sys_cfg where id=1")
     lastchecktime = cursor.fetchone()[0]
+    # 将多的一级分类补上
+    cursor = c.execute("select name from sys_cfg where type = 'subject'")
+    for i in cursor:
+        if i[0] not in result.keys():
+            result_all.append({'value': i[0], 'label': i[0]})
+            result[i[0]] = []
     conn.close()
     return [result, result_all, lastchecktime]
 
 
-def addtask(subject, subsub, title, etime):
+# #####################################
+# 定义task的函数
+# #####################################
+
+def addtask(subject, subsub, title, etime, person):
+    # TODO bug 添加任务的时候，如果过期了，status不应该使用默认值
     global subject_work
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
     c.execute("insert into task (subject,subsub,title,etime,iswork) values (?,?,?,?,?)", [
               subject, subsub, title, etime, subject_work[subject]])
+    conn.commit()
+    temp = c.execute("select max(task_id) from task")
+    task_id = temp.fetchone()[0]
+    if person:
+        for i in person:
+            c.execute("insert into task_person values (?,?)", [task_id, i])
     conn.commit()
     conn.close()
     return gettasknow()
@@ -85,17 +102,30 @@ def gettasknow():
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
     cursor = c.execute(
-        "select task_id,subject,subsub,title,etime,stime,isfinish from task where isfinish=0 and isabandon=0 and iswork>=? order by etime,task_id", [iswork])
+        "select task_id,subject,subsub,title,etime,stime,isfinish,status from task where isfinish=0 and isabandon=0 and iswork>=? order by etime,task_id", [iswork])
     result = []
     process = getallprocess()
+    person = getallperson()
     for row in cursor:
         temp = {'task_id': row[0], 'subject': row[1], 'subsub': row[2],
-                'title': row[3], 'etime': row[4][5:], 'stime': row[5], 'tetime': row[4], 'isfinish': row[6]}
+                'title': row[3], 'etime': row[4][5:], 'stime': row[5], 'tetime': row[4], 'isfinish': row[6], 'status': row[7]}
         if row[0] in process.keys():
             temp['num_process'] = process[row[0]]
+        if row[0] in person.keys():
+            temp['num_person'] = person[row[0]]
         result.append(temp)
     # temp = cursor
-    print(len(result))
+    # print(len(result))
+    conn.close()
+    return result
+
+
+def getallperson():
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    cursor = c.execute(
+        "select task_id,count(*) from task_person group by task_id")
+    result = dict(cursor)
     conn.close()
     return result
 
@@ -103,19 +133,18 @@ def gettasknow():
 def getallprocess():
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
-
-    cursor = c.execute(
-        "select task_id,count(*) from task_process group by task_id")
-    pfa = dict(cursor)
     cursor = c.execute(
         "select task_id,count(*) from task_process where isfinish=1 group by task_id")
+    pfa = dict(cursor)
+    cursor = c.execute(
+        "select task_id,count(*) from task_process group by task_id")
     pff = dict(cursor)
     result = {}
-    for i in pfa.keys():
-        if i in pff.keys():
-            result[i] = str(pfa[i]) + '/'+str(pfa[i])
+    for i in pff.keys():
+        if i in pfa.keys():
+            result[i] = str(pfa[i]) + '/'+str(pff[i])
         else:
-            result[i] = '0/'+str(pfa[i])
+            result[i] = '0/'+str(pff[i])
     conn.close()
     return result
 
@@ -131,6 +160,23 @@ def getprocess(task_id):
                        'isfinish': row[2], 'process_id': row[3], 'task_id': row[4]})
     conn.close()
     return result
+
+
+def gettaskprocess(task_id):
+    res = {}
+    res['k'] = task_id
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    cursor = c.execute(
+        "select '%s' ,count(*) as c from task_process where task_id='%s' and isfinish=1" % (task_id, task_id))
+    f = dict(cursor)
+
+    cursor = c.execute(
+        "select '%s' , count(*) as c from task_process where task_id='%s' " % (task_id, task_id))
+    a = dict(cursor)
+    res['num_process'] = str(f[str(task_id)]) + '/' + str(a[str(task_id)])
+    conn.close()
+    return res
 
 
 def parsetime(timestring, timeformat):
@@ -168,10 +214,18 @@ def gettimedata():
 def finishtask(task_id, input_finish):
     conn = sqlite3.connect(dbf)
     # 格式化成2016-03-20 11:45:39形式
-    etime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    ftime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
     c = conn.cursor()
-    c.execute('''update task set ftime=? ,isfinish=1 where task_id =? ''', [
-              etime, task_id])
+    temp = c.execute("select etime from task where task_id=?", [task_id])
+    etime = temp.fetchone()[0] + ' 23:59:59'
+    etime_ts = time.mktime(time.strptime(etime, "%Y-%m-%d %H:%M:%S"))
+    now_ts = time.time()
+    if now_ts > etime_ts:
+        status = 4
+    else:
+        status = 2
+    c.execute("update task set ftime=? ,isfinish=1,status=? where task_id =? ", [
+              ftime, status, task_id])
     c.execute("insert into task_process (task_id,content,isfinish) values (?,?,1)", [
         task_id, input_finish])
     conn.commit()
@@ -185,7 +239,8 @@ def deletetask(task_id):
     conn = sqlite3.connect(dbf)
     # 格式化成2016-03-20 11:45:39形式
     c = conn.cursor()
-    c.execute('''update task set isabandon=1 where task_id =? ''', [task_id])
+    c.execute(
+        '''update task set isabandon=1,status=5 where task_id =? ''', [task_id])
     conn.commit()
     conn.close()
 
@@ -194,8 +249,15 @@ def updatetask(task_id, subject, subsub, title, etime):
     conn = sqlite3.connect(dbf)
     # print(task_id, subsub, title, etime)
     c = conn.cursor()
-    c.execute('''update task set subject=?, subsub=? , title=? , etime=? where task_id =? ''', [
-              subject, subsub, title, etime, task_id])
+    etime_ts = time.mktime(time.strptime(
+        etime + ' 23:59:59', "%Y-%m-%d %H:%M:%S"))
+    now_ts = time.time()
+    if now_ts > etime_ts:
+        status = 3
+    else:
+        status = 1
+    c.execute('''update task set subject=?, subsub=? , title=? , etime=?,status=? where task_id =? ''', [
+              subject, subsub, title, etime, status, task_id])
     conn.commit()
     conn.close()
 
@@ -223,12 +285,12 @@ def gettasksummary():
     return json.dumps({'res_delay': res_delay, 'res_today': res_today, 'res_todo': res_todo})
 
 
-def querytask(query, subject, subsub, isqueryall):
+def querytask(query, subject, subsub, qt, isqueryall):
     global iswork
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
     query = '%'+query+'%'
-    sql = "select task_id,subject,subsub,title,etime,stime,isfinish from task where isabandon=0 and title like ?"
+    sql = "select task_id,subject,subsub,title,etime,stime,isfinish,status from task where isabandon=0 and title like ?"
     if not isqueryall:
         sql += " and isfinish = 0 "
     params_list = [query]
@@ -238,20 +300,56 @@ def querytask(query, subject, subsub, isqueryall):
     if subsub != '':
         sql += " and subsub=? "
         params_list.append(subsub)
+    if qt != '':
+        sql += " and ftime like ?"
+        qt = '%'+qt+'%'
+        params_list.append(qt)
 
-    sql += " and iswork>=? order by etime,task_id"
+    t = calbegin()
+
+    sql += " and iswork>=? and etime>? order by etime,task_id"
     params_list.append(iswork)
+    params_list.append(t)
+    # print('*'*10)
+    # print(sql)
+    # print(params_list)
     cursor = c.execute(sql, params_list)
     # 得到所有进展清单
+    process = getallprocess()
+    person = getallperson()
+    result = []
+    for row in cursor:
+        temp = {'task_id': row[0], 'subject': row[1], 'subsub': row[2],
+                'title': row[3], 'etime': row[4][5:], 'stime': row[5], 'tetime': row[4], 'isfinish': row[6], 'status': row[7]}
+        if row[0] in process.keys():
+            temp['num_process'] = process[row[0]]
+        if row[0] in person.keys():
+            temp['num_person'] = person[row[0]]
+        # print(temp)
+        result.append(temp)
+    # temp = cursor
+    conn.close()
+    return result
+
+
+# 只查询本周
+def querytask_week():
+    global iswork
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    sql = "select task_id,subject,subsub,title,etime,stime,isfinish,status from task where isabandon=0 and iswork >= ? AND etime <= ? AND isfinish =0 "
+    today = datetime.datetime.today()
+    etime = datetime.datetime.strftime(
+        today + datetime.timedelta(7 - today.weekday() - 1), "%Y-%m-%d")
+    cursor = c.execute(sql, [iswork, etime])
     process = getallprocess()
     result = []
     for row in cursor:
         temp = {'task_id': row[0], 'subject': row[1], 'subsub': row[2],
-                'title': row[3], 'etime': row[4][5:], 'stime': row[5], 'tetime': row[4], 'isfinish': row[6]}
+                'title': row[3], 'etime': row[4][5:], 'stime': row[5], 'tetime': row[4], 'isfinish': row[6], 'status': row[7]}
         if row[0] in process.keys():
             temp['num_process'] = process[row[0]]
         result.append(temp)
-    # temp = cursor
     conn.close()
     return result
 
@@ -273,18 +371,24 @@ def removetask():
     return str(result)
 
 
-# 统计的柱形图
-def gettasksummary_bar():
-    global iswork
+def calbegin():
     cur_year = time.localtime()[0]
     cur_month = time.localtime()[1]
-    if cur_month == 12:
+    if cur_month == 1:
         t = str(cur_year-1)+'-12-01'
     else:
         if cur_month < 10:
             t = str(cur_year)+'-0'+str(cur_month-1)+'-01'
         else:
-            t = str(cur_year)+'-'+str(cur_month)-1+'-01'
+            t = str(cur_year) + '-' + str(cur_month) - 1 + '-01'
+    return t
+
+# 统计图
+
+
+def gettasksummary_bar():
+    global iswork
+    t = calbegin()
     # print(t)
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
@@ -312,22 +416,30 @@ def gettasksummary_bar():
 
     # normal
     cursor = c.execute(
-        "select subject,subsub,count(*) from task where ftime<date(etime,'+1 day') and isfinish=1 and iswork>=? and etime>? group by subject,subsub", [iswork, t])
+        "select subject,subsub,count(*) from task where ftime<date(etime,'+1 day') and isabandon=0 and isfinish=1 and iswork>=? and etime>? group by subject,subsub", [iswork, t])
     yAxisnormal = {}
     for i in cursor:
         yAxisnormal[i[0]+'-'+i[1]] = i[2]
 
     # overdue
     cursor = c.execute(
-        "select subject,subsub,count(*) from task where ftime>=date(etime,'+1 day')  and iswork>=? and etime>? group by subject,subsub", [iswork, t])
+        "select subject,subsub,count(*) from task where ftime>=date(etime,'+1 day') and isabandon=0 and iswork>=? and etime>? group by subject,subsub", [iswork, t])
     yAxisoverdue = {}
     for i in cursor:
-        yAxisoverdue[i[0]+'-'+i[1]] = i[2]
+        yAxisoverdue[i[0] + '-' + i[1]] = i[2]
+
+    # abandon
+    cursor = c.execute(
+        "select subject,subsub,count(*) from task where isabandon=1 and iswork>=? and etime>? group by subject,subsub", [iswork, t])
+    yAxisabandon = {}
+    for i in cursor:
+        yAxisabandon[i[0]+'-'+i[1]] = i[2]
 
     yAxistodo_list = []
     yAxisnormal_list = []
     yAxisoverdue_list = []
     yAxistodooverdue_list = []
+    yAxisabandon_list = []
 
     for subsub in yAxisdata:
         if subsub not in yAxistodo.keys():
@@ -350,26 +462,40 @@ def gettasksummary_bar():
         else:
             yAxistodooverdue_list.append(yAxistodooverdue[subsub])
 
+        if subsub not in yAxisabandon.keys():
+            yAxisabandon_list.append(0)
+        else:
+            yAxisabandon_list.append(yAxisabandon[subsub])
+
     sum_todo = sum(yAxistodo_list)
     sum_normal = sum(yAxisnormal_list)
     sum_overdue = sum(yAxisoverdue_list)
-    sum_todoovredue = sum(yAxistodooverdue_list)
+    sum_todooverdue = sum(yAxistodooverdue_list)
+    sum_abandon = sum(yAxisabandon_list)
 
-    sum_task = sum_todo + sum_normal + sum_overdue + sum_todoovredue
+    sum_task = sum_todo + sum_normal + sum_overdue + sum_todooverdue + sum_abandon
 
     if sum_task != 0:
         overdue_percent = round(
-            (sum_overdue+sum_todoovredue) / sum_task * 100, 2)
+            (sum_overdue+sum_todooverdue) / sum_task * 100, 2)
         finish_percent = round((sum_overdue+sum_normal)/sum_task*100, 2)
     else:
         overdue_percent = 0
         finish_percent = 0
 
-    piedata = [{'value': sum_overdue, 'name': '逾期'}, {'value': sum_todoovredue, 'name': '待做逾期'}, {'value': sum_todo, 'name': '待做'}, {
-        'value': sum_normal, 'name': '正常完成'}]
+    cursor = c.execute(
+        " select subject, count(*) from task where iswork>=? and etime>? group by subject", [iswork, t])
+    pie_subject_data = []
+    for i in cursor:
+        pie_subject_data.append({'name': i[0], 'value': i[1]})
 
+    # 饼图数据
+    pie_summary_data = [{'value': sum_overdue, 'name': '逾期'}, {'value': sum_todooverdue, 'name': '待做逾期'}, {'value': sum_todo, 'name': '待做'}, {
+        'value': sum_normal, 'name': '正常完成'}, {'value': sum_abandon, 'name': '作废'}]
+
+    # 柱形堆叠图数据
     result = {'sum_task': sum_task, 'percent': [finish_percent, overdue_percent], 'yAxisdata': yAxisdata, 'yAxistodo_list': yAxistodo_list,
-              'yAxisnormal_list': yAxisnormal_list, 'yAxisoverdue_list': yAxisoverdue_list, 'yAxistodooverdue_list': yAxistodooverdue_list, 'piedata': piedata}
+              'yAxisnormal_list': yAxisnormal_list, 'yAxisoverdue_list': yAxisoverdue_list, 'yAxistodooverdue_list': yAxistodooverdue_list, 'yAxisabandon_list': yAxisabandon_list, 'pie_summary_data': pie_summary_data, 'pie_subject_data': pie_subject_data}
     # print('tongji')
     conn.close()
     return result
@@ -457,11 +583,14 @@ def initschedule(force=False):
                       newnexttime, d, i['schedule_id']])
             conn.commit()
         c.execute("update sys_cfg set value =? where id=1", [d])
+        c.execute(
+            "update task set status=3 where etime<date() and isfinish=0 and isabandon=0")
         conn.commit()
         # 删除无效的task
-        deleterows = removetask()
+        # TODO 带验证删除
+        # deleterows = removetask()
         conn.close()
-        return {'status': 1, 'message': '新增了：'+str(len(res))+'条计划任务，可查看详情。删除了：'+str(len(deleterows))+'条无效任务', 'lastchecktime': lastcheck}
+        return {'status': 1, 'message': '新增了：'+str(len(res)) + '条计划任务，可查看详情。lastchecktime:' + lastcheck}
     else:
         return {'status': 0, 'message': '今日已检查', 'lastchecktime': lastcheck}
 
@@ -637,12 +766,15 @@ def modifyschedule(schedule_id, subject, subsub, schedule_type, schedule_frequen
 # 定义全局的函数
 # #####################################
 def getiswork():
-    global iswork
+    global iswork, subject_work
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
     cursor = c.execute("select value from sys_cfg where id=2")
     iswork = cursor.fetchone()[0]
-    # print(iswork)
+
+    cursor = c.execute("select name,value from sys_cfg where type='subject'")
+    for i in cursor:
+        subject_work[i[0]] = int(i[1])
     conn.close()
     return iswork
 
@@ -659,8 +791,138 @@ def setiswork(isw):
     conn.close()
 
 
+def getsubject():
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    temp = []
+    cursor = c.execute(
+        "select id, name,value from sys_cfg where type = 'subject'")
+    for i in cursor:
+        temp.append({'subjectid': i[0], 'name': i[1], 'value': i[2]})
+    conn.commit()
+    conn.close()
+    return temp
+
+
+def addsubject(subjectname, subjectvalue):
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    c.execute("insert into  sys_cfg ('type','name','value') values ('subject',?,?)", [
+              subjectname, subjectvalue])
+    conn.commit()
+    conn.close()
+
+
+def deletesubject(subjectid):
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    c.execute("delete from sys_cfg where id=?", [subjectid])
+    conn.commit()
+    conn.close()
+
+
+def getcompany():
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    temp = []
+    cursor = c.execute(
+        "select company,count(*) from person group by company order by 2 desc")
+    for i in cursor:
+        temp.append({'value': i[0], 'label': i[0]})
+    conn.commit()
+    conn.close()
+    return temp
+
+
+def getperson():
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    temp = []
+    # TODO 后续根据频率调整排序
+    cursor = c.execute(
+        "select person_id,company,name from person order by 2,3")
+    for i in cursor:
+        temp.append({'personid': i[0], 'company': i[1], 'name': i[2]})
+    conn.commit()
+    conn.close()
+    return temp
+
+
+def getperson_option():
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    temp = []
+    cursor = c.execute(
+        "select person_id,company,name from person order by 2,3")
+    for i in cursor:
+        temp.append({'value': i[0], 'label': i[1]+'-' + i[2]})
+    conn.commit()
+    conn.close()
+    return temp
+
+
+def addperson(company, name):
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    c.execute("insert into  person ('company','name') values (?,?)", [
+              company, name])
+    conn.commit()
+    conn.close()
+
+
+def deleteperson(personid):
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    c.execute("delete from person where person_id=?", [personid])
+    conn.commit()
+    conn.close()
+
+
+def getperson_data(task_id):
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    temp = c.execute(
+        "select person_id,company,name from person where person_id in (select person_id from task_person where task_id =?)", [task_id])
+    res = []
+    for row in temp:
+        res.append({"person_id": row[0], "company": row[1], "name": row[2]})
+    conn.commit()
+    conn.close()
+    return res
+
+
+def appendtaskperson(task_id, person_id):
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    temp = c.execute(
+        "select person_id from task_person where task_id=? ", [task_id])
+    temp = list(temp)
+    temp = [x[0] for x in temp]
+    newperson = [x for x in person_id if x not in temp]
+    if newperson:
+        for i in newperson:
+            c.execute(
+                "insert into task_person (task_id,person_id) values (?,?)", [task_id, i])
+    conn.commit()
+    conn.close()
+    res = getperson_data(task_id)
+    return res
+
+
+def deletetaskperson(task_id, person_id):
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    c.execute(
+        "delete from task_person where task_id=? and  person_id=? ", [task_id, person_id])
+    conn.commit()
+    conn.close()
+    res = getperson_data(task_id)
+    return res
+
+
 if __name__ == '__main__':
     getiswork()
-    print(gettasksummary_bar())
+    temp = appendtaskperson(128, [1, 2, 4])
+    print(temp)
 else:
     getiswork()

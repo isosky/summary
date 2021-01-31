@@ -34,8 +34,10 @@ def addtask():
     arg_subsub = json_data['subsub']
     arg_title = json_data['title']
     arg_edate = json_data['edate']
+    arg_person = json_data['person']
     print(arg_subject, arg_title, arg_edate)
-    temp = dboo.addtask(arg_subject, arg_subsub, arg_title, arg_edate)
+    temp = dboo.addtask(arg_subject, arg_subsub,
+                        arg_title, arg_edate, arg_person)
     return json.dumps({'arrays': temp})
 
 
@@ -79,9 +81,15 @@ def querytask():
     json_data = json.loads(request.get_data())
     query = json_data['query']
     subject = json_data['subject']
+    qt = json_data['qt']
     subsub = json_data['subsub']
     isqueryall = json_data['isqueryall']
-    return json.dumps({'arrays': dboo.querytask(query, subject, subsub, isqueryall)})
+    return json.dumps({'arrays': dboo.querytask(query, subject, subsub, qt, isqueryall)})
+
+
+@app.route('/querytask_week')
+def querytask_week():
+    return json.dumps({'arrays': dboo.querytask_week()})
 
 
 @app.route('/updatetask', methods=['POST'])
@@ -123,7 +131,9 @@ def addprocess():
 def getprocess():
     json_data = json.loads(request.get_data())
     task_id = json_data['task_id']
-    return json.dumps({'arrays': dboo.getprocess(task_id)})
+    temp = dboo.getprocess(task_id)
+    temp_s = dboo.gettaskprocess(task_id)
+    return json.dumps({'arrays': temp, 'status': temp_s})
 
 
 # #####################################
@@ -219,7 +229,7 @@ def modifyschedule():
 
 
 # #####################################
-# 定义schedule的函数
+# 定义sys的函数
 # #####################################
 @app.route('/setiswork', methods=['POST'])
 def setiswork():
@@ -234,6 +244,104 @@ def getiswork():
     res = dboo.getiswork()
     return json.dumps({'iswork': res})
 
+
+@app.route('/getfirstpage')
+def getfirstpage():
+    res = dboo.getfirstpage()
+    return json.dumps(res)
+
+
+@app.route('/setfirstpage', methods=['POST'])
+def setfirstpage():
+    json_data = json.loads(request.get_data())
+    firstpage = json_data['firstpage']
+    dboo.setfirstpage(firstpage)
+    return json.dumps({'result': True})
+
+
+@app.route('/getsubject')
+def getsubject():
+    res = dboo.getsubject()
+    return json.dumps(res)
+
+
+@app.route('/addsubject', methods=['POST'])
+def addsubject():
+    json_data = json.loads(request.get_data())
+    subjectname = json_data['subjectname']
+    subjectvalue = json_data['subjectvalue']
+    dboo.addsubject(subjectname, subjectvalue)
+    return json.dumps({'result': True})
+
+
+@app.route('/deletesubject', methods=['POST'])
+def deletesubject():
+    json_data = json.loads(request.get_data())
+    subjectid = json_data['subjectid']
+    dboo.deletesubject(subjectid)
+    return json.dumps({'result': True})
+
+
+@app.route('/getcompany')
+def getcompany():
+    res = dboo.getcompany()
+    return json.dumps(res)
+
+
+@app.route('/getperson')
+def getperson():
+    res = dboo.getperson()
+    return json.dumps(res)
+
+
+@app.route('/getperson_option')
+def getperson_option():
+    res = dboo.getperson_option()
+    return json.dumps(res)
+
+
+@app.route('/addperson', methods=['POST'])
+def addperson():
+    json_data = json.loads(request.get_data())
+    company = json_data['company']
+    person_name = json_data['person_name']
+    dboo.addperson(company, person_name)
+    return json.dumps({'result': True})
+
+
+@app.route('/deleteperson', methods=['POST'])
+def deleteperson():
+    json_data = json.loads(request.get_data())
+    personid = json_data['personid']
+    dboo.deleteperson(personid)
+    return json.dumps({'result': True})
+
+
+@app.route('/getperson_data', methods=['POST'])
+def getperson_data():
+    json_data = json.loads(request.get_data())
+    task_id = json_data['task_id']
+    res = dboo.getperson_data(task_id)
+    return json.dumps(res)
+
+
+@app.route('/appendtaskperson', methods=['POST'])
+def appendtaskperson():
+    json_data = json.loads(request.get_data())
+    print(json_data)
+    task_id = json_data['task_id']
+    person_id = json_data['person_id']
+    res = dboo.appendtaskperson(task_id, person_id)
+    return json.dumps(res)
+
+
+@app.route('/deletetaskperson', methods=['POST'])
+def deletetaskperson():
+    json_data = json.loads(request.get_data())
+    task_id = json_data['task_id']
+    person_id = json_data['person_id']
+    res = dboo.deletetaskperson(task_id, person_id)
+    return json.dumps(res)
 
 # #####################################
 # 定义yys的函数
@@ -271,18 +379,6 @@ def yys_getyysrole():
 # #####################################
 # 定义全局的函数
 # #####################################
-@app.route('/getfirstpage')
-def getfirstpage():
-    res = dboo.getfirstpage()
-    return json.dumps(res)
-
-
-@app.route('/setfirstpage', methods=['POST'])
-def setfirstpage():
-    json_data = json.loads(request.get_data())
-    firstpage = json_data['firstpage']
-    dboo.setfirstpage(firstpage)
-    return json.dumps({'result': True})
 
 
 if __name__ == '__main__':

@@ -3,81 +3,95 @@
   <div id="app">
     <el-row :gutter="5">
       <!-- 左侧面板 -->
-      <el-col :span="14">
+      <el-col :span="12">
         <!-- 任务管理条 -->
-        <el-collapse v-model="activeName" accordion>
-          <el-collapse-item title="任务管理（添加&查询）" name="1">
-            <el-row :gutter="5">
-              <el-select
-                @change="updatesuboption"
-                clearable
-                filterable
-                allow-create
-                v-model="task_select"
-                style="width: 120px"
-                placeholder="请选择"
-              >
-                <el-option
-                  v-for="item in task_select_option"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                ></el-option>
-              </el-select>
-              <!-- <el-input v-model="task_sub_select" style="width: 100px" placeholder="二级分类"></el-input> -->
-              <el-select
-                v-model="task_sub_select"
-                filterable
-                clearable
-                allow-create
-                style="width: 120px"
-                placeholder="请选择"
-              >
-                <el-option
-                  v-for="item in task_sub_select_option"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                ></el-option>
-              </el-select>
-              <el-date-picker
-                :picker-options="{ firstDayOfWeek: 1 }"
-                v-model="new_edate"
-                value-format="yyyy-MM-dd"
-                type="date"
-                style="width: 150px"
-                placeholder="ddl"
-              ></el-date-picker>
-              <el-input
-                v-model="task_title"
-                style="width: 300px"
-                placeholder="请输入内容"
-              ></el-input>
-              <el-button @click="addtask">提交</el-button>
-              <el-button @click="resetall">重置</el-button>
-            </el-row>
-            <el-row :gutter="5">
-              <el-date-picker
-                :picker-options="{ firstDayOfWeek: 1 }"
-                v-model="querytimerange"
-                type="daterange"
-                range-separator="至"
-                start-placeholder="开始日期"
-                end-placeholder="结束日期"
-                align="right"
-              ></el-date-picker>
-              <el-switch
-                v-model="isqueryall"
-                active-color="#13ce66"
-                inactive-color="#ff4949"
-                active-text="全部"
-                inactive-text="待做"
-              ></el-switch>
-              <el-button @click="querytask">查询</el-button>
-            </el-row>
-          </el-collapse-item>
-        </el-collapse>
-        <div class="grid-content bg-purple">
+        <el-col :span="19">
+          <el-collapse v-model="activeName" accordion>
+            <el-collapse-item title="任务管理（添加&查询）" name="1">
+              <el-row :gutter="5">
+                <el-select
+                  @change="updatesuboption"
+                  clearable
+                  filterable
+                  allow-create
+                  v-model="task_select"
+                  style="width: 120px"
+                  placeholder="请选择"
+                >
+                  <el-option
+                    v-for="item in task_select_option"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  ></el-option>
+                </el-select>
+                <!-- <el-input v-model="task_sub_select" style="width: 100px" placeholder="二级分类"></el-input> -->
+                <el-select
+                  v-model="task_sub_select"
+                  filterable
+                  clearable
+                  allow-create
+                  style="width: 120px"
+                  placeholder="请选择"
+                >
+                  <el-option
+                    v-for="item in task_sub_select_option"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  ></el-option>
+                </el-select>
+                <el-date-picker
+                  :picker-options="{ firstDayOfWeek: 1 }"
+                  v-model="new_edate"
+                  value-format="yyyy-MM-dd"
+                  type="date"
+                  style="width: 150px"
+                  placeholder="ddl"
+                ></el-date-picker>
+                <el-input
+                  v-model="task_title"
+                  style="width: 280px"
+                  placeholder="请输入内容"
+                ></el-input>
+              </el-row>
+              <el-row :gutter="5">
+                <el-select
+                  v-model="person"
+                  filterable
+                  clearable
+                  multiple
+                  style="width: 400px"
+                  placeholder="请选择相关人员"
+                >
+                  <el-option
+                    v-for="item in person_option"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  ></el-option>
+                </el-select>
+                <el-button @click="addtask" type="success">提交</el-button>
+                <el-switch
+                  v-model="isqueryall"
+                  active-color="#13ce66"
+                  inactive-color="#ff4949"
+                  active-text="全部"
+                  inactive-text="待做"
+                ></el-switch>
+                <el-button @click="querytask" type="success">查询</el-button>
+              </el-row>
+            </el-collapse-item>
+          </el-collapse>
+        </el-col>
+        <el-col
+          :span="5"
+          style="text-align: center; vertical-align: middle; line-height: 3"
+        >
+          <el-button @click="querytask_week" type="warning">本周待做</el-button>
+          <el-button @click="resetall" type="warning">重置</el-button>
+        </el-col>
+        <div class="grid-content">
           <el-table
             :data="tableData"
             border
@@ -105,6 +119,11 @@
               width="80"
             ></el-table-column>
             <el-table-column prop="title" label="标题"></el-table-column>
+            <el-table-column
+              prop="num_person"
+              label="人员"
+              width="60"
+            ></el-table-column>
             <el-table-column
               prop="num_process"
               label="进展"
@@ -142,12 +161,15 @@
         </div>
       </el-col>
       <!-- 右侧面板 -->
-      <el-col :span="10">
+      <el-col :span="12">
         <el-row :gutter="5">
-          <el-col :span="12">
+          <el-col :span="8">
             <div id="b_task" style="height: 220px"></div>
           </el-col>
-          <el-col :span="12">
+          <el-col :span="8">
+            <div id="task_pie_subject" style="height: 220px"></div>
+          </el-col>
+          <el-col :span="8">
             <div id="task_pie_summary" style="height: 220px"></div>
           </el-col>
         </el-row>
@@ -202,6 +224,46 @@
                 </template>
               </el-table-column>
             </el-table>
+          </el-tab-pane>
+          <el-tab-pane name="person" label="人员">
+            <el-row :gutter="5">
+              <el-select
+                v-model="person"
+                filterable
+                clearable
+                multiple
+                style="width: 400px"
+                placeholder="请选择相关人员"
+              >
+                <el-option
+                  v-for="item in person_option"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                ></el-option>
+              </el-select>
+              <el-button @click="appendtaskperson" type="success"
+                >追加人员</el-button
+              >
+            </el-row>
+            <el-row :gutter="5">
+              <el-table :data="persondata" style="width: 100%">
+                <el-table-column prop="company" label="单位" width="180">
+                </el-table-column>
+                <el-table-column prop="name" label="名称" width="180">
+                </el-table-column>
+                <el-table-column label="操作" width="170">
+                  <template slot-scope="scope">
+                    <el-button
+                      @click="deletetaskperson(scope.row)"
+                      type="text"
+                      size="small"
+                      >删除</el-button
+                    >
+                  </template>
+                </el-table-column>
+              </el-table>
+            </el-row>
           </el-tab-pane>
         </el-tabs>
       </el-col>
@@ -379,9 +441,9 @@ export default {
             type: "shadow", // 默认为直线，可选为：'line' | 'shadow'
           },
         },
-        color: ["black", "red", "Orange", "green"],
+        color: ["black", "red", "Orange", "green", "#939393"],
         legend: {
-          data: ["逾期", "待做逾期", "待做", "正常完成"],
+          data: ["逾期", "待做逾期", "待做", "正常完成", "作废"],
         },
         grid: {
           left: 80,
@@ -462,15 +524,74 @@ export default {
             },
             data: [],
           },
+          {
+            name: "作废",
+            type: "bar",
+            stack: "总量",
+            label: {
+              normal: {
+                show: true,
+                position: "insideRight",
+                formatter: function (num) {
+                  if (num.value == 0) {
+                    return "";
+                  }
+                },
+              },
+            },
+            data: [],
+          },
         ],
       },
-      // pie图
-      tab_pie_option: {
+      // pie subject图
+      tab_subject_pie_option: {
+        title: {
+          text: "类型统计",
+          x: "center",
+        },
+        color: [
+          "#5470c6",
+          "#91cc75",
+          "#fac858",
+          "#ee6666",
+          "#73c0de",
+          "#3ba272",
+          "#fc8452",
+          "#9a60b4",
+          "#ea7ccc",
+        ],
+        tooltip: {
+          trigger: "item",
+          formatter: "{a} <br/>{b} : {c} ({d}%)",
+        },
+        series: [
+          {
+            name: "任务情况",
+            type: "pie",
+            radius: "55%",
+            center: ["50%", "60%"],
+            // roseType: "area",
+            itemStyle: {
+              borderRadius: 18,
+            },
+            data: [],
+            label: {
+              normal: {
+                show: true,
+                position: "insideRight",
+                formatter: "{b}：{c}",
+              },
+            },
+          },
+        ],
+      },
+      // pie summary图
+      tab_summary_pie_option: {
         title: {
           text: "任务统计",
           x: "center",
         },
-        color: ["black", "red", "Orange", "green"],
+        color: ["black", "red", "Orange", "green", "#939393"],
         tooltip: {
           trigger: "item",
           formatter: "{a} <br/>{b} : {c} ({d}%)",
@@ -510,7 +631,6 @@ export default {
       task_select: "",
       new_edate: "",
       task_title: "",
-      // TODO 从数据库获得
       task_select_option: [],
       // 二级分类
       task_sub_select: "",
@@ -521,30 +641,13 @@ export default {
       tableData: [],
       tableprocess: [],
 
-      // 查询
-      pickerOptions: {
-        shortcuts: [
-          {
-            text: "本月",
-            onClick(picker) {
-              let now = new Date();
-              let start = new Date(now.getFullYear(), now.getMonth());
-              let end = "";
-              // console.log(now.getMonth());
-              if (now.getMonth() == "12") {
-                end = new Date(now.getFullYear() + 1, 1);
-                // console.log("ii", end);
-              } else {
-                end = new Date(now.getFullYear(), now.getMonth() + 1);
-                // console.log("ee", end);
-              }
-              end.setTime(end.getTime() - 3600 * 1000 * 24 * 1);
-              picker.$emit("pick", [start, end]);
-            },
-          },
-        ],
-      },
-      querytimerange: "",
+      //
+      query_date: "",
+
+      //
+      person: "",
+      person_option: "",
+
       isqueryall: true,
 
       // dialog process
@@ -572,18 +675,48 @@ export default {
       now_time: new Date().getTime(),
       task_chart: "",
       tasksummary_chart: "",
+      tasksubject_pie_chart: "",
       tasksummary_pie_chart: "",
+      persondata: [],
     };
   },
   mounted: function () {
-    console.log(this);
+    // console.log(this);
+    let that = this;
     // console.log('asdasdasda');
     // console.log(this.tableData);
     this.task_chart = echarts.init(document.getElementById("b_task"), "white", {
       renderer: "canvas",
     });
+    this.task_chart.on("click", function (params) {
+      // console.log(params["data"][0]);
+      that.query_date = params["data"][0];
+      that.task_title = "";
+      that.task_select = "";
+      that.task_sub_select = "";
+      that.querytask(true);
+    });
     this.tasksummary_chart = echarts.init(
       document.getElementById("task_summary"),
+      "white",
+      {
+        renderer: "canvas",
+      }
+    );
+    this.tasksummary_chart.on("click", function (params) {
+      console.log(params["name"]);
+      let temp = params["name"];
+      // subject: this.task_select,
+      // subsub: this.task_sub_select,
+      that.task_select = temp.split("-")[0];
+      that.task_sub_select = temp.split("-")[1];
+      that.task_title = "";
+      that.query_date = "";
+      // that.query_date = params["data"][0];
+      that.querytask(true);
+    });
+    this.tasksubject_pie_chart = echarts.init(
+      document.getElementById("task_pie_subject"),
       "white",
       {
         renderer: "canvas",
@@ -602,8 +735,13 @@ export default {
     freshright: function (event) {
       this.initoption();
       this.setbar();
+      this.task_title = "";
+      this.task_select = "";
+      this.task_sub_select = "";
+      this.query_date = "";
       this.settasksummary_bar();
       this.querytask(false);
+      this.getperson_option();
     },
     resetall: function () {
       this.task_title = "";
@@ -622,6 +760,42 @@ export default {
           this.updatesuboption();
         }
       });
+    },
+    getperson_option: function () {
+      axios.get("/getperson_option").then((response) => {
+        // console.log(response);
+        this.person_option = response.data;
+      });
+    },
+    deletetaskperson: function (event) {
+      axios
+        .post("/deletetaskperson", {
+          task_id: this.s_task_id,
+          person_id: event.person_id,
+        })
+        .then((response) => {
+          this.persondata = response.data;
+        });
+    },
+    appendtaskperson: function () {
+      axios
+        .post("/appendtaskperson", {
+          task_id: this.s_task_id,
+          person_id: this.person,
+        })
+        .then((response) => {
+          this.persondata = response.data;
+          this.person = "";
+        });
+    },
+    getperson_data: function (task_id) {
+      axios
+        .post("/getperson_data", {
+          task_id: task_id,
+        })
+        .then((response) => {
+          this.persondata = response.data;
+        });
     },
     // 更新二级下拉列表
     updatesuboption: function (event) {
@@ -671,19 +845,26 @@ export default {
             response.data.yAxistodo_list;
           this.task_summary_option.series[3].data =
             response.data.yAxisnormal_list;
+          this.task_summary_option.series[4].data =
+            response.data.yAxisabandon_list;
           this.tasksummary_chart.setOption(this.task_summary_option);
+          // pie subject图
+          this.tab_subject_pie_option.series[0].data =
+            response.data.pie_subject_data;
+          this.tasksubject_pie_chart.setOption(this.tab_subject_pie_option);
 
-          // 饼图
-          this.tab_pie_option.series[0].data = response.data.piedata;
-          this.tab_pie_option.title.text =
+          // pie summary图
+          this.tab_summary_pie_option.series[0].data =
+            response.data.pie_summary_data;
+          this.tab_summary_pie_option.title.text =
             "完成率:" +
             response.data.percent[0] +
             "%，逾期率:" +
             response.data.percent[1] +
             "%";
-          this.tab_pie_option.title.subtext =
+          this.tab_summary_pie_option.title.subtext =
             "总统计数:" + response.data.sum_task + "个";
-          this.tasksummary_pie_chart.setOption(this.tab_pie_option);
+          this.tasksummary_pie_chart.setOption(this.tab_summary_pie_option);
         }
       });
     },
@@ -717,12 +898,14 @@ export default {
     // 添加任务
     addtask: function (event) {
       if (this.new_edate != "" && this.task_title) {
+        // console.log(this.person);
         axios
           .post("/addtask", {
             subject: this.task_select,
             subsub: this.task_sub_select,
             title: this.task_title,
             edate: this.new_edate,
+            person: this.person,
           })
           .then((response) => {
             // console.log(response);
@@ -731,6 +914,7 @@ export default {
             this.task_select = "";
             this.task_select = "";
             this.task_sub_select = "";
+            this.person = "";
             this.freshright();
           });
       }
@@ -749,17 +933,24 @@ export default {
       } else {
         isqueryall = this.isqueryall;
       }
-
       axios
         .post("/querytask", {
           query: this.task_title,
           subject: this.task_select,
           subsub: this.task_sub_select,
+          qt: this.query_date,
           isqueryall: isqueryall,
         })
         .then((response) => {
           this.tableData = response.data.arrays;
         });
+    },
+    querytask_week: function () {
+      axios.get("/querytask_week").then((response) => {
+        if (response.status == 200) {
+          this.tableData = response.data.arrays;
+        }
+      });
     },
     dialogcommit: function (event) {
       // console.log(this.s_task_id);
@@ -831,15 +1022,24 @@ export default {
           this.freshright();
         });
     },
+    // TODO 增加逾期的黑色显示
     isoverdate: function ({ row, column, rowIndex, columnIndex }) {
       if (columnIndex == 0) {
-        let temp = new Date(row.tetime + " 23:59:59").getTime();
         // console.log(row);
-        if (temp < this.now_time && row.isfinish == 0) {
+        if (row.status == 1) {
+          return "";
+        }
+        if (row.status == 3) {
           return "background-color:red;color:white";
         }
-        if (row.isfinish == 1) {
+        if (row.status == 2) {
           return "background-color:green;color:white";
+        }
+        if (row.status == 4) {
+          return "background-color:black;color:white";
+        }
+        if (row.status == 5) {
+          return "background-color:'#939393'";
         }
       }
     },
@@ -849,22 +1049,38 @@ export default {
       this.process_content = "";
     },
     showprocess: function (row, column, cell, event) {
-      if (column !== undefined && column.label != "进展") {
+      // console.log(column, row.task_id);
+      if (
+        column !== undefined &&
+        column.label != "进展" &&
+        column.label != "人员"
+      ) {
         this.tabs_select = "summary";
         return;
       }
       if (
         (column !== undefined && column.label == "进展") ||
-        (this.s_task_id != "" && !this.dialogpVisible)
+        (column == undefined && this.s_task_id != "" && !this.dialogpVisible)
       ) {
         if (row !== undefined) {
           this.s_task_id = row.task_id;
         }
         this.tabs_select = "process";
         this.getprocess(this.s_task_id);
+        return;
+      }
+      if (
+        (column !== undefined && column.label == "人员") ||
+        this.s_task_id != ""
+      ) {
+        if (row !== undefined) {
+          this.s_task_id = row.task_id;
+        }
+        this.tabs_select = "person";
+        this.getperson_data(this.s_task_id);
+        return;
       }
     },
-    // TODO 更新主任务的数据
     getprocess: function (task_id) {
       axios
         .post("/getprocess", {
@@ -877,6 +1093,12 @@ export default {
               this.tableprocess[i].isfinish = "完成";
             } else {
               this.tableprocess[i].isfinish = "待做";
+            }
+          }
+          for (var i in this.tableData) {
+            // console.log(i);
+            if (this.tableData[i].task_id == response.data.status.k) {
+              this.tableData[i].num_process = response.data.status.num_process;
             }
           }
           this.s_task_id = "";

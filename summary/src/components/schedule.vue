@@ -1,6 +1,5 @@
 <template>
   <div id="app">
-    <!-- TODO 有个bug，提交不了任务的描述 -->
     <el-col :span="14" class="grid-content bg-purple-light">
       <el-row>
         <el-collapse v-model="activeName" accordion>

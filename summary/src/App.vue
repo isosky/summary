@@ -4,7 +4,7 @@
       <el-col :span="1">
         <div>
           <el-menu
-            default-active="3"
+            :default-active="defaultactive"
             class="el-menu-vertical-demo"
             :collapse="isCollapse"
             @select="moveto"
@@ -14,18 +14,10 @@
               <span slot="title">任务管理</span>
             </el-menu-item>
             <el-menu-item index="2">
-              <i class="el-icon-s-data"></i>
-              <span slot="title">yys御魂</span>
-            </el-menu-item>
-            <el-menu-item index="3">
-              <i class="el-icon-aim"></i>
-              <span slot="title">yys角色</span>
-            </el-menu-item>
-            <el-menu-item index="4">
               <i class="el-icon-time"></i>
               <span slot="title">定时任务</span>
             </el-menu-item>
-            <el-menu-item index="5">
+            <el-menu-item index="3">
               <i class="el-icon-setting"></i>
               <span slot="title">系统设置</span>
             </el-menu-item>
@@ -45,17 +37,18 @@
 export default {
   data() {
     return {
+      // TODO 考虑一下是否将gofirstpage放到这个地方
+      defaultactive: "1",
       isCollapse: true,
-      routers: ["/task", "/yysyh", "/yyshero", "/schedule", "/syssetting"]
+      // routers: ["/task", "/yysyh", "/yyshero", "/schedule", "/syssetting"]
+      routers: ["/task", "/schedule", "/syssetting"],
     };
   },
   methods: {
-    moveto: function(index) {
-      // if (index != 3) {
+    moveto: function (index) {
       this.$router.push(this.routers[index - 1]);
-      // }
-    }
-  }
+    },
+  },
 };
 </script>
 
