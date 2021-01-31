@@ -279,6 +279,35 @@ def deletesubject():
     dboo.deletesubject(subjectid)
     return json.dumps({'result': True})
 
+
+@app.route('/getcompany')
+def getcompany():
+    res = dboo.getcompany()
+    return json.dumps(res)
+
+
+@app.route('/getperson')
+def getperson():
+    res = dboo.getperson()
+    return json.dumps(res)
+
+
+@app.route('/addperson', methods=['POST'])
+def addperson():
+    json_data = json.loads(request.get_data())
+    company = json_data['company']
+    person_name = json_data['person_name']
+    dboo.addperson(company, person_name)
+    return json.dumps({'result': True})
+
+
+@app.route('/deleteperson', methods=['POST'])
+def deleteperson():
+    json_data = json.loads(request.get_data())
+    personid = json_data['personid']
+    dboo.deleteperson(personid)
+    return json.dumps({'result': True})
+
 # #####################################
 # 定义yys的函数
 # #####################################

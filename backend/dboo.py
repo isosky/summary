@@ -797,6 +797,50 @@ def deletesubject(subjectid):
     conn.close()
 
 
+def getcompany():
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    temp = []
+    cursor = c.execute(
+        "select company,count(*) from person group by company order by 2 desc")
+    for i in cursor:
+        temp.append({'value': i[0], 'label': i[0]})
+    conn.commit()
+    conn.close()
+    return temp
+
+
+def getperson():
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    temp = []
+    # TODO 后续根据频率调整排序
+    cursor = c.execute(
+        "select person_id,company,name from person order by 2,3")
+    for i in cursor:
+        temp.append({'personid': i[0], 'company': i[1], 'name': i[2]})
+    conn.commit()
+    conn.close()
+    return temp
+
+
+def addperson(company, name):
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    c.execute("insert into  person ('company','name') values (?,?)", [
+              company, name])
+    conn.commit()
+    conn.close()
+
+
+def deleteperson(personid):
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    c.execute("delete from person where person_id=?", [personid])
+    conn.commit()
+    conn.close()
+
+
 if __name__ == '__main__':
     getiswork()
     temp = querytask_week()
