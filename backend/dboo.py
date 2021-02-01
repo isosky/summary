@@ -851,7 +851,7 @@ def getperson():
     temp = []
     # TODO 后续根据频率调整排序
     cursor = c.execute(
-        "select a.person_id,company,name,count(*) from person a,task_person b where a.person_id=b.person_id group by a.person_id,a.company,a.name order by 4 desc")
+        "select a.person_id,company,name,count(*) from person a left join task_person b  on a.person_id=b.person_id group by a.person_id,a.company,a.name order by 4 desc")
     for i in cursor:
         temp.append({'personid': i[0], 'company': i[1], 'name': i[2]})
     conn.commit()
@@ -864,7 +864,7 @@ def getperson_option():
     c = conn.cursor()
     temp = []
     cursor = c.execute(
-        "select a.person_id,company,name,count(*) from person a,task_person b where a.person_id=b.person_id group by a.person_id,a.company,a.name order by 4 desc")
+        "select a.person_id,company,name,count(*) from person a left join task_person b  on a.person_id=b.person_id group by a.person_id,a.company,a.name order by 4 desc")
     for i in cursor:
         temp.append({'value': i[0], 'label': i[1]+'-' + i[2]})
     conn.commit()
