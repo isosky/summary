@@ -240,11 +240,12 @@ def deletetask(task_id):
     # 格式化成2016-03-20 11:45:39形式
     c = conn.cursor()
     c.execute(
-        '''update task set isabandon=1,status=5 where task_id =? ''', [task_id])
+        "update task set isabandon=1,status=5 where task_id =? ", [task_id])
     conn.commit()
     conn.close()
 
 
+# TODO bug 如果修改已经完成的，这个地方用now就错了
 def updatetask(task_id, subject, subsub, title, etime):
     conn = sqlite3.connect(dbf)
     # print(task_id, subsub, title, etime)
@@ -256,7 +257,7 @@ def updatetask(task_id, subject, subsub, title, etime):
         status = 3
     else:
         status = 1
-    c.execute('''update task set subject=?, subsub=? , title=? , etime=?,status=? where task_id =? ''', [
+    c.execute("update task set subject=?, subsub=? , title=? , etime=?,status=? where task_id =? ", [
               subject, subsub, title, etime, status, task_id])
     conn.commit()
     conn.close()

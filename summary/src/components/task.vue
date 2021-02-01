@@ -3,9 +3,9 @@
   <div id="app">
     <el-row :gutter="5">
       <!-- 左侧面板 -->
-      <el-col :span="12">
+      <el-col :span="11">
         <!-- 任务管理条 -->
-        <el-col :span="19">
+        <el-col :span="21">
           <el-collapse v-model="activeName" accordion>
             <el-collapse-item title="任务管理（添加&查询）" name="1">
               <el-row :gutter="5">
@@ -71,7 +71,6 @@
                     :value="item.value"
                   ></el-option>
                 </el-select>
-                <el-button @click="addtask" type="success">提交</el-button>
                 <el-switch
                   v-model="isqueryall"
                   active-color="#13ce66"
@@ -79,17 +78,38 @@
                   active-text="全部"
                   inactive-text="待做"
                 ></el-switch>
-                <el-button @click="querytask" type="success">查询</el-button>
+                <el-button
+                  @click="addtask"
+                  icon="el-icon-check"
+                  circle
+                  type="success"
+                ></el-button>
+                <el-button
+                  @click="querytask"
+                  icon="el-icon-search"
+                  type="success"
+                  circle
+                ></el-button>
               </el-row>
             </el-collapse-item>
           </el-collapse>
         </el-col>
         <el-col
-          :span="5"
+          :span="3"
           style="text-align: center; vertical-align: middle; line-height: 3"
         >
-          <el-button @click="querytask_week" type="warning">本周待做</el-button>
-          <el-button @click="resetall" type="warning">重置</el-button>
+          <el-button
+            @click="querytask_week"
+            icon="el-icon-date"
+            circle
+            type="warning"
+          ></el-button>
+          <el-button
+            @click="resetall"
+            icon="el-icon-refresh"
+            circle
+            type="warning"
+          ></el-button>
         </el-col>
         <div class="grid-content">
           <el-table
@@ -161,7 +181,7 @@
         </div>
       </el-col>
       <!-- 右侧面板 -->
-      <el-col :span="12">
+      <el-col :span="13">
         <el-row :gutter="5">
           <el-col :span="8">
             <div id="b_task" style="height: 220px"></div>
@@ -173,99 +193,101 @@
             <div id="task_pie_summary" style="height: 220px"></div>
           </el-col>
         </el-row>
-        <el-tabs v-model="tabs_select" :lazy="true" type="border-card">
-          <el-tab-pane name="summary" label="统计">
-            <div id="task_summary" style="height: 500px"></div>
-          </el-tab-pane>
-          <el-tab-pane name="process" label="进展">
-            <el-table
-              :data="tableprocess"
-              border
-              height="500"
-              style="width: 100%"
-            >
-              <el-table-column
-                prop="stime"
-                label="日期"
-                width="100"
-              ></el-table-column>
-              <el-table-column
-                prop="content"
-                label="内容"
-                width="400"
-              ></el-table-column>
-              <el-table-column
-                prop="isfinish"
-                label="状态"
-                width="100"
-              ></el-table-column>
-              <el-table-column label="操作" width="170">
-                <template slot-scope="scope">
-                  <el-button
-                    @click="showupdateprocess(scope.row)"
-                    type="text"
-                    size="small"
-                    >修改</el-button
-                  >
-                  <el-button
-                    v-if="scope.row.isfinish == '完成'"
-                    @click="resetprocess(scope.row)"
-                    type="text"
-                    size="small"
-                    >待做</el-button
-                  >
-                  <el-button
-                    v-if="scope.row.isfinish == '待做'"
-                    @click="finishprocess(scope.row)"
-                    type="text"
-                    size="small"
-                    >完成</el-button
-                  >
-                </template>
-              </el-table-column>
-            </el-table>
-          </el-tab-pane>
-          <el-tab-pane name="person" label="人员">
-            <el-row :gutter="5">
-              <el-select
-                v-model="person"
-                filterable
-                clearable
-                multiple
-                style="width: 400px"
-                placeholder="请选择相关人员"
+        <el-row :gutter="5">
+          <el-tabs v-model="tabs_select" :lazy="true" type="border-card">
+            <el-tab-pane name="summary" label="统计">
+              <div id="task_summary" style="height: 500px"></div>
+            </el-tab-pane>
+            <el-tab-pane name="process" label="进展">
+              <el-table
+                :data="tableprocess"
+                border
+                height="500"
+                style="width: 100%"
               >
-                <el-option
-                  v-for="item in person_option"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                ></el-option>
-              </el-select>
-              <el-button @click="appendtaskperson" type="success"
-                >追加人员</el-button
-              >
-            </el-row>
-            <el-row :gutter="5">
-              <el-table :data="persondata" style="width: 100%">
-                <el-table-column prop="company" label="单位" width="180">
-                </el-table-column>
-                <el-table-column prop="name" label="名称" width="180">
-                </el-table-column>
+                <el-table-column
+                  prop="stime"
+                  label="日期"
+                  width="100"
+                ></el-table-column>
+                <el-table-column
+                  prop="content"
+                  label="内容"
+                  width="400"
+                ></el-table-column>
+                <el-table-column
+                  prop="isfinish"
+                  label="状态"
+                  width="100"
+                ></el-table-column>
                 <el-table-column label="操作" width="170">
                   <template slot-scope="scope">
                     <el-button
-                      @click="deletetaskperson(scope.row)"
+                      @click="showupdateprocess(scope.row)"
                       type="text"
                       size="small"
-                      >删除</el-button
+                      >修改</el-button
+                    >
+                    <el-button
+                      v-if="scope.row.isfinish == '完成'"
+                      @click="resetprocess(scope.row)"
+                      type="text"
+                      size="small"
+                      >待做</el-button
+                    >
+                    <el-button
+                      v-if="scope.row.isfinish == '待做'"
+                      @click="finishprocess(scope.row)"
+                      type="text"
+                      size="small"
+                      >完成</el-button
                     >
                   </template>
                 </el-table-column>
               </el-table>
-            </el-row>
-          </el-tab-pane>
-        </el-tabs>
+            </el-tab-pane>
+            <el-tab-pane name="person" label="人员">
+              <el-row :gutter="5">
+                <el-select
+                  v-model="person"
+                  filterable
+                  clearable
+                  multiple
+                  style="width: 400px"
+                  placeholder="请选择相关人员"
+                >
+                  <el-option
+                    v-for="item in person_option"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  ></el-option>
+                </el-select>
+                <el-button @click="appendtaskperson" type="success"
+                  >追加人员</el-button
+                >
+              </el-row>
+              <el-row :gutter="5">
+                <el-table :data="persondata" style="width: 100%">
+                  <el-table-column prop="company" label="单位" width="180">
+                  </el-table-column>
+                  <el-table-column prop="name" label="名称" width="180">
+                  </el-table-column>
+                  <el-table-column label="操作" width="170">
+                    <template slot-scope="scope">
+                      <el-button
+                        @click="deletetaskperson(scope.row)"
+                        type="text"
+                        size="small"
+                        >删除</el-button
+                      >
+                    </template>
+                  </el-table-column>
+                </el-table>
+              </el-row>
+            </el-tab-pane>
+          </el-tabs>
+        </el-row>
       </el-col>
     </el-row>
     <!-- 各种弹出框 -->
@@ -571,9 +593,9 @@ export default {
             radius: "55%",
             center: ["50%", "60%"],
             // roseType: "area",
-            itemStyle: {
-              borderRadius: 18,
-            },
+            // itemStyle: {
+            //   borderRadius: 6,
+            // },
             data: [],
             label: {
               normal: {
@@ -596,9 +618,6 @@ export default {
           trigger: "item",
           formatter: "{a} <br/>{b} : {c} ({d}%)",
         },
-        // legend: {
-        //     data: ['逾期', '待做', '正常完成']
-        // },
         series: [
           {
             name: "任务情况",
