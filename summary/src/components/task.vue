@@ -590,12 +590,8 @@ export default {
           {
             name: "任务情况",
             type: "pie",
-            radius: "55%",
+            radius: ["45%", "55%"],
             center: ["50%", "60%"],
-            // roseType: "area",
-            // itemStyle: {
-            //   borderRadius: 6,
-            // },
             data: [],
             label: {
               normal: {
@@ -604,6 +600,16 @@ export default {
                 formatter: "{b}：{c}",
               },
             },
+          },
+          {
+            name: "分类",
+            type: "pie",
+            label: {
+              position: "inner",
+            },
+            radius: ["0%", "30%"],
+            center: ["50%", "60%"],
+            data: [],
           },
         ],
       },
@@ -870,6 +876,8 @@ export default {
           // pie subject图
           this.tab_subject_pie_option.series[0].data =
             response.data.pie_subject_data;
+          this.tab_subject_pie_option.series[1].data =
+            response.data.pie_subject_data_c;
           this.tasksubject_pie_chart.setOption(this.tab_subject_pie_option);
 
           // pie summary图
