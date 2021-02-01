@@ -501,7 +501,7 @@ def gettasksummary_bar():
 
     # 饼图数据
     pie_summary_data = [{'value': sum_overdue, 'name': '逾期'}, {'value': sum_todooverdue, 'name': '待做逾期'}, {'value': sum_todo, 'name': '待做'}, {
-        'value': sum_normal, 'name': '正常完成'}, {'value': sum_abandon, 'name': '作废'}]
+        'value': sum_normal, 'name': '正常'}, {'value': sum_abandon, 'name': '作废'}]
 
     # 柱形堆叠图数据
     result = {'sum_task': sum_task, 'percent': [finish_percent, overdue_percent], 'yAxisdata': yAxisdata, 'yAxistodo_list': yAxistodo_list,
@@ -851,7 +851,7 @@ def getperson():
     temp = []
     # TODO 后续根据频率调整排序
     cursor = c.execute(
-        "select person_id,company,name from person order by 2,3")
+        "select a.person_id,company,name,count(*) from person a,task_person b where a.person_id=b.person_id group by a.person_id,a.company,a.name order by 4 desc")
     for i in cursor:
         temp.append({'personid': i[0], 'company': i[1], 'name': i[2]})
     conn.commit()
@@ -864,7 +864,7 @@ def getperson_option():
     c = conn.cursor()
     temp = []
     cursor = c.execute(
-        "select person_id,company,name from person order by 2,3")
+        "select a.person_id,company,name,count(*) from person a,task_person b where a.person_id=b.person_id group by a.person_id,a.company,a.name order by 4 desc")
     for i in cursor:
         temp.append({'value': i[0], 'label': i[1]+'-' + i[2]})
     conn.commit()

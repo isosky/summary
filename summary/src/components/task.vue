@@ -14,6 +14,7 @@
                   clearable
                   filterable
                   allow-create
+                  default-first-option
                   v-model="task_select"
                   style="width: 120px"
                   placeholder="请选择"
@@ -31,6 +32,7 @@
                   filterable
                   clearable
                   allow-create
+                  default-first-option
                   style="width: 120px"
                   placeholder="请选择"
                 >
@@ -61,6 +63,7 @@
                   filterable
                   clearable
                   multiple
+                  default-first-option
                   style="width: 400px"
                   placeholder="请选择相关人员"
                 >
@@ -253,6 +256,7 @@
                   filterable
                   clearable
                   multiple
+                  default-first-option
                   style="width: 400px"
                   placeholder="请选择相关人员"
                 >
@@ -351,6 +355,7 @@
       <el-select
         @change="updatesuboption"
         clearable
+        default-first-option
         v-model="task_select"
         style="width: 120px"
         placeholder="请选择"
@@ -368,6 +373,7 @@
         filterable
         clearable
         allow-create
+        default-first-option
         style="width: 120px"
         placeholder="请选择"
       >
