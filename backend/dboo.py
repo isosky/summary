@@ -571,7 +571,7 @@ def initschedule(force=False):
     d = datetime.date.today().strftime("%Y-%m-%d")
     if d != lastcheck or force:
         cursor = c.execute(
-            "select * from schedule where isabandon=0 and (lasttime is null or nexttime<date(date(),'+10 day'))")
+            "select * from schedule where isabandon=0 and (lasttime is null or nexttime<date(date('now','localtime') ,'+10 day'))")
         res = []
         for i in cursor:
             temp = {'schedule_id': i[0], 'subject': i[1], 'subsub': i[2], 'content': i[3],
@@ -595,7 +595,7 @@ def initschedule(force=False):
             conn.commit()
         c.execute("update sys_cfg set value =? where id=1", [d])
         c.execute(
-            "update task set status=3 where etime<date() and isfinish=0 and isabandon=0")
+            "update task set status=3 where etime<date('now','localtime') and isfinish=0 and isabandon=0")
         conn.commit()
         # 删除无效的task
         # TODO 带验证删除
@@ -849,7 +849,6 @@ def getperson():
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
     temp = []
-    # TODO 后续根据频率调整排序
     cursor = c.execute(
         "select a.person_id,company,name,count(*) from person a left join task_person b  on a.person_id=b.person_id group by a.person_id,a.company,a.name order by 4 desc")
     for i in cursor:
