@@ -695,6 +695,7 @@ export default {
       dialoguVisible: false,
       dutitle: "",
       duetime: "",
+      dustatus: "",
 
       // dialog delete
       dialogcVisible: false,
@@ -1009,6 +1010,7 @@ export default {
       this.dutitle = event.title;
       this.s_task_id = event.task_id;
       this.duetime = event.tetime;
+      this.dustatus = event.status;
     },
 
     // 调用修改任务接口
@@ -1021,6 +1023,7 @@ export default {
           subsub: this.task_sub_select,
           title: this.dutitle,
           etime: this.duetime,
+          dustatus: this.dustatus,
         })
         .then((response) => {
           this.dialoguVisible = false;
@@ -1029,6 +1032,7 @@ export default {
           this.task_select = "";
           this.task_select = "";
           this.task_sub_select = "";
+          this.dustatus = "";
           this.freshright();
         });
     },

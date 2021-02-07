@@ -246,17 +246,18 @@ def deletetask(task_id):
 
 
 # TODO bug 如果修改已经完成的，这个地方用now就错了
-def updatetask(task_id, subject, subsub, title, etime):
+def updatetask(task_id, subject, subsub, title, etime, status):
     conn = sqlite3.connect(dbf)
     # print(task_id, subsub, title, etime)
     c = conn.cursor()
-    etime_ts = time.mktime(time.strptime(
-        etime + ' 23:59:59', "%Y-%m-%d %H:%M:%S"))
-    now_ts = time.time()
-    if now_ts > etime_ts:
-        status = 3
-    else:
-        status = 1
+    if status == 1 or status == 3:
+        etime_ts = time.mktime(time.strptime(
+            etime + ' 23:59:59', "%Y-%m-%d %H:%M:%S"))
+        now_ts = time.time()
+        if now_ts > etime_ts:
+            status = 3
+        else:
+            status = 1
     c.execute("update task set subject=?, subsub=? , title=? , etime=?,status=? where task_id =? ", [
               subject, subsub, title, etime, status, task_id])
     conn.commit()
