@@ -1019,9 +1019,9 @@ export default {
       axios
         .post("/updatetask", {
           task_id: this.s_task_id,
-          subject: this.task_select,
-          subsub: this.task_sub_select,
-          title: this.dutitle,
+          type: this.task_select,
+          sub_type: this.task_sub_select,
+          task_name: this.dutitle,
           etime: this.duetime,
           dustatus: this.dustatus,
         })
