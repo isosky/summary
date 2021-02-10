@@ -32,7 +32,7 @@
           style="width: 200px"
           placeholder="请输入分类类型"
         ></el-input
-        ><el-button @click="addsubject">添加分类</el-button></el-row
+        ><el-button @click="addtype">添加分类</el-button></el-row
       >
       <el-row :span="6"
         ><el-table :data="subjectdata" style="width: 100%">
@@ -43,7 +43,7 @@
           <el-table-column label="操作" width="170">
             <template slot-scope="scope">
               <el-button
-                @click="deletesubject(scope.row)"
+                @click="deletetype(scope.row)"
                 type="text"
                 size="small"
                 >删除</el-button
@@ -82,7 +82,7 @@
         <el-table :data="persondata"  height="800" style="width: 100%">
           <el-table-column prop="company" label="单位" width="180">
           </el-table-column>
-          <el-table-column prop="name" label="名称" width="180">
+          <el-table-column prop="person_name" label="名称" width="180">
           </el-table-column>
           <el-table-column label="操作" width="170">
             <template slot-scope="scope">
@@ -125,41 +125,41 @@ export default {
   mounted: function () {
     this.getfirstpage();
     this.getiswork();
-    this.getsubject();
+    this.gettype();
     this.getcompany();
     this.getperson();
   },
   methods: {
-    getsubject: function () {
-      axios.get("/getsubject").then((response) => {
+    gettype: function () {
+      axios.get("/gettype").then((response) => {
         // console.log(response);
         this.subjectdata = response.data;
       });
     },
-    addsubject: function (event) {
+    addtype: function (event) {
       if (this.subjectname != "" && this.subjectvalue != "") {
         axios
-          .post("/addsubject", {
-            subjectname: this.subjectname,
-            subjectvalue: this.subjectvalue,
+          .post("/addtype", {
+            typename: this.subjectname,
+            typevalue: this.subjectvalue,
           })
           .then((response) => {
             // console.log(response);
             this.subjectname = "";
             this.subjectvalue = "";
-            this.getsubject();
+            this.gettype();
           });
       }
     },
-    deletesubject: function (event) {
-      let temp = event.subjectid;
+    deletetype: function (event) {
+      let temp = event.type_id;
       // console.log(temp);
       axios
-        .post("/deletesubject", {
-          subjectid: temp,
+        .post("/deletetype", {
+          typeid: temp,
         })
         .then((response) => {
-          this.getsubject();
+          this.gettype();
         });
     },
     // person
@@ -192,7 +192,7 @@ export default {
       }
     },
     deleteperson: function (event) {
-      let temp = event.personid;
+      let temp = event.person_id;
       // console.log(temp);
       axios
         .post("/deleteperson", {

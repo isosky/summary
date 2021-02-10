@@ -132,16 +132,16 @@
               width="95"
             ></el-table-column>
             <el-table-column
-              prop="subject"
+              prop="type"
               label="分类"
               width="60"
             ></el-table-column>
             <el-table-column
-              prop="subsub"
+              prop="sub_type"
               label="二级分类"
               width="80"
             ></el-table-column>
-            <el-table-column prop="title" label="标题"></el-table-column>
+            <el-table-column prop="task_name" label="标题"></el-table-column>
             <el-table-column
               prop="num_person"
               label="人员"
@@ -214,7 +214,7 @@
                   width="100"
                 ></el-table-column>
                 <el-table-column
-                  prop="content"
+                  prop="process_name"
                   label="内容"
                   width="400"
                 ></el-table-column>
@@ -275,7 +275,7 @@
                 <el-table :data="persondata" style="width: 100%">
                   <el-table-column prop="company" label="单位" width="180">
                   </el-table-column>
-                  <el-table-column prop="name" label="名称" width="180">
+                  <el-table-column prop="person_name" label="名称" width="180">
                   </el-table-column>
                   <el-table-column label="操作" width="170">
                     <template slot-scope="scope">
@@ -572,7 +572,7 @@ export default {
         ],
       },
       // pie subject图
-      tab_subject_pie_option: {
+      tab_type_pie_option: {
         title: {
           text: "类型统计",
           x: "center",
@@ -707,7 +707,7 @@ export default {
       now_time: new Date().getTime(),
       task_chart: "",
       tasksummary_chart: "",
-      tasksubject_pie_chart: "",
+      tasktype_pie_chart: "",
       tasksummary_pie_chart: "",
       persondata: [],
     };
@@ -747,7 +747,7 @@ export default {
       // that.query_date = params["data"][0];
       that.querytask(true);
     });
-    this.tasksubject_pie_chart = echarts.init(
+    this.tasktype_pie_chart = echarts.init(
       document.getElementById("task_pie_subject"),
       "white",
       {
@@ -880,12 +880,11 @@ export default {
           this.task_summary_option.series[4].data =
             response.data.yAxisabandon_list;
           this.tasksummary_chart.setOption(this.task_summary_option);
-          // pie subject图
-          this.tab_subject_pie_option.series[0].data =
-            response.data.pie_subject_data;
-          this.tab_subject_pie_option.series[1].data =
-            response.data.pie_subject_data_c;
-          this.tasksubject_pie_chart.setOption(this.tab_subject_pie_option);
+          // pie type图
+          this.tab_type_pie_option.series[0].data = response.data.pie_type_data;
+          this.tab_type_pie_option.series[1].data =
+            response.data.pie_type_data_c;
+          this.tasktype_pie_chart.setOption(this.tab_type_pie_option);
 
           // pie summary图
           this.tab_summary_pie_option.series[0].data =
@@ -915,7 +914,7 @@ export default {
       axios
         .post("/addprocess", {
           task_id: this.s_task_id,
-          content: this.input_process,
+          process_name: this.input_process,
         })
         .then((response) => {
           this.$message({
@@ -935,9 +934,9 @@ export default {
         // console.log(this.person);
         axios
           .post("/addtask", {
-            subject: this.task_select,
-            subsub: this.task_sub_select,
-            title: this.task_title,
+            type: this.task_select,
+            sub_type: this.task_sub_select,
+            task_name: this.task_title,
             edate: this.new_edate,
             person: this.person,
           })
@@ -970,12 +969,13 @@ export default {
       axios
         .post("/querytask", {
           query: this.task_title,
-          subject: this.task_select,
-          subsub: this.task_sub_select,
+          type: this.task_select,
+          sub_type: this.task_sub_select,
           qt: this.query_date,
           isqueryall: isqueryall,
         })
         .then((response) => {
+          console.log(response.data);
           this.tableData = response.data.arrays;
         });
     },
@@ -1005,9 +1005,9 @@ export default {
     updatetask: function (event) {
       this.dialoguVisible = true;
       // console.log(event);
-      this.task_select = event.subject;
-      this.task_sub_select = event.subsub;
-      this.dutitle = event.title;
+      this.task_select = event.type;
+      this.task_sub_select = event.sub_type;
+      this.dutitle = event.task_name;
       this.s_task_id = event.task_id;
       this.duetime = event.tetime;
       this.dustatus = event.status;
@@ -1182,7 +1182,7 @@ export default {
       axios
         .post("/updateprocess", {
           process_id: this.process_id,
-          content: this.process_content,
+          process_name: this.process_content,
         })
         .then((response) => {
           if (response.status == 200) {

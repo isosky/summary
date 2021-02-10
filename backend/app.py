@@ -30,14 +30,14 @@ def data_add():
 def addtask():
     # print(request.get_data())
     json_data = json.loads(request.get_data())
-    arg_subject = json_data['subject']
-    arg_subsub = json_data['subsub']
-    arg_title = json_data['title']
+    arg_type = json_data['type']
+    arg_sub_type = json_data['sub_type']
+    arg_task_name = json_data['task_name']
     arg_edate = json_data['edate']
     arg_person = json_data['person']
-    print(arg_subject, arg_title, arg_edate)
-    temp = dboo.addtask(arg_subject, arg_subsub,
-                        arg_title, arg_edate, arg_person)
+    print(arg_type, arg_task_name, arg_edate)
+    temp = dboo.addtask(arg_type, arg_sub_type,
+                        arg_task_name, arg_edate, arg_person)
     return json.dumps({'arrays': temp})
 
 
@@ -80,11 +80,11 @@ def deletetask():
 def querytask():
     json_data = json.loads(request.get_data())
     query = json_data['query']
-    subject = json_data['subject']
+    type = json_data['type']
     qt = json_data['qt']
-    subsub = json_data['subsub']
+    sub_type = json_data['sub_type']
     isqueryall = json_data['isqueryall']
-    return json.dumps({'arrays': dboo.querytask(query, subject, subsub, qt, isqueryall)})
+    return json.dumps({'arrays': dboo.querytask(query, type, sub_type, qt, isqueryall)})
 
 
 @app.route('/querytask_week')
@@ -97,12 +97,12 @@ def updatetask():
     json_data = json.loads(request.get_data())
     print(json_data)
     task_id = json_data['task_id']
-    subject = json_data['subject']
-    subsub = json_data['subsub']
-    title = json_data['title']
+    type = json_data['type']
+    sub_type = json_data['sub_type']
+    task_name = json_data['task_name']
     etime = json_data['etime']
     status = json_data['dustatus']
-    dboo.updatetask(task_id, subject, subsub, title, etime, status)
+    dboo.updatetask(task_id, type, sub_type, task_name, etime, status)
     return json.dumps({'result': True})
 
 
@@ -121,8 +121,8 @@ def gettasksummary_bar():
 def addprocess():
     json_data = json.loads(request.get_data())
     task_id = json_data['task_id']
-    content = json_data['content']
-    if dboo.addprocess(task_id, content):
+    process_name = json_data['process_name']
+    if dboo.addprocess(task_id, process_name):
         return json.dumps({'result': True})
 
 
@@ -160,9 +160,9 @@ def finishprocess():
 def updateprocess():
     json_data = json.loads(request.get_data())
     process_id = json_data['process_id']
-    content = json_data['content']
+    process_name = json_data['process_name']
     # print(process_id)
-    return json.dumps({'status': dboo.updateprocess(process_id, content)})
+    return json.dumps({'status': dboo.updateprocess(process_id, process_name)})
 
 # #####################################
 # 定义schedule的函数
@@ -177,13 +177,13 @@ def initschedule():
 @app.route('/addschedule', methods=['POST'])
 def addschedule():
     json_data = json.loads(request.get_data())
-    subject = json_data['task_select']
-    subsub = json_data['task_sub_select']
+    type = json_data['type']
+    sub_type = json_data['sub_type']
     schedule_type = json_data['schedule_type']
     schedule_frequence = json_data['schedule_frequence']
-    content = json_data['schedule_content']
-    temp = dboo.addschedule(subject, subsub, schedule_type,
-                            schedule_frequence, content)
+    task_name = json_data['task_name']
+    temp = dboo.addschedule(type, sub_type, schedule_type,
+                            schedule_frequence, task_name)
     return json.dumps({'result': temp})
 
 
@@ -220,13 +220,13 @@ def startschedule():
 def modifyschedule():
     json_data = json.loads(request.get_data())
     schedule_id = json_data['schedule_id']
-    subject = json_data['subject']
-    subsub = json_data['subsub']
+    type = json_data['type']
+    sub_type = json_data['sub_type']
     schedule_type = json_data['schedule_type']
     schedule_frequence = json_data['schedule_frequence']
-    content = json_data['schedule_content']
+    task_name = json_data['schedule_content']
     # print(schedule_id)
-    return json.dumps({'status': dboo.modifyschedule(schedule_id, subject, subsub, schedule_type, schedule_frequence, content)})
+    return json.dumps({'status': dboo.modifyschedule(schedule_id, type, sub_type, schedule_type, schedule_frequence, task_name)})
 
 
 # #####################################
@@ -260,26 +260,26 @@ def setfirstpage():
     return json.dumps({'result': True})
 
 
-@app.route('/getsubject')
-def getsubject():
-    res = dboo.getsubject()
+@app.route('/gettype')
+def gettype():
+    res = dboo.gettype()
     return json.dumps(res)
 
 
-@app.route('/addsubject', methods=['POST'])
-def addsubject():
+@app.route('/addtype', methods=['POST'])
+def addtype():
     json_data = json.loads(request.get_data())
-    subjectname = json_data['subjectname']
-    subjectvalue = json_data['subjectvalue']
-    dboo.addsubject(subjectname, subjectvalue)
+    typename = json_data['typename']
+    typevalue = json_data['typevalue']
+    dboo.addtype(typename, typevalue)
     return json.dumps({'result': True})
 
 
-@app.route('/deletesubject', methods=['POST'])
-def deletesubject():
+@app.route('/deletetype', methods=['POST'])
+def deletetype():
     json_data = json.loads(request.get_data())
-    subjectid = json_data['subjectid']
-    dboo.deletesubject(subjectid)
+    typeid = json_data['typeid']
+    dboo.deletetype(typeid)
     return json.dumps({'result': True})
 
 
@@ -343,39 +343,6 @@ def deletetaskperson():
     person_id = json_data['person_id']
     res = dboo.deletetaskperson(task_id, person_id)
     return json.dumps(res)
-
-# #####################################
-# 定义yys的函数
-# #####################################
-@app.route('/yys_getyhscore')
-def yys_getyhscore():
-    res = dboo_yys.getyhscore()
-    return json.dumps(res)
-
-
-@app.route('/yys_getyhtypescore')
-def yys_getyhtypescore():
-    res = dboo_yys.getyhtypescore()
-    return json.dumps(res)
-
-
-@app.route('/yys_getyhtypenum')
-def yys_getyhtypenum():
-    res = dboo_yys.getyhtypenum()
-    return json.dumps(res)
-
-
-@app.route('/yys_getyhtypesunburst')
-def yys_getyhtypesunburst():
-    res = dboo_yys.getyhtypesunburst()
-    return json.dumps(res)
-
-
-@app.route('/yys_getyysrole')
-def yys_getyysrole():
-    res = dboo_yys.getyysrole()
-    return json.dumps(res)
-
 
 # #####################################
 # 定义全局的函数

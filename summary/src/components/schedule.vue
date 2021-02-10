@@ -79,16 +79,16 @@
           @cell-click="showscheduleprocess"
         >
           <el-table-column
-            prop="subject"
+            prop="type"
             label="分类"
             width="60"
           ></el-table-column>
           <el-table-column
-            prop="subsub"
+            prop="sub_type"
             label="二级分类"
             width="80"
           ></el-table-column>
-          <el-table-column prop="content" label="内容"></el-table-column>
+          <el-table-column prop="task_name" label="内容"></el-table-column>
           <el-table-column
             prop="schedule_type"
             label="类型"
@@ -144,7 +144,7 @@
     <el-col :span="9" :offset="1" class="grid-content bg-purple-light">
       <el-table :data="scheduletaskdata" height="800" style="width: 100%">
         <el-table-column
-          prop="content"
+          prop="task_name"
           label="内容"
           width="180"
         ></el-table-column>
@@ -339,11 +339,11 @@ export default {
     addschedule: function (event) {
       axios
         .post("/addschedule", {
-          task_select: this.task_select,
-          task_sub_select: this.task_sub_select,
+          type: this.task_select,
+          sub_type: this.task_sub_select,
           schedule_type: this.schedule_type,
           schedule_frequence: this.schedule_frequence,
-          schedule_content: this.schedule_content,
+          task_name: this.schedule_content,
         })
         .then((response) => {
           if (response.status == 200) {
@@ -353,19 +353,19 @@ export default {
     },
     showupdateschedule: function (event) {
       this.modifysVisible = true;
-      this.task_select = event.subject;
-      this.task_sub_select = event.subsub;
+      this.task_select = event.type;
+      this.task_sub_select = event.sub_type;
       this.schedule_type = event.schedule_type;
       this.schedule_frequence = event.schedule_frequence;
-      this.schedule_content = event.content;
+      this.schedule_content = event.task_name;
       this.scheduleselect_id = event.schedule_id;
     },
     modifyschedule: function (event) {
       axios
         .post("/modifyschedule", {
           schedule_id: this.scheduleselect_id,
-          subject: this.task_select,
-          subsub: this.task_sub_select,
+          type: this.task_select,
+          sub_type: this.task_sub_select,
           schedule_type: this.schedule_type,
           schedule_frequence: this.schedule_frequence,
           schedule_content: this.schedule_content,
