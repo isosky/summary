@@ -369,51 +369,42 @@ def calbegin():
 def gettasksummary_bar():
     global iswork
     t = calbegin()
+    t = datetime.date.today() - datetime.timedelta(days=30)
     # print(t)
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
     cursor = c.execute(
-        "select type,sub_type,count(*) from task where isabandon=0 and iswork>=? and etime>? group by type,sub_type order by 3", [iswork, t])
+        "select type,sub_type,count(*) from task where iswork>=? and etime>? group by type,sub_type order by 3", [iswork, t])
     yAxisdata = []
     for i in cursor:
         yAxisdata.append(i[0]+'-'+i[1])
 
-    etime = time.strftime("%Y-%m-%d", time.localtime())
+    # etime = time.strftime("%Y-%m-%d", time.localtime())
+    # etime = datetime.date.today() - datetime.timedelta(days=30)
+    # print('*'*10)
+    # print(t, etime)
     # todo
-    cursor = c.execute(
-        "select type,sub_type,count(*) from task where etime>=? and isabandon=0 and isfinish=0  and iswork>=? and etime>? group by type,sub_type", [etime, iswork, t])
+    # todo:1,todooverdue:3,normal:2,overdue:4,abandon:5
     yAxistodo = {}
-    for i in cursor:
-        yAxistodo[i[0]+'-'+i[1]] = i[2]
-
-    # unfinish and delay
-    # TODO 这部分不应该计算开始日期
-    cursor = c.execute(
-        "select type,sub_type,count(*) from task where etime<? and isfinish=0 and isabandon=0  and iswork>=? and etime>? group by type,sub_type", [etime, iswork, t])
     yAxistodooverdue = {}
-    for i in cursor:
-        yAxistodooverdue[i[0]+'-'+i[1]] = i[2]
-
-    # normal
-    cursor = c.execute(
-        "select type,sub_type,count(*) from task where ftime<date(etime,'+1 day') and isabandon=0 and isfinish=1 and iswork>=? and etime>? group by type,sub_type", [iswork, t])
     yAxisnormal = {}
-    for i in cursor:
-        yAxisnormal[i[0]+'-'+i[1]] = i[2]
-
-    # overdue
-    cursor = c.execute(
-        "select type,sub_type,count(*) from task where ftime>=date(etime,'+1 day') and isabandon=0 and iswork>=? and etime>? group by type,sub_type", [iswork, t])
     yAxisoverdue = {}
-    for i in cursor:
-        yAxisoverdue[i[0] + '-' + i[1]] = i[2]
-
-    # abandon
-    cursor = c.execute(
-        "select type,sub_type,count(*) from task where isabandon=1 and iswork>=? and etime>? group by type,sub_type", [iswork, t])
     yAxisabandon = {}
+
+    cursor = c.execute(
+        "select type,sub_type,status,count(*) from task where iswork>=? and etime>=? group by type,sub_type,status order by 1,2,3", [iswork, t])
     for i in cursor:
-        yAxisabandon[i[0]+'-'+i[1]] = i[2]
+        if i[2] == 1:
+            yAxistodo[i[0]+'-'+i[1]] = i[3]
+
+        if i[2] == 2:
+            yAxisnormal[i[0]+'-'+i[1]] = i[3]
+        if i[2] == 3:
+            yAxistodooverdue[i[0] + '-' + i[1]] = i[3]
+        if i[2] == 4:
+            yAxisoverdue[i[0]+'-'+i[1]] = i[3]
+        if i[2] == 5:
+            yAxisabandon[i[0] + '-' + i[1]] = i[3]
 
     yAxistodo_list = []
     yAxisnormal_list = []
@@ -464,13 +455,13 @@ def gettasksummary_bar():
         finish_percent = 0
 
     cursor = c.execute(
-        " select type, count(*) from task where iswork>=? and etime>? group by type", [iswork, t])
+        " select type, count(*) from task where iswork>=? and etime>=? group by type", [iswork, t])
     pie_type_data = []
     for i in cursor:
         pie_type_data.append({'name': i[0], 'value': i[1]})
 
     cursor = c.execute(
-        "select iswork,count(*) from task  where iswork>=? and etime>? group by iswork", [iswork, t])
+        "select iswork,count(*) from task  where iswork>=? and etime>=? group by iswork", [iswork, t])
     pie_type_data_c = []
     for i in cursor:
         if i[0]:
