@@ -189,23 +189,19 @@ def parsetime(timestring, timeformat):
 def gettimedata():
     global iswork
     conn = sqlite3.connect(dbf)
+    start_time = datetime.datetime.strftime(
+        datetime.date.today() - datetime.timedelta(days=14), "%Y-%m-%d")
+    end_time = datetime.datetime.strftime(
+        datetime.date.today() + datetime.timedelta(days=1), "%Y-%m-%d")
     c = conn.cursor()
     cursor = c.execute(
-        "select strftime('%Y-%m-%d',ftime),count(*) from task where isfinish =1 and isabandon=0 and iswork>=? group by strftime('%Y-%m-%d',ftime)", [iswork])
+        "select strftime('%Y-%m-%d',ftime),count(*) from task where isfinish =1 and isabandon=0 and iswork>=? and etime>=? group by strftime('%Y-%m-%d',ftime)", [iswork, start_time])
     result = []
     for row in cursor:
         result.append(row)
-# 返回日历的时间
-    cur_year = time.localtime()[0]
-    cur_month = time.localtime()[1]
-    if cur_month == 1:
-        r = [str(cur_year-1)+'-12', str(cur_year)+'-02']
-    elif cur_month == 12:
-        r = [str(cur_year)+'-'+str(cur_month-1),
-             str(cur_year+1)+'-02']
-    else:
-        r = [str(cur_year)+'-'+str(cur_month-1),
-             str(cur_year)+'-'+str(cur_month+2)]
+
+    r = [start_time, end_time]
+
     conn.commit()
     conn.close()
     return {'result': result, 'range': r}
@@ -369,7 +365,7 @@ def calbegin():
 def gettasksummary_bar():
     global iswork
     t = calbegin()
-    t = datetime.date.today() - datetime.timedelta(days=30)
+    t = datetime.date.today() - datetime.timedelta(days=14)
     # print(t)
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
@@ -380,7 +376,7 @@ def gettasksummary_bar():
         yAxisdata.append(i[0]+'-'+i[1])
 
     # etime = time.strftime("%Y-%m-%d", time.localtime())
-    # etime = datetime.date.today() - datetime.timedelta(days=30)
+    # etime = datetime.date.today() - datetime.timedelta(days=14)
     # print('*'*10)
     # print(t, etime)
     # todo

@@ -444,24 +444,53 @@ export default {
       title_now: "任务管理（添加&查询）",
       // 日历表
       task_option: {
-        tooltip: {},
+        grid: {
+          left: "0",
+          right: "0",
+        },
         visualMap: {
           show: false,
           min: 0,
-          max: 10,
+          max: 20,
+          // orient: "vertical",
           inRange: {
             color: ["#ebedf0", "#c6e48b", "#7bc96f", "#239a3b", "#196127"],
           },
         },
+        tooltip: {
+          formatter: function (params) {
+            return "完成任务数量: " + params.value[1];
+          },
+        },
         calendar: {
           range: ["2020-06", "2020-08"],
+          orient: "vertical",
+          left: 50,
+          right: 10,
+          top: 50,
+          bottom: 10,
+          yearLabel: {
+            show: false,
+          },
           dayLabel: {
             firstDay: 1, // 从周一开始
+            nameMap: "cn",
+          },
+          monthLabel: {
+            nameMap: "cn",
           },
         },
         series: {
           type: "heatmap",
           coordinateSystem: "calendar",
+          label: {
+            show: true,
+            formatter: function (params) {
+              var d = echarts.number.parseDate(params.value[0]);
+              return d.getDate() + "\n" + params.value[1] + "个";
+            },
+            color: "#000",
+          },
           data: [],
         },
       },
