@@ -335,28 +335,7 @@ def calday():
     return [(today - datetime.timedelta(days=today.weekday())).strftime('%Y%m%d'), (today - datetime.timedelta(days=today.weekday()-6)).strftime('%Y%m%d')]
 
 
-# def removetask():
-#     conn = sqlite3.connect(dbf)
-#     c = conn.cursor()
-#     cursor = c.execute("select count(*) from task where isabandon=1")
-#     for i in cursor:
-#         result = i[0]
-#     # print(result)
-#     cursor = c.execute("delete from task where isabandon=1")
-#     conn.commit()
-#     return str(result)
-
-
 def calbegin():
-    # cur_year = time.localtime()[0]
-    # cur_month = time.localtime()[1]
-    # if cur_month == 1:
-    #     t = str(cur_year-1)+'-12-01'
-    # else:
-    #     if cur_month < 10:
-    #         t = str(cur_year)+'-0'+str(cur_month-1)+'-01'
-    #     else:
-    #         t = str(cur_year) + '-' + str(cur_month) - 1 + '-01'
     return datetime.date.today() - datetime.timedelta(days=14)
 
 # 统计图
@@ -365,22 +344,15 @@ def calbegin():
 def gettasksummary_bar():
     global iswork
     t = calbegin()
-    # t = datetime.date.today() - datetime.timedelta(days=14)
-    # print(t)
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
     cursor = c.execute(
-        "select type,sub_type,count(*) from task where iswork>=? and etime>? group by type,sub_type order by 3", [iswork, t])
+        "select type,sub_type,count(*) from task where iswork>=? and etime>=? group by type,sub_type order by 3", [iswork, t])
     yAxisdata = []
     for i in cursor:
         yAxisdata.append(i[0]+'-'+i[1])
+    # print(yAxisdata)
 
-    # etime = time.strftime("%Y-%m-%d", time.localtime())
-    # etime = datetime.date.today() - datetime.timedelta(days=14)
-    # print('*'*10)
-    # print(t, etime)
-    # todo
-    # todo:1,todooverdue:3,normal:2,overdue:4,abandon:5
     yAxistodo = {}
     yAxistodooverdue = {}
     yAxisnormal = {}
@@ -899,10 +871,10 @@ def deletetaskperson(task_id, person_id):
 
 if __name__ == '__main__':
     getiswork()
-    print(type_work)
+    # print(type_work)
     # initoption()
-    # temp = gettasksummary_bar()
-    # print(temp)
+    temp = gettasksummary_bar()
+    print(temp)
     # print(temp.keys())
 else:
     getiswork()
