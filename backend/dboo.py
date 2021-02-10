@@ -317,7 +317,7 @@ def querytask_week():
     global iswork
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
-    sql = "select task_id,type,sub_type,task_name,etime,stime,isfinish,status from task where isabandon=0 and iswork >= ? AND etime <= ? AND isfinish =0 "
+    sql = "select task_id,type,sub_type,task_name,etime,stime,isfinish,status from task where isabandon=0 and iswork >= ? AND etime <= ? AND isfinish =0 order by etime"
     today = datetime.datetime.today()
     etime = datetime.datetime.strftime(
         today + datetime.timedelta(7 - today.weekday() - 1), "%Y-%m-%d")
