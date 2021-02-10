@@ -220,6 +220,8 @@ def finishtask(task_id, input_finish):
     etime = temp.fetchone()[0] + ' 23:59:59'
     etime_ts = time.mktime(time.strptime(etime, "%Y-%m-%d %H:%M:%S"))
     now_ts = time.time()
+    if input_finish == '':
+        input_finish = '已完成'
     if now_ts > etime_ts:
         status = 4
     else:

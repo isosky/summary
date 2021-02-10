@@ -762,7 +762,7 @@ export default {
       }
     );
     this.tasksummary_chart.on("click", function (params) {
-      console.log(params["name"]);
+      // console.log(params["name"]);
       let temp = params["name"];
       // subject: this.task_select,
       // subsub: this.task_sub_select,
@@ -1001,7 +1001,7 @@ export default {
           isqueryall: isqueryall,
         })
         .then((response) => {
-          console.log(response.data);
+          // console.log(response.data);
           this.tableData = response.data.arrays;
         });
     },
@@ -1178,7 +1178,7 @@ export default {
               message: "禁用成功",
               type: "success",
             });
-            console.log(event);
+            // console.log(event);
             this.getprocess(event.task_id);
           }
         });
