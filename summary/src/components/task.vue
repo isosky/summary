@@ -7,7 +7,10 @@
         <!-- 任务管理条 -->
         <el-col :span="21">
           <el-collapse v-model="activeName" accordion>
-            <el-collapse-item title="任务管理（添加&查询）" name="1">
+            <el-collapse-item name="1">
+              <template slot="title">
+                {{ title_now }}<i class="header-icon el-icon-info"></i>
+              </template>
               <el-row :gutter="5">
                 <el-select
                   @change="updatesuboption"
@@ -437,6 +440,8 @@ export default {
       tabs_select: "summary",
       // v_step_date: "",
       // v_step_avg: "",
+      //
+      title_now: "任务管理（添加&查询）",
       // 日历表
       task_option: {
         tooltip: {},
@@ -714,6 +719,27 @@ export default {
   },
   mounted: function () {
     // console.log(this);
+    let now = new Date();
+    let year = now.getFullYear(); //得到年份
+    let month = now.getMonth() + 1; //得到月份
+    let date = now.getDate(); //得到日期
+    let day = now.getDay(); //得到周几
+    let week;
+    let arr_week = new Array(
+      "星期日",
+      "星期一",
+      "星期二",
+      "星期三",
+      "星期四",
+      "星期五",
+      "星期六"
+    );
+    week = arr_week[day];
+    let time_ts = "";
+    time_ts =
+      "当前时间：" + year + "年" + month + "月" + date + "日" + " " + week;
+    // ****
+    this.title_now = this.title_now + "  ||  " + time_ts;
     let that = this;
     // console.log('asdasdasda');
     // console.log(this.tableData);
