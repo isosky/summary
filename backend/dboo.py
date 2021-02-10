@@ -348,16 +348,16 @@ def calday():
 
 
 def calbegin():
-    cur_year = time.localtime()[0]
-    cur_month = time.localtime()[1]
-    if cur_month == 1:
-        t = str(cur_year-1)+'-12-01'
-    else:
-        if cur_month < 10:
-            t = str(cur_year)+'-0'+str(cur_month-1)+'-01'
-        else:
-            t = str(cur_year) + '-' + str(cur_month) - 1 + '-01'
-    return t
+    # cur_year = time.localtime()[0]
+    # cur_month = time.localtime()[1]
+    # if cur_month == 1:
+    #     t = str(cur_year-1)+'-12-01'
+    # else:
+    #     if cur_month < 10:
+    #         t = str(cur_year)+'-0'+str(cur_month-1)+'-01'
+    #     else:
+    #         t = str(cur_year) + '-' + str(cur_month) - 1 + '-01'
+    return datetime.date.today() - datetime.timedelta(days=14)
 
 # 统计图
 
@@ -365,7 +365,7 @@ def calbegin():
 def gettasksummary_bar():
     global iswork
     t = calbegin()
-    t = datetime.date.today() - datetime.timedelta(days=14)
+    # t = datetime.date.today() - datetime.timedelta(days=14)
     # print(t)
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
