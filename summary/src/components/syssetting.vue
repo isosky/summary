@@ -79,7 +79,7 @@
       >
       </el-row>
       <el-row :span="6">
-        <el-table :data="persondata" style="width: 100%">
+        <el-table :data="persondata"  height="800" style="width: 100%">
           <el-table-column prop="company" label="单位" width="180">
           </el-table-column>
           <el-table-column prop="name" label="名称" width="180">

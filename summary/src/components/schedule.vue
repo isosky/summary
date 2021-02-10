@@ -74,6 +74,7 @@
         <el-table
           :data="scheduledata"
           border
+          height="750"
           style="width: 100%"
           @cell-click="showscheduleprocess"
         >
@@ -141,7 +142,7 @@
       </el-row>
     </el-col>
     <el-col :span="9" :offset="1" class="grid-content bg-purple-light">
-      <el-table :data="scheduletaskdata" style="width: 100%">
+      <el-table :data="scheduletaskdata" height="800" style="width: 100%">
         <el-table-column
           prop="content"
           label="内容"

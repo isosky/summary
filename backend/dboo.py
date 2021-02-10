@@ -240,23 +240,25 @@ def deletetask(task_id):
     # 格式化成2016-03-20 11:45:39形式
     c = conn.cursor()
     c.execute(
-        '''update task set isabandon=1,status=5 where task_id =? ''', [task_id])
+        "update task set isabandon=1,status=5 where task_id =? ", [task_id])
     conn.commit()
     conn.close()
 
 
-def updatetask(task_id, subject, subsub, title, etime):
+# TODO bug 如果修改已经完成的，这个地方用now就错了
+def updatetask(task_id, subject, subsub, title, etime, status):
     conn = sqlite3.connect(dbf)
     # print(task_id, subsub, title, etime)
     c = conn.cursor()
-    etime_ts = time.mktime(time.strptime(
-        etime + ' 23:59:59', "%Y-%m-%d %H:%M:%S"))
-    now_ts = time.time()
-    if now_ts > etime_ts:
-        status = 3
-    else:
-        status = 1
-    c.execute('''update task set subject=?, subsub=? , title=? , etime=?,status=? where task_id =? ''', [
+    if status == 1 or status == 3:
+        etime_ts = time.mktime(time.strptime(
+            etime + ' 23:59:59', "%Y-%m-%d %H:%M:%S"))
+        now_ts = time.time()
+        if now_ts > etime_ts:
+            status = 3
+        else:
+            status = 1
+    c.execute("update task set subject=?, subsub=? , title=? , etime=?,status=? where task_id =? ", [
               subject, subsub, title, etime, status, task_id])
     conn.commit()
     conn.close()
@@ -489,13 +491,23 @@ def gettasksummary_bar():
     for i in cursor:
         pie_subject_data.append({'name': i[0], 'value': i[1]})
 
+    cursor = c.execute(
+        "select iswork,count(*) from task  where iswork>=? and etime>? group by iswork", [iswork, t])
+    pie_subject_data_c = []
+    for i in cursor:
+        if i[0]:
+            pie_subject_data_c.append({'name': '工作', 'value': i[1]})
+        else:
+            pie_subject_data_c.append({'name': '非工作', 'value': i[1]})
+
     # 饼图数据
     pie_summary_data = [{'value': sum_overdue, 'name': '逾期'}, {'value': sum_todooverdue, 'name': '待做逾期'}, {'value': sum_todo, 'name': '待做'}, {
-        'value': sum_normal, 'name': '正常完成'}, {'value': sum_abandon, 'name': '作废'}]
+        'value': sum_normal, 'name': '正常'}, {'value': sum_abandon, 'name': '作废'}]
 
     # 柱形堆叠图数据
     result = {'sum_task': sum_task, 'percent': [finish_percent, overdue_percent], 'yAxisdata': yAxisdata, 'yAxistodo_list': yAxistodo_list,
-              'yAxisnormal_list': yAxisnormal_list, 'yAxisoverdue_list': yAxisoverdue_list, 'yAxistodooverdue_list': yAxistodooverdue_list, 'yAxisabandon_list': yAxisabandon_list, 'pie_summary_data': pie_summary_data, 'pie_subject_data': pie_subject_data}
+              'yAxisnormal_list': yAxisnormal_list, 'yAxisoverdue_list': yAxisoverdue_list, 'yAxistodooverdue_list': yAxistodooverdue_list,
+              'yAxisabandon_list': yAxisabandon_list, 'pie_summary_data': pie_summary_data, 'pie_subject_data': pie_subject_data, 'pie_subject_data_c': pie_subject_data_c}
     # print('tongji')
     conn.close()
     return result
@@ -560,7 +572,7 @@ def initschedule(force=False):
     d = datetime.date.today().strftime("%Y-%m-%d")
     if d != lastcheck or force:
         cursor = c.execute(
-            "select * from schedule where isabandon=0 and (lasttime is null or nexttime<date(date(),'+10 day'))")
+            "select * from schedule where isabandon=0 and (lasttime is null or nexttime<date(date('now','localtime') ,'+10 day'))")
         res = []
         for i in cursor:
             temp = {'schedule_id': i[0], 'subject': i[1], 'subsub': i[2], 'content': i[3],
@@ -584,7 +596,7 @@ def initschedule(force=False):
             conn.commit()
         c.execute("update sys_cfg set value =? where id=1", [d])
         c.execute(
-            "update task set status=3 where etime<date() and isfinish=0 and isabandon=0")
+            "update task set status=3 where etime<date('now','localtime') and isfinish=0 and isabandon=0")
         conn.commit()
         # 删除无效的task
         # TODO 带验证删除
@@ -838,9 +850,8 @@ def getperson():
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
     temp = []
-    # TODO 后续根据频率调整排序
     cursor = c.execute(
-        "select person_id,company,name from person order by 2,3")
+        "select a.person_id,company,name,count(*) from person a left join task_person b  on a.person_id=b.person_id group by a.person_id,a.company,a.name order by 4 desc")
     for i in cursor:
         temp.append({'personid': i[0], 'company': i[1], 'name': i[2]})
     conn.commit()
@@ -853,7 +864,7 @@ def getperson_option():
     c = conn.cursor()
     temp = []
     cursor = c.execute(
-        "select person_id,company,name from person order by 2,3")
+        "select a.person_id,company,name,count(*) from person a left join task_person b  on a.person_id=b.person_id group by a.person_id,a.company,a.name order by 4 desc")
     for i in cursor:
         temp.append({'value': i[0], 'label': i[1]+'-' + i[2]})
     conn.commit()
