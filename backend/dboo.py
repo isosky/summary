@@ -283,7 +283,7 @@ def querytask(query, type, sub_type, qt, isqueryall):
 
     t = calbegin()
 
-    sql += " and iswork>=? and etime>? order by etime,task_id"
+    sql += " and iswork>=? and stime>? order by etime,task_id"
     params_list.append(iswork)
     params_list.append(t)
     # print('*'*10)
