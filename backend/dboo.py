@@ -190,9 +190,9 @@ def gettimedata():
     global iswork
     conn = sqlite3.connect(dbf)
     start_time = datetime.datetime.strftime(
-        datetime.date.today() - datetime.timedelta(days=14), "%Y-%m-%d")
+        datetime.date.today() - datetime.timedelta(days=13), "%Y-%m-%d")
     end_time = datetime.datetime.strftime(
-        datetime.date.today() + datetime.timedelta(days=1), "%Y-%m-%d")
+        datetime.date.today(), "%Y-%m-%d")
     c = conn.cursor()
     cursor = c.execute(
         "select strftime('%Y-%m-%d',ftime),count(*) from task where isfinish =1 and isabandon=0 and iswork>=? and etime>=? group by strftime('%Y-%m-%d',ftime)", [iswork, start_time])
@@ -336,7 +336,7 @@ def calday():
 
 
 def calbegin():
-    return datetime.date.today() - datetime.timedelta(days=14)
+    return datetime.date.today() - datetime.timedelta(days=13)
 
 # 统计图
 
