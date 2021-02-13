@@ -92,6 +92,11 @@ def addtask(type, sub_type, task_name, etime, person_arrays):
     if person_arrays:
         for i in person_arrays:
             c.execute("insert into task_person values (?,?)", [task_id, i])
+    if sub_type == '学习':
+        new_etime = (datetime.datetime.strptime(etime, "%Y-%m-%d") +
+                     datetime.timedelta(days=7)).strftime("%Y-%m-%d")
+        c.execute("insert into task (type,sub_type,task_name,etime,iswork) values (?,?,?,?,?)", [
+            type, sub_type, task_name + '-总结', new_etime, type_work[type]])
     conn.commit()
     conn.close()
     return gettasknow()
@@ -287,8 +292,8 @@ def querytask(query, type, sub_type, qt, isqueryall):
     params_list.append(iswork)
     params_list.append(t)
     # print('*'*10)
-    print(sql)
-    print(params_list)
+    # print(sql)
+    # print(params_list)
     cursor = c.execute(sql, params_list)
     # 得到所有进展清单
     process = getallprocess()
