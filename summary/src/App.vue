@@ -18,6 +18,10 @@
               <span slot="title">定时任务</span>
             </el-menu-item>
             <el-menu-item index="3">
+              <i class="el-icon-user"></i>
+              <span slot="title">人员信息</span>
+            </el-menu-item>
+            <el-menu-item index="4">
               <i class="el-icon-setting"></i>
               <span slot="title">系统设置</span>
             </el-menu-item>
@@ -41,7 +45,7 @@ export default {
       defaultactive: "1",
       isCollapse: true,
       // routers: ["/task", "/yysyh", "/yyshero", "/schedule", "/syssetting"]
-      routers: ["/task", "/schedule", "/syssetting"],
+      routers: ["/task", "/schedule", "/person", "/syssetting"],
     };
   },
   methods: {

@@ -3,8 +3,7 @@ import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 import App from './App.vue'
 import task from './components/task.vue'
-import yysyh from './components/yysyh.vue'
-import yyshero from './components/yyshero.vue'
+import person from './components/person.vue'
 import schedule from './components/schedule.vue'
 import syssetting from './components/syssetting.vue'
 import VueRouter from 'vue-router'
@@ -21,6 +20,11 @@ const routes = [{
 {
   path: '/schedule',
   component: schedule
+
+},
+{
+  path: '/person',
+  component: person
 
 },
 {
@@ -42,8 +46,8 @@ VueRouter.prototype.push = function push(location) {
   return originalPush.call(this, location).catch(err => err)
 }
 
-// axios.defaults.baseURL = 'http://localhost:5000';
-axios.defaults.baseURL = 'http://81.70.25.54:5000';
+axios.defaults.baseURL = 'http://localhost:5000';
+// axios.defaults.baseURL = 'http://81.70.25.54:5000';
 
 const app = new Vue({
   router,

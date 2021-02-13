@@ -630,7 +630,7 @@ export default {
           {
             name: "任务情况",
             type: "pie",
-            radius: ["45%", "55%"],
+            radius: ["45%", "60%"],
             center: ["50%", "60%"],
             data: [],
             label: {
