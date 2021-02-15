@@ -91,7 +91,7 @@
                   type="success"
                 ></el-button>
                 <el-button
-                  @click="querytask"
+                  @click="querytask('table')"
                   icon="el-icon-search"
                   type="success"
                   circle
@@ -708,12 +708,11 @@ export default {
 
       //
       query_date: "",
+      isqueryall: true,
 
       //
       person: "",
       person_option: "",
-
-      isqueryall: true,
 
       // dialog process
       dialogpVisible: false,
@@ -781,7 +780,8 @@ export default {
       that.task_title = "";
       that.task_select = "";
       that.task_sub_select = "";
-      that.querytask(true, "graph");
+      that.isqueryall = true;
+      that.querytask("graph");
     });
     this.tasksummary_chart = echarts.init(
       document.getElementById("task_summary"),
@@ -800,7 +800,8 @@ export default {
       that.task_title = "";
       that.query_date = "";
       // that.query_date = params["data"][0];
-      that.querytask(true, "graph");
+      that.isqueryall = true;
+      that.querytask("graph");
     });
     this.tasktype_pie_chart = echarts.init(
       document.getElementById("task_pie_subject"),
@@ -827,7 +828,8 @@ export default {
       this.task_sub_select = "";
       this.query_date = "";
       this.settasksummary_bar();
-      this.querytask(false, "");
+      this.isqueryall = false;
+      this.querytask("table");
       this.getperson_option();
     },
     resetall: function () {
@@ -980,7 +982,8 @@ export default {
           this.dialogpVisible = false;
           this.showprocess();
           // TODO 是否可以做成局部刷新，只更新该任务的数据即可
-          this.querytask(false, "");
+          this.isqueryall = false;
+          this.querytask("table");
         });
     },
     // 添加任务
@@ -1014,12 +1017,10 @@ export default {
       this.v_task_content = event.title;
     },
     // 查询任务
-    querytask: function (isquery, mode) {
-      let isqueryall;
-      if (isquery == false) {
-        isqueryall = false;
-      } else {
-        isqueryall = this.isqueryall;
+    // TODO 是否查询已完成直接放到this的参数里面，query改成只有一个参数
+    querytask: function (mode) {
+      if (mode == "graph") {
+        this.isqueryall = true;
       }
       axios
         .post("/querytask", {
@@ -1027,7 +1028,7 @@ export default {
           type: this.task_select,
           sub_type: this.task_sub_select,
           ftime: this.query_date,
-          isqueryall: isqueryall,
+          isqueryall: this.isqueryall,
           mode: mode,
         })
         .then((response) => {

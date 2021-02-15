@@ -296,7 +296,7 @@ def querytask(query, type, sub_type, ftime, isqueryall, mode):
     params_list.append(iswork)
     if mode == 'graph':
         t = calbegin()
-        sql += " and (stime>=? or status=3)"
+        sql += " and (stime>=? or status in (1,3))"
         params_list.append(t)
     sql += " order by etime,task_id"
     # print('*'*10)
