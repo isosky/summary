@@ -354,7 +354,7 @@ def gettasksummary_bar():
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
     cursor = c.execute(
-        "select type,sub_type,count(*) from task where iswork>=? and (stime>=? or status =3) group by type,sub_type order by 3", [iswork, t])
+        "select type,sub_type,count(*) from task where iswork>=? and (stime>=? or status in (1,3)) group by type,sub_type order by 3", [iswork, t])
     yAxisdata = []
     for i in cursor:
         yAxisdata.append(i[0]+'-'+i[1])
@@ -367,7 +367,7 @@ def gettasksummary_bar():
     yAxisabandon = {}
 
     cursor = c.execute(
-        "select type,sub_type,status,count(*) from task where iswork>=? and (stime>=? or status =3) group by type,sub_type,status order by 1,2,3", [iswork, t])
+        "select type,sub_type,status,count(*) from task where iswork>=? and (stime>=? or status in (1,3)) group by type,sub_type,status order by 1,2,3", [iswork, t])
     for i in cursor:
         if i[2] == 1:
             yAxistodo[i[0]+'-'+i[1]] = i[3]
