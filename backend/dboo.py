@@ -266,7 +266,7 @@ def updatetask(task_id, type, sub_type, task_name, etime, status):
     conn.close()
 
 
-def querytask(query, type, sub_type, qt, isqueryall):
+def querytask(query, type, sub_type, ftime, isqueryall, mode):
     global iswork
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
@@ -281,16 +281,18 @@ def querytask(query, type, sub_type, qt, isqueryall):
     if sub_type != '':
         sql += " and sub_type=? "
         params_list.append(sub_type)
-    if qt != '':
+    if ftime != '':
         sql += " and ftime like ?"
-        qt = '%'+qt+'%'
-        params_list.append(qt)
+        ftime = '%'+ftime+'%'
+        params_list.append(ftime)
 
-    t = calbegin()
-
-    sql += " and iswork>=? and stime>=? order by etime,task_id"
+    sql += " and iswork>=? "
     params_list.append(iswork)
-    params_list.append(t)
+    if mode == 'graph':
+        t = calbegin()
+        sql += " and (stime>=? or status=3)"
+        params_list.append(t)
+    sql += " order by etime,task_id"
     # print('*'*10)
     # print(sql)
     # print(params_list)
@@ -352,7 +354,7 @@ def gettasksummary_bar():
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
     cursor = c.execute(
-        "select type,sub_type,count(*) from task where iswork>=? and stime>=? group by type,sub_type order by 3", [iswork, t])
+        "select type,sub_type,count(*) from task where iswork>=? and (stime>=? or status =3) group by type,sub_type order by 3", [iswork, t])
     yAxisdata = []
     for i in cursor:
         yAxisdata.append(i[0]+'-'+i[1])
@@ -365,11 +367,10 @@ def gettasksummary_bar():
     yAxisabandon = {}
 
     cursor = c.execute(
-        "select type,sub_type,status,count(*) from task where iswork>=? and stime>=? group by type,sub_type,status order by 1,2,3", [iswork, t])
+        "select type,sub_type,status,count(*) from task where iswork>=? and (stime>=? or status =3) group by type,sub_type,status order by 1,2,3", [iswork, t])
     for i in cursor:
         if i[2] == 1:
             yAxistodo[i[0]+'-'+i[1]] = i[3]
-
         if i[2] == 2:
             yAxisnormal[i[0]+'-'+i[1]] = i[3]
         if i[2] == 3:
@@ -874,12 +875,23 @@ def deletetaskperson(task_id, person_id):
     return res
 
 
+# #####################################
+# 定义count的函数
+# #####################################
+def gettotalmonth():
+    res = {}
+    for i in range(12):
+        res[i] = {'k': i * 12, 'v': str(i+1) * 6}
+    return res
+
+
 # querytask(query, type, sub_type, qt, isqueryall)
 if __name__ == '__main__':
     getiswork()
     # print(type_work)
     # initoption()
-    temp = querytask('', '自己', '投资', '', True)
+    # temp = querytask('', '自己', '投资', '', True)
+    temp = calbegin()
     print(temp)
     # print(temp.keys())
 else:

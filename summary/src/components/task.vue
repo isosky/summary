@@ -781,7 +781,7 @@ export default {
       that.task_title = "";
       that.task_select = "";
       that.task_sub_select = "";
-      that.querytask(true);
+      that.querytask(true, "graph");
     });
     this.tasksummary_chart = echarts.init(
       document.getElementById("task_summary"),
@@ -800,7 +800,7 @@ export default {
       that.task_title = "";
       that.query_date = "";
       // that.query_date = params["data"][0];
-      that.querytask(true);
+      that.querytask(true, "graph");
     });
     this.tasktype_pie_chart = echarts.init(
       document.getElementById("task_pie_subject"),
@@ -827,7 +827,7 @@ export default {
       this.task_sub_select = "";
       this.query_date = "";
       this.settasksummary_bar();
-      this.querytask(false);
+      this.querytask(false, "");
       this.getperson_option();
     },
     resetall: function () {
@@ -980,7 +980,7 @@ export default {
           this.dialogpVisible = false;
           this.showprocess();
           // TODO 是否可以做成局部刷新，只更新该任务的数据即可
-          this.querytask(false);
+          this.querytask(false, "");
         });
     },
     // 添加任务
@@ -1014,7 +1014,7 @@ export default {
       this.v_task_content = event.title;
     },
     // 查询任务
-    querytask: function (isquery) {
+    querytask: function (isquery, mode) {
       let isqueryall;
       if (isquery == false) {
         isqueryall = false;
@@ -1026,8 +1026,9 @@ export default {
           query: this.task_title,
           type: this.task_select,
           sub_type: this.task_sub_select,
-          qt: this.query_date,
+          ftime: this.query_date,
           isqueryall: isqueryall,
+          mode: mode,
         })
         .then((response) => {
           // console.log(response.data);

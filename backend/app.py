@@ -81,10 +81,11 @@ def querytask():
     json_data = json.loads(request.get_data())
     query = json_data['query']
     type = json_data['type']
-    qt = json_data['qt']
+    ftime = json_data['ftime']
     sub_type = json_data['sub_type']
     isqueryall = json_data['isqueryall']
-    return json.dumps({'arrays': dboo.querytask(query, type, sub_type, qt, isqueryall)})
+    mode = json_data['mode']
+    return json.dumps({'arrays': dboo.querytask(query, type, sub_type, ftime, isqueryall, mode)})
 
 
 @app.route('/querytask_week')
@@ -345,8 +346,14 @@ def deletetaskperson():
     return json.dumps(res)
 
 # #####################################
-# 定义全局的函数
+# 定义count的函数
 # #####################################
+
+
+@app.route('/gettotalmonth')
+def gettotalmonth():
+    res = dboo.gettotalmonth()
+    return json.dumps(res)
 
 
 if __name__ == '__main__':
