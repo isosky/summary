@@ -272,7 +272,8 @@ def updatetask(task_id, type, sub_type, task_name, etime, status):
     conn.close()
 
 
-def querytask(query, type, sub_type, ftime, isqueryall, mode):
+def querytask(query, type, sub_type, ftime, query_duration, isstime, isqueryall, mode):
+    print(ftime, '|', query_duration, '|', isstime)
     global iswork
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
@@ -287,10 +288,25 @@ def querytask(query, type, sub_type, ftime, isqueryall, mode):
     if sub_type != '':
         sql += " and sub_type=? "
         params_list.append(sub_type)
-    if ftime != '':
+    # if ftime != '':
+    #     sql += " and ftime like ?"
+    #     ftime = '%'+ftime+'%'
+    #     params_list.append(ftime)
+    # if query_duration:
+    if isstime and query_duration:
+        sql += " and stime between ? and ?"
+        params_list.extend(query_duration)
+        if ftime != '' and ftime is not None:
+            sql += " and ftime like ?"
+            ftime = '%'+ftime+'%'
+            params_list.append(ftime)
+    if not isstime and ftime:
         sql += " and ftime like ?"
         ftime = '%'+ftime+'%'
         params_list.append(ftime)
+    if not isstime and query_duration != []:
+        sql += " and ftime between ? and ?"
+        params_list.extend(query_duration)
 
     sql += " and iswork>=? "
     params_list.append(iswork)
@@ -299,7 +315,7 @@ def querytask(query, type, sub_type, ftime, isqueryall, mode):
         sql += " and (stime>=? or status in (1,3))"
         params_list.append(t)
     sql += " order by etime,task_id"
-    # print('*'*10)
+    print('*'*10)
     print(sql)
     print(params_list)
     cursor = c.execute(sql, params_list)

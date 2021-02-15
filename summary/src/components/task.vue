@@ -19,7 +19,7 @@
                   allow-create
                   default-first-option
                   v-model="task_select"
-                  style="width: 120px"
+                  style="width: 95px"
                   placeholder="请选择"
                 >
                   <el-option
@@ -29,14 +29,13 @@
                     :value="item.value"
                   ></el-option>
                 </el-select>
-                <!-- <el-input v-model="task_sub_select" style="width: 100px" placeholder="二级分类"></el-input> -->
                 <el-select
                   v-model="task_sub_select"
                   filterable
                   clearable
                   allow-create
                   default-first-option
-                  style="width: 120px"
+                  style="width: 95px"
                   placeholder="请选择"
                 >
                   <el-option
@@ -53,12 +52,19 @@
                   type="date"
                   style="width: 150px"
                   placeholder="ddl"
+                  @change="setdate"
                 ></el-date-picker>
                 <el-input
                   v-model="task_title"
                   style="width: 280px"
                   placeholder="请输入内容"
                 ></el-input>
+                <el-button
+                  @click="addtask"
+                  icon="el-icon-check"
+                  circle
+                  type="success"
+                ></el-button>
               </el-row>
               <el-row :gutter="5">
                 <el-select
@@ -67,7 +73,7 @@
                   clearable
                   multiple
                   default-first-option
-                  style="width: 400px"
+                  style="width: 200px"
                   placeholder="请选择相关人员"
                 >
                   <el-option
@@ -77,24 +83,29 @@
                     :value="item.value"
                   ></el-option>
                 </el-select>
-                <el-switch
-                  v-model="isqueryall"
-                  active-color="#13ce66"
-                  inactive-color="#ff4949"
-                  active-text="全部"
-                  inactive-text="待做"
-                ></el-switch>
-                <el-button
-                  @click="addtask"
-                  icon="el-icon-check"
-                  circle
-                  type="success"
-                ></el-button>
+                <el-date-picker
+                  v-model="query_duration"
+                  style="width: 275px"
+                  type="daterange"
+                  unlink-panels
+                  value-format="yyyy-MM-dd"
+                  range-separator="至"
+                  start-placeholder="开始日期"
+                  end-placeholder="结束日期"
+                  :picker-options="pickerOptions"
+                  @change="setdate"
+                >
+                </el-date-picker>
+                <el-checkbox v-model="isstime" @change="setdate"
+                  >查添加日期
+                </el-checkbox>
+                <el-checkbox v-model="isqueryall">全查</el-checkbox>
                 <el-button
                   @click="querytask('table')"
                   icon="el-icon-search"
                   type="success"
                   circle
+                  style="margin: 0 5px 0 5px"
                 ></el-button>
               </el-row>
             </el-collapse-item>
@@ -707,8 +718,41 @@ export default {
       tableprocess: [],
 
       //
-      query_date: "",
+      // new_edate: "",
+      isstime: false,
       isqueryall: true,
+      pickerOptions: {
+        shortcuts: [
+          {
+            text: "最近一周",
+            onClick(picker) {
+              const end = new Date();
+              const start = new Date();
+              start.setTime(start.getTime() - 3600 * 1000 * 24 * 7);
+              picker.$emit("pick", [start, end]);
+            },
+          },
+          {
+            text: "最近一个月",
+            onClick(picker) {
+              const end = new Date();
+              const start = new Date();
+              start.setTime(start.getTime() - 3600 * 1000 * 24 * 30);
+              picker.$emit("pick", [start, end]);
+            },
+          },
+          {
+            text: "最近三个月",
+            onClick(picker) {
+              const end = new Date();
+              const start = new Date();
+              start.setTime(start.getTime() - 3600 * 1000 * 24 * 90);
+              picker.$emit("pick", [start, end]);
+            },
+          },
+        ],
+      },
+      query_duration: null,
 
       //
       person: "",
@@ -776,7 +820,7 @@ export default {
     });
     this.task_chart.on("click", function (params) {
       // console.log(params["data"][0]);
-      that.query_date = params["data"][0];
+      that.new_edate = params["data"][0];
       that.task_title = "";
       that.task_select = "";
       that.task_sub_select = "";
@@ -798,8 +842,8 @@ export default {
       that.task_select = temp.split("-")[0];
       that.task_sub_select = temp.split("-")[1];
       that.task_title = "";
-      that.query_date = "";
-      // that.query_date = params["data"][0];
+      that.new_edate = "";
+      // that.new_edate = params["data"][0];
       that.isqueryall = true;
       that.querytask("graph");
     });
@@ -826,7 +870,9 @@ export default {
       this.task_title = "";
       this.task_select = "";
       this.task_sub_select = "";
-      this.query_date = "";
+      this.new_edate = "";
+      this.isstime = false;
+      this.query_duration = [];
       this.settasksummary_bar();
       this.isqueryall = false;
       this.querytask("table");
@@ -885,6 +931,20 @@ export default {
         .then((response) => {
           this.persondata = response.data;
         });
+    },
+    setdate: function (event) {
+      if (
+        this.isstime == false &&
+        !(this.query_duration == null || this.query_duration == "")
+      ) {
+        this.new_edate = "";
+      }
+      if (
+        this.isstime == false &&
+        !(this.new_edate == null || this.new_edate == "")
+      ) {
+        this.query_duration = "";
+      }
     },
     // 更新二级下拉列表
     updatesuboption: function (event) {
@@ -1019,6 +1079,7 @@ export default {
     // 查询任务
     // TODO 是否查询已完成直接放到this的参数里面，query改成只有一个参数
     querytask: function (mode) {
+      // console.log(this.query_duration);
       if (mode == "graph") {
         this.isqueryall = true;
       }
@@ -1027,7 +1088,9 @@ export default {
           query: this.task_title,
           type: this.task_select,
           sub_type: this.task_sub_select,
-          ftime: this.query_date,
+          ftime: this.new_edate,
+          query_duration: this.query_duration,
+          isstime: this.isstime,
           isqueryall: this.isqueryall,
           mode: mode,
         })
@@ -1280,6 +1343,14 @@ export default {
 }
 
 .el-date-picker {
+  margin: 0 5px 0 5px;
+}
+
+.el-date-editor {
+  margin: 0 5px 0 5px;
+}
+
+.el-checkbox {
   margin: 0 5px 0 5px;
 }
 

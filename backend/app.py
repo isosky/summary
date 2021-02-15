@@ -83,9 +83,11 @@ def querytask():
     type = json_data['type']
     ftime = json_data['ftime']
     sub_type = json_data['sub_type']
+    query_duration = json_data['query_duration']
+    isstime = json_data['isstime']
     isqueryall = json_data['isqueryall']
     mode = json_data['mode']
-    return json.dumps({'arrays': dboo.querytask(query, type, sub_type, ftime, isqueryall, mode)})
+    return json.dumps({'arrays': dboo.querytask(query, type, sub_type, ftime, query_duration, isstime, isqueryall, mode)})
 
 
 @app.route('/querytask_week')
