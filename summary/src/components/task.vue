@@ -781,7 +781,7 @@ export default {
       that.task_select = "";
       that.task_sub_select = "";
       that.isqueryall = true;
-      that.querytask("graph");
+      that.querytask("table");
     });
     this.tasksummary_chart = echarts.init(
       document.getElementById("task_summary"),

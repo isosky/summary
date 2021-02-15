@@ -300,8 +300,8 @@ def querytask(query, type, sub_type, ftime, isqueryall, mode):
         params_list.append(t)
     sql += " order by etime,task_id"
     # print('*'*10)
-    # print(sql)
-    # print(params_list)
+    print(sql)
+    print(params_list)
     cursor = c.execute(sql, params_list)
     # 得到所有进展清单
     process = getallprocess()
