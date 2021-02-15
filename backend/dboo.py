@@ -469,6 +469,10 @@ def gettasksummary_bar():
     pie_summary_data = [{'value': sum_overdue, 'name': '逾期'}, {'value': sum_todooverdue, 'name': '待做逾期'}, {'value': sum_todo, 'name': '待做'}, {
         'value': sum_normal, 'name': '正常'}, {'value': sum_abandon, 'name': '作废'}]
 
+    pie_summary_data = sorted(
+        pie_summary_data, key=lambda e: e.__getitem__('value'), reverse=True)
+    # print(pie_summary_data)
+
     # 柱形堆叠图数据
     result = {'sum_task': sum_task, 'percent': [finish_percent, overdue_percent], 'yAxisdata': yAxisdata, 'yAxistodo_list': yAxistodo_list,
               'yAxisnormal_list': yAxisnormal_list, 'yAxisoverdue_list': yAxisoverdue_list, 'yAxistodooverdue_list': yAxistodooverdue_list,
@@ -913,7 +917,7 @@ if __name__ == '__main__':
     # print(type_work)
     # initoption()
     # temp = querytask('', '自己', '投资', '', True)
-    temp = calbegin()
+    temp = gettasksummary_bar()
     print(temp)
     # print(temp.keys())
 else:
