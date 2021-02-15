@@ -469,8 +469,8 @@ def gettasksummary_bar():
     pie_summary_data = [{'value': sum_overdue, 'name': '逾期'}, {'value': sum_todooverdue, 'name': '待做逾期'}, {'value': sum_todo, 'name': '待做'}, {
         'value': sum_normal, 'name': '正常'}, {'value': sum_abandon, 'name': '作废'}]
 
-    pie_summary_data = sorted(
-        pie_summary_data, key=lambda e: e.__getitem__('value'), reverse=True)
+    # pie_summary_data = sorted(
+    #     pie_summary_data, key=lambda e: e.__getitem__('value'), reverse=True)
     # print(pie_summary_data)
 
     # 柱形堆叠图数据
