@@ -451,13 +451,13 @@ def gettasksummary_bar():
         finish_percent = 0
 
     cursor = c.execute(
-        " select type, count(*) from task where iswork>=? and stime>=? group by type", [iswork, t])
+        " select type, count(*) from task where iswork>=? and stime>=? group by type order by 2 desc", [iswork, t])
     pie_type_data = []
     for i in cursor:
         pie_type_data.append({'name': i[0], 'value': i[1]})
 
     cursor = c.execute(
-        "select iswork,count(*) from task  where iswork>=? and stime>=? group by iswork", [iswork, t])
+        "select iswork,count(*) from task  where iswork>=? and stime>=? group by iswork order by 2 desc", [iswork, t])
     pie_type_data_c = []
     for i in cursor:
         if i[0]:
