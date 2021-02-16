@@ -4,7 +4,7 @@
 # import getlockscreen as ls
 import json
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, session
 from flask_cors import CORS
 
 import dboo as dboo
@@ -78,6 +78,8 @@ def deletetask():
 
 @app.route('/querytask', methods=['POST'])
 def querytask():
+    print('q'*10)
+    print(request.cookies)
     json_data = json.loads(request.get_data())
     query = json_data['query']
     type = json_data['type']
@@ -251,6 +253,8 @@ def getiswork():
 
 @app.route('/getfirstpage')
 def getfirstpage():
+    print('#' * 10)
+    print(request.cookies)
     res = dboo.getfirstpage()
     return json.dumps(res)
 
@@ -358,6 +362,15 @@ def deletetaskperson():
 def gettotalmonth():
     res = dboo.gettotalmonth()
     return json.dumps(res)
+
+
+@app.route('/login', methods=['POST'])
+def login():
+    print(request)
+    json_data = json.loads(request.get_data())
+    print(json_data)
+    print(session)
+    return json.dumps({"res": 'aaa'})
 
 
 if __name__ == '__main__':
