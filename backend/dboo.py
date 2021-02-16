@@ -92,7 +92,7 @@ def addtask(type, sub_type, task_name, etime, person_arrays):
     if person_arrays:
         for i in person_arrays:
             c.execute("insert into task_person values (?,?)", [task_id, i])
-    if sub_type == '学习' and '-' not in task_name:
+    if sub_type == '学习' and '-' not in task_name and '《' in task_name:
         # 添加总结
         new_etime = (datetime.datetime.strptime(etime, "%Y-%m-%d") +
                      datetime.timedelta(days=7)).strftime("%Y-%m-%d")
@@ -807,14 +807,19 @@ def deletetype(typeid):
 def getcompany():
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
-    temp = []
+    company_selector = []
     cursor = c.execute(
         "select company,count(*) from person group by company order by 2 desc")
     for i in cursor:
-        temp.append({'value': i[0], 'label': i[0]})
-    conn.commit()
+        company_selector.append({'value': i[0], 'label': i[0]})
+
+    person_post_selector = []
+    cursor = c.execute(
+        "select person_post,count(*) from person group by person_post order by 2 desc")
+    for i in cursor:
+        person_post_selector.append({'value': i[0], 'label': i[0]})
     conn.close()
-    return temp
+    return {"person_post_selector": person_post_selector, "company_selector": company_selector}
 
 
 def getperson():
@@ -822,9 +827,10 @@ def getperson():
     c = conn.cursor()
     temp = []
     cursor = c.execute(
-        "select a.person_id,company,person_name,count(*) from person a left join task_person b  on a.person_id=b.person_id group by a.person_id,a.company,a.person_name order by 4 desc")
+        "select a.person_id,company,person_name,person_post,count(*) from person a left join task_person b  on a.person_id=b.person_id group by a.person_id,a.company,a.person_name order by 4 desc")
     for i in cursor:
-        temp.append({'person_id': i[0], 'company': i[1], 'person_name': i[2]})
+        temp.append({'person_id': i[0], 'company': i[1],
+                     'person_name': i[2], 'person_post': i[3]})
     conn.commit()
     conn.close()
     return temp
@@ -843,11 +849,12 @@ def getperson_option():
     return temp
 
 
-def addperson(company, person_name):
+# TODO 去重
+def addperson(company, person_name, person_post):
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
-    c.execute("insert into  person ('company','person_name') values (?,?)", [
-              company, person_name])
+    c.execute("insert into  person ('company','person_name','person_post') values (?,?,?)", [
+              company, person_name, person_post])
     conn.commit()
     conn.close()
 

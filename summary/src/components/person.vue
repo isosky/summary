@@ -21,7 +21,7 @@
         <el-input
           v-model="person_name"
           style="width: 120px"
-          placeholder="请输入名称"
+          placeholder="请输入姓名"
         ></el-input>
         <el-button
           @click="addperson"
@@ -35,6 +35,24 @@
           circle
           type="success"
         ></el-button>
+      </el-row>
+      <el-row :span="6">
+        <el-select
+          v-model="person_post"
+          filterable
+          allow-create
+          default-first-option
+          placeholder="请选择岗位"
+          style="width: 140px"
+        >
+          <el-option
+            v-for="item in person_post_selector"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          >
+          </el-option>
+        </el-select>
       </el-row>
       <el-row :span="6">
         <el-table :data="persondata" height="800" style="width: 100%">
@@ -75,6 +93,8 @@ export default {
       company_selector: [],
       company: "",
       person_name: "",
+      person_post: "",
+      person_post_selector: [],
     };
   },
   mounted: function () {
@@ -86,7 +106,8 @@ export default {
     getcompany: function () {
       axios.get("/getcompany").then((response) => {
         // console.log(response);
-        this.company_selector = response.data;
+        this.company_selector = response.data.company_selector;
+        this.person_post_selector = response.data.person_post_selector;
       });
     },
     getperson: function () {
@@ -101,6 +122,7 @@ export default {
           .post("/addperson", {
             company: this.company,
             person_name: this.person_name,
+            person_post: this.person_post,
           })
           .then((response) => {
             // console.log(response);

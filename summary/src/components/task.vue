@@ -70,6 +70,7 @@
                 <el-select
                   v-model="person"
                   filterable
+                  :filter-method="personFilter"
                   clearable
                   multiple
                   default-first-option
@@ -443,6 +444,7 @@
 
 <script>
 import axios from "axios";
+import PinyinMatch from "pinyin-match";
 var echarts = require("echarts");
 export default {
   data: function () {
@@ -757,6 +759,7 @@ export default {
       //
       person: "",
       person_option: "",
+      copyperson_option: "",
 
       // dialog process
       dialogpVisible: false,
@@ -900,7 +903,24 @@ export default {
       axios.get("/getperson_option").then((response) => {
         // console.log(response);
         this.person_option = response.data;
+        this.copyperson_option = Object.assign(this.person_option);
       });
+    },
+    personFilter: function (val) {
+      if (val) {
+        this.person_option = this.copyperson_option.filter((item) => {
+          // 如果直接包含输入值直接返回true
+          if (item.label) {
+            if (item.label.toUpperCase().indexOf(val.toUpperCase()) != -1) {
+              return true;
+            }
+            // 输入值拼音d
+            return PinyinMatch.match(item.label, val);
+          }
+        });
+      } else {
+        this.person_option = this.copyperson_option;
+      }
     },
     deletetaskperson: function (event) {
       axios

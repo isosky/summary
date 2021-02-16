@@ -12,6 +12,7 @@
     "core-js": "^2.6.12",
     "echarts": "^5.0.2",
     "element-ui": "^2.15.0",
+    "pinyin-match": "^1.1.9",
     "vue": "^2.6.12",
     "vue-router": "^3.5.1"
   },
