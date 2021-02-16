@@ -317,9 +317,9 @@ def querytask(query, type, sub_type, ftime, query_duration, isstime, isqueryall,
         sql += " and (stime>=? or status in (1,3))"
         params_list.append(t)
     sql += " order by etime,task_id"
-    print('*'*10)
-    print(sql)
-    print(params_list)
+    # print('*'*10)
+    # print(sql)
+    # print(params_list)
     cursor = c.execute(sql, params_list)
     # 得到所有进展清单
     process = getallprocess()
@@ -568,6 +568,10 @@ def initschedule(force=False):
         c.execute("update sys_cfg set value =? where id=1", [d])
         c.execute(
             "update task set status=3 where etime<date('now','localtime') and isfinish=0 and isabandon=0")
+        conn.commit()
+
+        c.execute(
+            "insert into log (checktime) values (datetime('now','localtime'))")
         conn.commit()
         # 删除无效的task
         # TODO 带验证删除
@@ -923,6 +927,7 @@ def gettotalmonth():
 # querytask(query, type, sub_type, qt, isqueryall)
 if __name__ == '__main__':
     getiswork()
+    initschedule(force=True)
     # print(type_work)
     # initoption()
     # temp = querytask('', '自己', '投资', '', True)
