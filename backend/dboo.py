@@ -854,13 +854,23 @@ def getperson_option():
 
 
 # TODO 去重
-def addperson(company, person_name, person_post):
+def addperson(company, person_name, person_post, force):
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
+    temp = c.execute(
+        "select count(*) from person where company=? and person_name=?", [company, person_name])
+    temp = temp.fetchone()[0]
+
+    print(temp > 0 and not force)
+    if temp > 0 and not force:
+        conn.close()
+        return {"msg": False}
+
     c.execute("insert into  person ('company','person_name','person_post') values (?,?,?)", [
               company, person_name, person_post])
     conn.commit()
     conn.close()
+    return {"msg": True}
 
 
 def deleteperson(personid):

@@ -53,6 +53,7 @@
           >
           </el-option>
         </el-select>
+        <el-checkbox v-model="person_forceadd">强制添加 </el-checkbox>
       </el-row>
       <el-row :span="6">
         <el-table :data="persondata" height="800" style="width: 100%">
@@ -95,6 +96,7 @@ export default {
       person_name: "",
       person_post: "",
       person_post_selector: [],
+      person_forceadd: false,
     };
   },
   mounted: function () {
@@ -123,13 +125,17 @@ export default {
             company: this.company,
             person_name: this.person_name,
             person_post: this.person_post,
+            force: this.person_forceadd,
           })
           .then((response) => {
-            // console.log(response);
-            this.company = "";
-            this.person_name = "";
-            this.getperson();
-            this.getcompany();
+            if (response.data.msg == true) {
+              this.company = "";
+              this.person_name = "";
+              this.getperson();
+              this.getcompany();
+            } else {
+              this.$message.error("有重名的，请确认是否强制添加");
+            }
           });
       }
     },

@@ -310,8 +310,9 @@ def addperson():
     company = json_data['company']
     person_name = json_data['person_name']
     person_post = json_data['person_post']
-    dboo.addperson(company, person_name, person_post)
-    return json.dumps({'result': True})
+    force = json_data['force']
+    temp = dboo.addperson(company, person_name, person_post, force)
+    return json.dumps(temp)
 
 
 @app.route('/deleteperson', methods=['POST'])
