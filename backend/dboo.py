@@ -92,7 +92,7 @@ def addtask(type, sub_type, task_name, etime, person_arrays):
     if person_arrays:
         for i in person_arrays:
             c.execute("insert into task_person values (?,?)", [task_id, i])
-    if sub_type == '学习':
+    if sub_type == '学习' and '-' not in task_name:
         # 添加总结
         new_etime = (datetime.datetime.strptime(etime, "%Y-%m-%d") +
                      datetime.timedelta(days=7)).strftime("%Y-%m-%d")
@@ -266,6 +266,8 @@ def updatetask(task_id, type, sub_type, task_name, etime, status):
             status = 3
         else:
             status = 1
+    c.execute(
+        "insert into task_his  select *,datetime('now','localtime') from task where task_id=?", [task_id])
     c.execute("update task set type=?, sub_type=? , task_name=? , etime=?,status=? where task_id =? ", [
               type, sub_type, task_name, etime, status, task_id])
     conn.commit()
@@ -917,8 +919,8 @@ if __name__ == '__main__':
     # print(type_work)
     # initoption()
     # temp = querytask('', '自己', '投资', '', True)
-    temp = gettasksummary_bar()
-    print(temp)
+    # temp = gettasksummary_bar()
+    # print(temp)
     # print(temp.keys())
 else:
     getiswork()
