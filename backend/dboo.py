@@ -275,7 +275,7 @@ def updatetask(task_id, type, sub_type, task_name, etime, status):
 
 
 def querytask(query, type, sub_type, ftime, query_duration, isstime, isqueryall, mode):
-    print(ftime, '|', query_duration, '|', isstime)
+    # print(ftime, '|', query_duration, '|', isstime)
     global iswork
     conn = sqlite3.connect(dbf)
     c = conn.cursor()

@@ -521,7 +521,7 @@ export default {
           data: ["逾期", "待做逾期", "待做", "正常完成", "作废"],
         },
         grid: {
-          left: 80,
+          left: 110,
         },
         xAxis: {
           type: "value",
