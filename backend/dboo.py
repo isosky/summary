@@ -54,23 +54,32 @@ def initoption():
     global iswork
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
-    cursor = c.execute(
-        "select type,sub_type,count(*) from task where isabandon=0 and iswork>=? group by type,sub_type order by 3 desc", [iswork])
+
+    # 获得所有
     result = {}
     result_all = []
+    cursor = c.execute("select name from sys_cfg where type = 'type'")
+    for i in cursor:
+        result_all.append({'value': i[0], 'label': i[0]})
+        result[i[0]] = []
+
+    # 得到近7天高频的
+    t = calbegin()
+    cursor = c.execute(
+        "select type,sub_type,count(*) from task where isabandon=0 and iswork>=? and stime>=? group by type,sub_type order by 3 desc", [iswork, t])
     for row in cursor:
-        if row[0] not in result.keys():
-            result[row[0]] = []
-            result_all.append({'value': row[0], 'label': row[0]})
         result[row[0]].append(row[1])
+
+    # 将多的加回来
+    cursor = c.execute(
+        "select type,sub_type,count(*) from task where isabandon=0 and iswork>=? group by type,sub_type order by 3 desc", [iswork])
+    for row in cursor:
+        if row[0] not in result[row[0]]:
+            result[row[0]].append(row[1])
+
     cursor = c.execute("select value from sys_cfg where id=1")
     lastchecktime = cursor.fetchone()[0]
-    # 将多的一级分类补上
-    cursor = c.execute("select name from sys_cfg where type = 'subject'")
-    for i in cursor:
-        if i[0] not in result.keys():
-            result_all.append({'value': i[0], 'label': i[0]})
-            result[i[0]] = []
+
     conn.close()
     return [result, result_all, lastchecktime]
 
@@ -939,7 +948,7 @@ if __name__ == '__main__':
     getiswork()
     initschedule(force=True)
     # print(type_work)
-    # initoption()
+    print(initoption())
     # temp = querytask('', '自己', '投资', '', True)
     # temp = gettasksummary_bar()
     # print(temp)
