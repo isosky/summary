@@ -74,7 +74,7 @@ def initoption():
     cursor = c.execute(
         "select type,sub_type,count(*) from task where isabandon=0 and iswork>=? group by type,sub_type order by 3 desc", [iswork])
     for row in cursor:
-        if row[0] not in result[row[0]]:
+        if row[1] not in result[row[0]]:
             result[row[0]].append(row[1])
 
     cursor = c.execute("select value from sys_cfg where id=1")
