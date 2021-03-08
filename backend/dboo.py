@@ -58,13 +58,21 @@ def initoption():
     # 获得所有
     result = {}
     result_all = []
-    cursor = c.execute("select name from sys_cfg where type = 'type'")
+
+    t = calbegin()
+    cursor = c.execute(
+        "select type,count(*) from task where isabandon=0 and iswork>=? and stime>=datetime(?,'-7 DAY') group by type order by 2 desc", [iswork, t])
     for i in cursor:
         result_all.append({'value': i[0], 'label': i[0]})
         result[i[0]] = []
 
+    cursor = c.execute("select name from sys_cfg where type = 'type'")
+    for i in cursor:
+        if i[0] not in result_all:
+            result_all.append({'value': i[0], 'label': i[0]})
+            result[i[0]] = []
+
     # 得到近7天高频的
-    t = calbegin()
     cursor = c.execute(
         "select type,sub_type,count(*) from task where isabandon=0 and iswork>=? and stime>=? group by type,sub_type order by 3 desc", [iswork, t])
     for row in cursor:
