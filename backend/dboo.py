@@ -68,7 +68,7 @@ def initoption():
 
     cursor = c.execute("select name from sys_cfg where type = 'type'")
     for i in cursor:
-        if i[0] not in result_all:
+        if i[0] not in result.keys():
             result_all.append({'value': i[0], 'label': i[0]})
             result[i[0]] = []
 
