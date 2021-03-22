@@ -201,6 +201,14 @@
       <!-- 右侧面板 -->
       <el-col :span="13">
         <el-row :gutter="5">
+          <el-button
+            @click="querytask_week"
+            icon="el-icon-date"
+            circle
+            type="warning"
+          ></el-button>
+        </el-row>
+        <el-row :gutter="5">
           <el-col :span="8">
             <div id="b_task" style="height: 220px"></div>
           </el-col>
@@ -214,13 +222,13 @@
         <el-row :gutter="5">
           <el-tabs v-model="tabs_select" :lazy="true" type="border-card">
             <el-tab-pane name="summary" label="统计">
-              <div id="task_summary" style="height: 500px"></div>
+              <div id="task_summary" style="height: 455px"></div>
             </el-tab-pane>
             <el-tab-pane name="process" label="进展">
               <el-table
                 :data="tableprocess"
                 border
-                height="500"
+                height="455"
                 style="width: 100%"
               >
                 <el-table-column
