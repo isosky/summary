@@ -1314,7 +1314,8 @@ export default {
     },
     showupdateprocess: function (event) {
       this.dialogprocessVisible = true;
-      this.process_content = event.content;
+      this.process_content = event.process_name;
+      console.log(event);
       this.process_id = event.process_id;
       this.s_task_id = event.task_id;
     },
