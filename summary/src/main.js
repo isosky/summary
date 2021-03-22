@@ -15,29 +15,29 @@ Vue.use(ElementUI)
 Vue.use(VueRouter)
 
 const routes = [{
-  path: '/task',
-  component: task
-},
-{
-  path: '/schedule',
-  component: schedule
+    path: '/task',
+    component: task
+  },
+  {
+    path: '/schedule',
+    component: schedule
 
-},
-{
-  path: '/person',
-  component: person
+  },
+  {
+    path: '/person',
+    component: person
 
-},
-{
-  path: '/count',
-  component: count
+  },
+  {
+    path: '/count',
+    component: count
 
-},
-{
-  path: '/syssetting',
-  component: syssetting
+  },
+  {
+    path: '/syssetting',
+    component: syssetting
 
-}
+  }
 ]
 
 const router = new VueRouter({
@@ -49,8 +49,8 @@ VueRouter.prototype.push = function push(location) {
   return originalPush.call(this, location).catch(err => err)
 }
 
-// axios.defaults.baseURL = 'http://localhost:5000';
-axios.defaults.baseURL = 'http://81.70.25.54:5000';
+axios.defaults.baseURL = 'http://localhost:5000';
+// axios.defaults.baseURL = 'http://81.70.25.54:5000';
 
 const app = new Vue({
   router,

@@ -518,7 +518,7 @@ export default {
         },
         color: ["black", "red", "Orange", "green", "#939393"],
         legend: {
-          data: ["逾期", "待做逾期", "待做", "正常完成", "作废"],
+          data: ["逾期完成", "待做逾期", "待做", "正常完成", "作废"],
         },
         grid: {
           left: 110,
@@ -532,7 +532,7 @@ export default {
         },
         series: [
           {
-            name: "逾期",
+            name: "逾期完成",
             type: "bar",
             stack: "总量",
             label: {

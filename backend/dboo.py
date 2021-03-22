@@ -11,8 +11,8 @@ import calendar
 
 if os.path.exists("F:/OneDrive/文档/tmss.db"):
     dbf = "F:/OneDrive/文档/tmss.db"
-elif os.path.exists("C:/Users/fengy/OneDrive/文档/tmss.db"):
-    dbf = "C:/Users/fengy/OneDrive/文档/tmss.db"
+elif os.path.exists("C:/Users/isowang/OneDrive/文档/tmss.db"):
+    dbf = "C:/Users/isowang/OneDrive/文档/tmss.db"
 else:
     dbf = "/data/wangtr/data/tmss.db"
 
@@ -485,7 +485,7 @@ def gettasksummary_bar():
             pie_type_data_c.append({'name': '非工作', 'value': i[1]})
 
     # 饼图数据
-    pie_summary_data = [{'value': sum_overdue, 'name': '逾期'}, {'value': sum_todooverdue, 'name': '待做逾期'}, {'value': sum_todo, 'name': '待做'}, {
+    pie_summary_data = [{'value': sum_overdue, 'name': '逾期完成'}, {'value': sum_todooverdue, 'name': '待做逾期'}, {'value': sum_todo, 'name': '待做'}, {
         'value': sum_normal, 'name': '正常'}, {'value': sum_abandon, 'name': '作废'}]
 
     # pie_summary_data = sorted(
