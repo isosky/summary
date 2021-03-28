@@ -256,7 +256,7 @@ def finishtask(task_id, input_finish):
         task_id, input_finish])
     conn.commit()
     #   关闭所有进程
-    c.execute('update task_process set isfinish=1 where task_id=?', [task_id])
+    c.execute("update task_process set isfinish=1,ftime=datetime('now','localtime') where task_id=?", [task_id])
     conn.commit()
     conn.close()
 
