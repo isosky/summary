@@ -508,7 +508,7 @@ def gettasksummary_bar():
 def resetprocess(process_id):
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
-    c.execute("update task_process set isfinish=0 where process_id=?",
+    c.execute("update task_process set isfinish=0,ftime=datetime('now','localtime') where process_id=?",
               [process_id])
     conn.commit()
     conn.close()
@@ -518,7 +518,7 @@ def resetprocess(process_id):
 def finishprocess(process_id):
     conn = sqlite3.connect(dbf)
     c = conn.cursor()
-    c.execute("update task_process set isfinish=1 where process_id=?",
+    c.execute("update task_process set isfinish=1,ftime=datetime('now','localtime') where process_id=?",
               [process_id])
     conn.commit()
     conn.close()
