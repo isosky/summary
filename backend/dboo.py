@@ -109,17 +109,17 @@ def addtask(type, sub_type, task_name, etime, person_arrays):
     if person_arrays:
         for i in person_arrays:
             c.execute("insert into task_person values (?,?)", [task_id, i])
-    if sub_type == '学习' and '-' not in task_name and '《' in task_name:
-        # 添加总结
-        new_etime = (datetime.datetime.strptime(etime, "%Y-%m-%d") +
-                     datetime.timedelta(days=7)).strftime("%Y-%m-%d")
-        c.execute("insert into task (type,sub_type,task_name,etime,iswork) values (?,?,?,?,?)", [
-            type, sub_type, task_name + '-总结', new_etime, type_work[type]])
-        # 添加复习
-        new_etime = (datetime.datetime.strptime(new_etime, "%Y-%m-%d") +
-                     datetime.timedelta(days=7)).strftime("%Y-%m-%d")
-        c.execute("insert into task (type,sub_type,task_name,etime,iswork) values (?,?,?,?,?)", [
-            type, sub_type, task_name + '-复习', new_etime, type_work[type]])
+    # if sub_type == '学习' and '-' not in task_name and '《' in task_name:
+    #     # 添加总结
+    #     new_etime = (datetime.datetime.strptime(etime, "%Y-%m-%d") +
+    #                  datetime.timedelta(days=7)).strftime("%Y-%m-%d")
+    #     c.execute("insert into task (type,sub_type,task_name,etime,iswork) values (?,?,?,?,?)", [
+    #         type, sub_type, task_name + '-总结', new_etime, type_work[type]])
+    #     # 添加复习
+    #     new_etime = (datetime.datetime.strptime(new_etime, "%Y-%m-%d") +
+    #                  datetime.timedelta(days=7)).strftime("%Y-%m-%d")
+    #     c.execute("insert into task (type,sub_type,task_name,etime,iswork) values (?,?,?,?,?)", [
+    #         type, sub_type, task_name + '-复习', new_etime, type_work[type]])
     conn.commit()
     conn.close()
     return gettasknow()
@@ -256,7 +256,8 @@ def finishtask(task_id, input_finish):
         task_id, input_finish])
     conn.commit()
     #   关闭所有进程
-    c.execute("update task_process set isfinish=1,ftime=datetime('now','localtime') where task_id=?", [task_id])
+    c.execute(
+        "update task_process set isfinish=1,ftime=datetime('now','localtime') where task_id=?", [task_id])
     conn.commit()
     conn.close()
 
