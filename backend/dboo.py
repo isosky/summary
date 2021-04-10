@@ -368,12 +368,15 @@ def querytask_week():
         today + datetime.timedelta(7 - today.weekday() - 1), "%Y-%m-%d")
     cursor = c.execute(sql, [iswork, etime])
     process = getallprocess()
+    person = getallperson()
     result = []
     for row in cursor:
         temp = {'task_id': row[0], 'type': row[1], 'sub_type': row[2],
                 'task_name': row[3], 'etime': row[4][5:], 'stime': row[5], 'tetime': row[4], 'isfinish': row[6], 'status': row[7]}
         if row[0] in process.keys():
             temp['num_process'] = process[row[0]]
+        if row[0] in person.keys():
+            temp['num_person'] = person[row[0]]
         result.append(temp)
     conn.close()
     return result
