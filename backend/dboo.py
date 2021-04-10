@@ -537,6 +537,16 @@ def addprocess(task_id, process_name):
     return True
 
 
+def deleteprocess(process_id):
+    conn = sqlite3.connect(dbf)
+    # etime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    c = conn.cursor()
+    c.execute("delete from task_process where process_id =?", [process_id])
+    conn.commit()
+    conn.close()
+    return True
+
+
 def updateprocess(process_id, process_name):
     conn = sqlite3.connect(dbf)
     # etime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())

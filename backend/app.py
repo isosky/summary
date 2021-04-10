@@ -129,6 +129,14 @@ def addprocess():
         return json.dumps({'result': True})
 
 
+@app.route('/deleteprocess', methods=['POST'])
+def deleteprocess():
+    json_data = json.loads(request.get_data())
+    process_id = json_data['process_id']
+    temp = dboo.deleteprocess(process_id)
+    return json.dumps({'result': temp})
+
+
 # 更新
 # TODO 把这个任务的最新状态反馈一下
 @app.route('/getprocess', methods=['POST'])

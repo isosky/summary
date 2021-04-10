@@ -249,6 +249,12 @@
                 <el-table-column label="操作" width="170">
                   <template slot-scope="scope">
                     <el-button
+                      @click="deleteprocess(scope.row)"
+                      type="text"
+                      size="small"
+                      >删除</el-button
+                    >
+                    <el-button
                       @click="showupdateprocess(scope.row)"
                       type="text"
                       size="small"
@@ -1295,6 +1301,17 @@ export default {
             }
           }
           this.s_task_id = "";
+        });
+    },
+    deleteprocess: function (event) {
+      axios
+        .post("/deleteprocess", {
+          process_id: event.process_id,
+        })
+        .then((response) => {
+          if (response.status == 200) {
+            this.getprocess(event.task_id);
+          }
         });
     },
     resetprocess: function (event) {
