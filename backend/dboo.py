@@ -910,7 +910,7 @@ def getperson_data(task_id):
             {"person_id": row[0], "company": row[1], "person_name": row[2]})
     conn.commit()
     conn.close()
-    return res
+    return {'arrays': res, 'num_person': len(res), 'task_id': task_id}
 
 
 def appendtaskperson(task_id, person_id):

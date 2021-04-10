@@ -948,8 +948,9 @@ export default {
           person_id: this.person,
         })
         .then((response) => {
-          this.persondata = response.data;
+          this.persondata = response.data.arrays;
           this.person = "";
+          this.getperson_data(this.s_task_id);
         });
     },
     getperson_data: function (task_id) {
@@ -958,7 +959,13 @@ export default {
           task_id: task_id,
         })
         .then((response) => {
-          this.persondata = response.data;
+          // console.log(response);
+          this.persondata = response.data.arrays;
+          for (var i in this.tableData) {
+            if (this.tableData[i].task_id == response.data.task_id) {
+              this.tableData[i].num_person = response.data.num_person;
+            }
+          }
         });
     },
     setdate: function (event) {
