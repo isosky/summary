@@ -277,6 +277,7 @@
                 <el-select
                   v-model="person"
                   filterable
+                  :filter-method="personFilter"
                   clearable
                   multiple
                   default-first-option
