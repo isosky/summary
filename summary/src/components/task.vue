@@ -843,6 +843,7 @@ export default {
       that.task_select = "";
       that.task_sub_select = "";
       that.isqueryall = true;
+      that.tabs_select = "summary";
       that.querytask("table");
     });
     this.tasksummary_chart = echarts.init(
@@ -898,6 +899,7 @@ export default {
     },
     resetall: function () {
       this.task_title = "";
+      this.tabs_select = "summary";
       this.freshright();
     },
     // 初始化分类的下拉列表
@@ -1145,6 +1147,7 @@ export default {
       axios.get("/querytask_week").then((response) => {
         if (response.status == 200) {
           this.tableData = response.data.arrays;
+          this.tabs_select = "summary";
         }
       });
     },
