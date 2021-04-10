@@ -217,22 +217,76 @@ def parsetime(timestring, timeformat):
 def gettimedata():
     global iswork
     conn = sqlite3.connect(dbf)
+    today = datetime.date.today()
     start_time = datetime.datetime.strftime(
-        datetime.date.today() - datetime.timedelta(days=13), "%Y-%m-%d")
+        today - datetime.timedelta(days=13), "%Y-%m-%d")
     end_time = datetime.datetime.strftime(
-        datetime.date.today(), "%Y-%m-%d")
+        today + datetime.timedelta(7 - today.weekday() - 1), "%Y-%m-%d")
+    date_list = returndatelist(start_time, end_time)
+
     c = conn.cursor()
+    finish_task = {}
     cursor = c.execute(
         "select strftime('%Y-%m-%d',ftime),count(*) from task where isfinish =1 and isabandon=0 and iswork>=? and ftime>=? group by strftime('%Y-%m-%d',ftime)", [iswork, start_time])
-    result = []
     for row in cursor:
-        result.append(row)
+        finish_task[row[0]] = row[1]
+    # print(finish_task)
+
+    todo_task = {}
+    cursor = c.execute(
+        "select strftime('%Y-%m-%d',etime),count(*) from task where isfinish =1 and isabandon=0 and iswork>=? and etime>=? and etime<=? group by strftime('%Y-%m-%d',etime)", [iswork, start_time, end_time])
+    for row in cursor:
+        todo_task[row[0]] = row[1]
+    # print(todo_task)
+
+    overdue_task = {}
+    cursor = c.execute(
+        "select strftime('%Y-%m-%d',ftime),count(*) from task where isfinish =1 and status=4 and isabandon=0 and iswork>=0 group by strftime('%Y-%m-%d',ftime)")
+    for row in cursor:
+        overdue_task[row[0]] = row[1]
+    # print(overdue_task)
+
+    normal_task = {}
+    cursor = c.execute(
+        "select strftime('%Y-%m-%d',ftime),count(*) from task where isfinish =1 and isabandon=0  and etime=strftime('%Y-%m-%d',ftime) and iswork>=? and ftime>=? group by strftime('%Y-%m-%d',ftime)", [iswork, start_time])
+    for row in cursor:
+        normal_task[row[0]] = row[1]
+    # print(normal_task)
 
     r = [start_time, end_time]
 
+    result = []
+    result_desc = []
+    for i in date_list:
+        if i not in finish_task:
+            finish_task[i] = 0
+        if i not in todo_task:
+            todo_task[i] = 0
+        if i not in overdue_task:
+            overdue_task[i] = 0
+        if i not in normal_task:
+            normal_task[i] = 0
+        result.append([i, finish_task[i]])
+        result_desc.append([i, str(finish_task[i])+'/' +
+                            str(todo_task[i]), str(overdue_task[i]) + '/' + str(normal_task[i]) + '/' + str(finish_task[i] - overdue_task[i] - normal_task[i])])
+    # print(result)
+
     conn.commit()
     conn.close()
-    return {'result': result, 'range': r}
+    return {'result': result, 'result_desc': result_desc, 'range': r}
+
+
+def returndatelist(datestart, dateend):
+    datestart = datetime.datetime.strptime(datestart, '%Y-%m-%d')
+    dateend = datetime.datetime.strptime(dateend, '%Y-%m-%d')
+    date_list = []
+    date_list.append(datestart.strftime('%Y-%m-%d'))
+    while datestart < dateend:
+        # 日期叠加一天
+        datestart += datetime.timedelta(days=+1)
+        # 日期转字符串存入列表
+        date_list.append(datestart.strftime('%Y-%m-%d'))
+    return date_list
 
 
 def finishtask(task_id, input_finish):
@@ -970,7 +1024,8 @@ if __name__ == '__main__':
     getiswork()
     initschedule(force=True)
     # print(type_work)
-    print(initoption())
+    print(gettimedata())
+    # print("2021-04-01" > "2021-03-31")
     # temp = querytask('', '自己', '投资', '', True)
     # temp = gettasksummary_bar()
     # print(temp)
