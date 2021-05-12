@@ -2,9 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import datetime
-import json
 import os
-import random
 import sqlite3
 import time
 import calendar

@@ -517,7 +517,7 @@ export default {
             label: {
               show: true,
               formatter: function (params) {
-                console.log(params);
+                // console.log(params);
                 var d = echarts.number.parseDate(params.value[0]);
                 return (
                   d.getDate() + "\n" + params.value[1] + "\n" + params.value[2]
@@ -658,9 +658,9 @@ export default {
           "#ee6666",
           "#73c0de",
           "#3ba272",
-          "#fc8452",
-          "#9a60b4",
-          "#ea7ccc",
+          "black",
+          "red",
+          "black",
         ],
         tooltip: {
           trigger: "item",
@@ -687,6 +687,7 @@ export default {
             label: {
               position: "inner",
             },
+            color: ["#ee6666", "black", "black"],
             radius: ["0%", "30%"],
             center: ["50%", "60%"],
             data: [],
@@ -1032,7 +1033,7 @@ export default {
           this.task_option.series[1].data = response.data.result;
           this.task_option.calendar.range = response.data.range;
 
-          console.log(this.task_option);
+          // console.log(this.task_option);
           this.task_chart.setOption(this.task_option);
         }
       });
@@ -1058,6 +1059,7 @@ export default {
           this.tab_type_pie_option.series[0].data = response.data.pie_type_data;
           this.tab_type_pie_option.series[1].data =
             response.data.pie_type_data_c;
+          console.log(this.tab_type_pie_option);
           this.tasktype_pie_chart.setOption(this.tab_type_pie_option);
 
           // pie summary图
@@ -1364,7 +1366,7 @@ export default {
     showupdateprocess: function (event) {
       this.dialogprocessVisible = true;
       this.process_content = event.process_name;
-      console.log(event);
+      // console.log(event);
       this.process_id = event.process_id;
       this.s_task_id = event.task_id;
     },
