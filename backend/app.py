@@ -385,7 +385,7 @@ def calfundtotal():
     json_data = json.loads(request.get_data())
     isupdate = json_data['isupdate']
     isclosing = json_data['isclosing']
-    res = fund.calfundtotal(isupdate, isclosing)
+    res = fund.calfundtotal(isupdate=isupdate, isclosing=isclosing)
     return json.dumps(res)
 
 
