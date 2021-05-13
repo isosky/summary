@@ -6,8 +6,8 @@ import json
 import time
 import datetime
 
-if os.path.exists("F:/OneDrive/文档/tmss.db"):
-    dbf = "F:/OneDrive/文档/tmss.db"
+if os.path.exists("G:/Securecrt_v6.6.2/Securecrt_v6.6.2/SecureCRT/tmss.db"):
+    dbf = "G:/Securecrt_v6.6.2/Securecrt_v6.6.2/SecureCRT/tmss.db"
 elif os.path.exists("C:/Users/isowang/OneDrive/文档/tmss.db"):
     dbf = "C:/Users/isowang/OneDrive/文档/tmss.db"
 else:
@@ -81,10 +81,10 @@ def getfundall():
     c.executemany(sql, temp_list)
     conn.commit()
     conn.close()
-    calfundtotal()
+    calfundtotal(isclosing=True)
 
 
-def calfundtotal(t=''):
+def calfundtotal(t='', isclosing=False, isupdate=False):
     # fund_orders 中buy的share求和，sum求和，求平均为成本，减去sell的为实际的
     # 平均成本*sum（buy的share）-sum(sell的share)=现在的成本
     sql_a = "select fund_code,operation,round(sum(fund_shares),2),round(sum(order_sum),2) from fund_orders "
@@ -110,7 +110,11 @@ def calfundtotal(t=''):
         temp[i]['cost'] = round(temp[i]['buy'][1]/temp[i]['share'], 4)
         temp[i]['earn_history'] = temp[i]['sell'][1] - \
             temp[i]['sell'][0]*temp[i]['cost']
-        temp[i]['price_now'] = getpricesbydate(i, t)
+        # 收盘计算，和昨天的进行计算
+        if isclosing:
+            temp[i]['price_now'] = getpricesbydate(i, t)
+        else:
+            temp[i]['price_now'], temp[i]['changes'] = getpricenow(i)
         temp[i]['earn_sum'] = round(temp[i]['share'] *
                                     temp[i]['price_now'] - temp[i]['sum'], 2)
     # print(temp)
@@ -122,21 +126,35 @@ def calfundtotal(t=''):
     sql = "select max(fund_time) from fund_total_history"
     max_time = c.execute(sql)
     max_time = max_time.fetchone()[0]
+    ut = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
     for i in temp.keys():
-        if i not in fund_exist:
-            c.execute(
-                "insert into fund_total (fund_code,fund_shares,fund_sum,cost,earn_sum,earn_history) values (?,?,?,?,?,?)",
-                [i, temp[i]['share'], temp[i]['cost'], temp[i]['sum'], temp[i]['earn_sum'], temp[i]['earn_history']])
+        # 买入卖出才涉及到更新成本和份额和盈利
+        if isupdate:
+            if i not in fund_exist:
+                c.execute(
+                    "insert into fund_total (fund_code,fund_shares,fund_sum,cost,earn_sum,earn_history) values (?,?,?,?,?,?)",
+                    [i, temp[i]['share'], temp[i]['cost'], temp[i]['sum'], temp[i]['earn_sum'], temp[i]['earn_history']])
+            else:
+                c.execute(
+                    "update fund_total set fund_shares=?,fund_sum=?,cost=?,earn_sum=?,earn_history=?,update_time=? where fund_code=?",
+                    [temp[i]['share'], temp[i]['cost'], temp[i]['sum'], temp[i]['earn_sum'], temp[i]['earn_history'], ut, i])
+            # 收盘第二天更新前一天的收益
+        if isclosing:
+            if t > max_time:
+                c.execute(
+                    "insert into fund_total_history (fund_code,fund_time,earn_sum) values (?,?,?)", [i, ut, temp[i]['earn_sum']])
+            else:
+                c.execute("update fund_total_history set earn_sum=? where fund_code = ? and fund_time =? ", [
+                    temp[i]['earn_sum'], i, ut])
+        # 盘中
         else:
-            c.execute(
-                "update fund_total set fund_shares=?,fund_sum=?,cost=?,earn_sum=?,earn_history=?,update_time=? where fund_code=?",
-                [temp[i]['share'], temp[i]['cost'], temp[i]['sum'], temp[i]['earn_sum'], temp[i]['earn_history'], time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()), i])
-        if t > max_time:
-            c.execute(
-                "insert into fund_total_history (fund_code,fund_time,earn_sum) values (?,?,?)", [i, t, temp[i]['earn_sum']])
-        else:
-            c.execute("update fund_total_history set earn_sum=? where fund_code = ? and fund_time =? ", [
-                temp[i]['earn_sum'], i, t])
+            temp[i]['earn_today'] = round(
+                temp[i]['changes']*temp[i]['share'], 4)
+            c.execute("update fund_total set earn_today=?,update_time=? where fund_code =?",
+                      [temp[i]['earn_today'], ut, i])
+        # if isclosing:
+            # c.execute(
+            # "update fund_total set earn_today=?,update_time=? where fund_code=?", [t, i])
     conn.commit()
     conn.close()
 
@@ -151,9 +169,46 @@ def getpricesbydate(code, date):
     return temp
 
 
+# TODO 分时数据移动到历史表里面去
+def getpricenow(code):
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    t = int(time.time()*1000)
+    url = 'http://fundgz.1234567.com.cn/js/{0}.js?rt={1}'.format(
+        code, t)
+    # print(url)
+    response = get_resonse(url)
+    # 爬取失败等待再次爬取
+    if response == '':
+        print(response)
+        return ''
+    else:
+        temp = json.loads(re.match(".*?({.*}).*", response, re.S).group(1))
+        # print(temp)
+        c.execute("insert into fund_gz (fund_code,fund_name,prices_time,prices,gz_time,estimate,changes,rate) values (?,?,?,?,?,?,?,?)",
+                  [temp['fundcode'], temp['name'], temp['jzrq'], temp['dwjz'], temp['gztime'], temp['gsz'],
+                   round(float(temp['gsz'])-float(temp['dwjz']), 4), temp['gszzl']])
+    conn.commit()
+    conn.close()
+    # print(temp)
+    return [float(temp['gsz']), round(float(temp['gsz'])-float(temp['dwjz']), 4)]
+
+
 if __name__ == '__main__':
-    # print(url.format('123'))
-    getfundall()
+
+    pass
+
+    # # useage
+    # # 盘中更新
+    calfundtotal()
+    # # 收盘更新
+    # getfundall()
+    # # 收盘更新 一般不用,使用上面的那个
+    # calfundtotal(isclosing=True)
+    # # 买入卖出
+    # calfundtotal(isupdate=True)
+
+    # 追数据
     # temp = '2021-04-07'
     # now = datetime.datetime.now().strftime('%Y-%m-%d')
     # while temp != now:

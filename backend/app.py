@@ -9,6 +9,7 @@ from flask_cors import CORS
 
 import dboo as dboo
 import dboo_yys as dboo_yys
+import fund as fund
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
@@ -365,6 +366,26 @@ def deletetaskperson():
 @app.route('/gettotalmonth')
 def gettotalmonth():
     res = dboo.gettotalmonth()
+    return json.dumps(res)
+
+
+# #####################################
+# 定义fund的函数
+# #####################################
+
+
+@app.route('/getfundall')
+def getfundall():
+    res = fund.getfundall()
+    return json.dumps(res)
+
+
+@app.route('/calfundtotal', methods=['POST'])
+def calfundtotal():
+    json_data = json.loads(request.get_data())
+    isupdate = json_data['isupdate']
+    isclosing = json_data['isclosing']
+    res = fund.calfundtotal(isupdate, isclosing)
     return json.dumps(res)
 
 
