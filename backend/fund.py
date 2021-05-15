@@ -82,6 +82,7 @@ def getfundall():
     conn.commit()
     conn.close()
     calfundtotal(isclosing=True)
+    return {'msg': True}
 
 
 def calfundtotal(t='', isclosing=False, isupdate=False):
