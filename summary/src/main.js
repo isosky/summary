@@ -6,6 +6,7 @@ import task from './components/task.vue'
 import person from './components/person.vue'
 import count from './components/count.vue'
 import schedule from './components/schedule.vue'
+import fund from './components/fund.vue'
 import syssetting from './components/syssetting.vue'
 import VueRouter from 'vue-router'
 
@@ -24,8 +25,18 @@ const routes = [{
 
   },
   {
+    path: '/fund',
+    component: fund
+
+  },
+  {
     path: '/person',
     component: person
+
+  },
+  {
+    path: '/count',
+    component: count
 
   },
   {
@@ -49,8 +60,8 @@ VueRouter.prototype.push = function push(location) {
   return originalPush.call(this, location).catch(err => err)
 }
 
-axios.defaults.baseURL = 'http://localhost:5000';
-// axios.defaults.baseURL = 'http://81.70.25.54:5000';
+// axios.defaults.baseURL = 'http://localhost:5000';
+axios.defaults.baseURL = 'http://81.70.25.54:5000';
 
 const app = new Vue({
   router,

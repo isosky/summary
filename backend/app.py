@@ -389,6 +389,10 @@ def calfundtotal():
     return json.dumps(res)
 
 
+@app.route('/getfundtable')
+def getfundtable():
+    return json.dumps(fund.getfundtable())
+
 if __name__ == '__main__':
     # ls.getlocksreen()
     app.run(host='0.0.0.0', port=5000, debug=True)

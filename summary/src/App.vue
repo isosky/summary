@@ -14,18 +14,22 @@
               <span slot="title">任务管理</span>
             </el-menu-item>
             <el-menu-item index="2">
+              <i class="el-icon-money"></i>
+              <span slot="title">基金</span>
+            </el-menu-item>
+            <el-menu-item index="3">
               <i class="el-icon-time"></i>
               <span slot="title">定时任务</span>
             </el-menu-item>
-            <el-menu-item index="3">
+            <el-menu-item index="4">
               <i class="el-icon-user"></i>
               <span slot="title">人员信息</span>
             </el-menu-item>
-            <el-menu-item index="4">
+            <el-menu-item index="5">
               <i class="el-icon-s-data"></i>
               <span slot="title">统计</span>
             </el-menu-item>
-            <el-menu-item index="5">
+            <el-menu-item index="6">
               <i class="el-icon-setting"></i>
               <span slot="title">系统设置</span>
             </el-menu-item>
@@ -49,7 +53,14 @@ export default {
       defaultactive: "1",
       isCollapse: true,
       // routers: ["/task", "/yysyh", "/yyshero", "/schedule", "/syssetting"]
-      routers: ["/task", "/schedule", "/person", "/count", "/syssetting"],
+      routers: [
+        "/task",
+        "/fund",
+        "/schedule",
+        "/person",
+        "/count",
+        "/syssetting",
+      ],
     };
   },
   methods: {

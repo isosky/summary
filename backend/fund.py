@@ -1,5 +1,6 @@
 import os
 import sqlite3
+from sqlite3.dbapi2 import connect
 import requests
 import re
 import json
@@ -141,12 +142,15 @@ def calfundtotal(t='', isclosing=False, isupdate=False):
                     [temp[i]['share'], temp[i]['cost'], temp[i]['sum'], temp[i]['earn_sum'], temp[i]['earn_history'], ut, i])
             # 收盘第二天更新前一天的收益
         if isclosing:
+            print(t, max_time, t > max_time, i, temp[i]['earn_sum'])
             if t > max_time:
                 c.execute(
-                    "insert into fund_total_history (fund_code,fund_time,earn_sum) values (?,?,?)", [i, ut, temp[i]['earn_sum']])
+                    "insert into fund_total_history (fund_code,fund_time,earn_sum) values (?,?,?)", [i, t, temp[i]['earn_sum']])
             else:
+                c.execute("update fund_total set earn_sum=?,update_time=? where fund_code = ?", [
+                    temp[i]['earn_sum'], ut, i])
                 c.execute("update fund_total_history set earn_sum=? where fund_code = ? and fund_time =? ", [
-                    temp[i]['earn_sum'], i, ut])
+                    temp[i]['earn_sum'], i, t])
         # 盘中
         else:
             temp[i]['earn_today'] = round(
@@ -195,13 +199,76 @@ def getpricenow(code):
     return [float(temp['gsz']), round(float(temp['gsz'])-float(temp['dwjz']), 4)]
 
 
+def buyfund(fund_code, trade_time, fund_shares, fund_prices, fund_fee, order_sum, check_time, operation, methods):
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    c.execute("insert into fund_orders (fund_code, trade_time, fund_shares, fund_prices, fund_fee, order_sum, check_time, operation, methods) values (?,?,?,?,?,?,?,?,?)",
+              [fund_code, trade_time, fund_shares, fund_prices, fund_fee, order_sum, check_time, operation, methods])
+    conn.commit()
+    conn.close()
+    # TODO 统一规划反馈值
+    return {'msg': 'ok'}
+
+
+def dict_factory(cursor, row):
+    d = {}
+    for idx, col in enumerate(cursor.description):
+        d[col[0]] = row[idx]
+    return d
+
+
+def getfundorders(fund_code):
+    conn = sqlite3.connect(dbf)
+    conn.row_factory = dict_factory
+    c = conn.cursor()
+    temp = c.execute(
+        "select * from fund_orders where fund_code=?", [fund_code])
+    res = []
+    for i in temp:
+        res.append(dict(i))
+    conn.commit()
+    conn.close()
+    return res
+
+
+def getfundtable():
+    conn = sqlite3.connect(dbf)
+    conn.row_factory = dict_factory
+    c = conn.cursor()
+    temp = c.execute(
+        "select * from fund_total")
+    res = []
+    for i in temp:
+        res.append(dict(i))
+    conn.commit()
+    conn.close()
+    return res
+
+
+def updatefund(order_id, newdata):
+    conn = sqlite3.connect(dbf)
+    c = conn.cursor()
+    for k, v in newdata.items():
+        sql = 'update fund_orders set %s=? where order_id=? ' % k
+        c.execute(sql, [v, order_id])
+    conn.commit()
+    conn.close()
+
+
+def sellfund(fund_code, trade_time, fund_shares, fund_prices, fund_fee, order_sum, check_time, operation, methods):
+    pass
+
+
 if __name__ == '__main__':
 
-    pass
+    # print(getfundorders('005827'))
+
+    # updatefund(2, {'fund_fee': 0.1})
+    calfundtotal(isclosing=True)
 
     # # useage
     # # 盘中更新
-    calfundtotal()
+    # calfundtotal()
     # # 收盘更新
     # getfundall()
     # # 收盘更新 一般不用,使用上面的那个
