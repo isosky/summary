@@ -400,8 +400,12 @@ def querytask(query, type, sub_type, ftime, query_duration, isstime, isqueryall,
                 'task_name': row[3], 'etime': row[4][5:], 'stime': row[5], 'tetime': row[4], 'isfinish': row[6], 'status': row[7]}
         if row[0] in process.keys():
             temp['num_process'] = process[row[0]]
+        else:
+            temp['num_process'] = ''
         if row[0] in person.keys():
             temp['num_person'] = person[row[0]]
+        else:
+            temp['num_person'] = ''
         # print(temp)
         result.append(temp)
     # temp = cursor

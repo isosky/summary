@@ -948,7 +948,7 @@ export default {
           person_id: event.person_id,
         })
         .then((response) => {
-          this.persondata = response.data;
+          this.persondata = response.data.arrays;
         });
     },
     appendtaskperson: function () {
@@ -969,7 +969,7 @@ export default {
           task_id: task_id,
         })
         .then((response) => {
-          // console.log(response);
+          // console.log(this.tableData);
           this.persondata = response.data.arrays;
           for (var i in this.tableData) {
             if (this.tableData[i].task_id == response.data.task_id) {
