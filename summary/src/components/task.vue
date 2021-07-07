@@ -676,7 +676,7 @@ export default {
             label: {
               position: "inner",
             },
-            color: ["#ee6666", "black", "black"],
+            // color: ["gray"],
             radius: ["0%", "30%"],
             center: ["50%", "60%"],
             data: [],
