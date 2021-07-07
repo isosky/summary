@@ -480,7 +480,7 @@ export default {
           show: false,
           min: 0,
           max: 20,
-          seriesIndex: [1],
+          // seriesIndex: [1],
           // orient: "vertical",
           inRange: {
             color: ["#ebedf0", "#c6e48b", "#7bc96f", "#239a3b", "#196127"],
@@ -509,30 +509,19 @@ export default {
             nameMap: "cn",
           },
         },
-        series: [
-          {
-            type: "scatter",
-            coordinateSystem: "calendar",
-            symbolSize: 1,
-            label: {
-              show: true,
-              formatter: function (params) {
-                // console.log(params);
-                var d = echarts.number.parseDate(params.value[0]);
-                return (
-                  d.getDate() + "\n" + params.value[1] + "\n" + params.value[2]
-                );
-              },
-              color: "#000",
+        series: {
+          type: "heatmap",
+          coordinateSystem: "calendar",
+          label: {
+            show: true,
+            formatter: function (params) {
+              var d = echarts.number.parseDate(params.value[0]);
+              return d.getDate() + "\n" + params.value[1] + "个";
             },
-            data: [],
+            color: "#000",
           },
-          {
-            type: "heatmap",
-            coordinateSystem: "calendar",
-            data: [],
-          },
-        ],
+          data: [],
+        },
       },
       // 统计柱形图
       task_summary_option: {
@@ -1029,10 +1018,11 @@ export default {
         // console.log(response.data.result);
         if (response.status == 200) {
           // console.log(response.data.result);
-          this.task_option.series[0].data = response.data.result_desc;
-          this.task_option.series[1].data = response.data.result;
+          // this.task_option.series[0].data = response.data.result_desc;
+          // this.task_option.series[1].data = response.data.result;
+          // this.task_option.calendar.range = response.data.range;
+          this.task_option.series.data = response.data.result;
           this.task_option.calendar.range = response.data.range;
-
           // console.log(this.task_option);
           this.task_chart.setOption(this.task_option);
         }
