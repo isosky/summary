@@ -38,7 +38,7 @@
               :row-class-name="tablepostRowClassName"
             >
               <el-table-column
-                prop="tname"
+                prop="post_name"
                 label="帖子名称"
                 width="420"
               ></el-table-column>
@@ -48,14 +48,20 @@
                 width="220"
               ></el-table-column>
               <el-table-column
-                prop="datetime"
+                prop="create_time"
                 label="发帖时间"
                 sortable
                 width="180"
               ></el-table-column>
               <el-table-column
-                prop="now"
+                prop="reply_count"
                 label="回复"
+                sortable
+                width="80"
+              ></el-table-column>
+              <el-table-column
+                prop="reply_get"
+                label="已爬"
                 sortable
                 width="80"
               ></el-table-column>
@@ -97,12 +103,12 @@
               :row-class-name="tablepostRowClassName"
             >
               <el-table-column
-                prop="user_name"
+                prop="nga_user_name"
                 label="发帖人"
                 width="180"
               ></el-table-column>
               <el-table-column
-                prop="reply_row"
+                prop="reply_sequence"
                 label="楼"
                 width="60"
               ></el-table-column>
@@ -113,7 +119,7 @@
                 width="180"
               ></el-table-column>
               <el-table-column
-                prop="reply"
+                prop="content"
                 label="回复"
                 width="480"
               ></el-table-column>
@@ -209,7 +215,7 @@ export default {
     getonepost: function (row, event, column) {
       this.post_click = row.tid;
       this.getreplytabledata();
-      this.select_title = row.tname;
+      this.select_title = row.post_name;
       this.is_gloabl = false;
     },
     handleCurrentChange: function (val) {
