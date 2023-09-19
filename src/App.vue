@@ -47,31 +47,27 @@
               <i class="el-icon-money"></i>
               <span slot="title">基金</span>
             </el-menu-item> -->
-            <el-menu-item index="6">
+            <el-menu-item index="8">
               <i class="el-icon-chat-dot-square"></i>
               <span slot="title">NGA</span>
             </el-menu-item>
-            <el-menu-item index="7">
+            <el-menu-item index="9">
               <i class="el-icon-time"></i>
               <span slot="title">定时任务</span>
             </el-menu-item>
-            <el-menu-item index="8">
+            <el-menu-item index="10">
               <i class="el-icon-monitor"></i>
               <span slot="title">类型分析</span>
             </el-menu-item>
-            <el-menu-item index="9">
-              <i class="el-icon-notebook-1"></i>
-              <span slot="title">藏书</span>
-            </el-menu-item>
-            <el-menu-item index="10">
+            <el-menu-item index="11">
               <i class="el-icon-s-promotion"></i>
               <span slot="title">出行</span>
             </el-menu-item>
-            <el-menu-item index="11">
+            <el-menu-item index="12">
               <i class="el-icon-bicycle"></i>
               <span slot="title">骑行</span>
             </el-menu-item>
-            <el-menu-item index="12">
+            <el-menu-item index="13">
               <i class="el-icon-setting"></i>
               <span slot="title">系统设置</span>
             </el-menu-item>
@@ -119,7 +115,6 @@ export default {
         "/nga",
         "/schedule",
         "/typeanalysis",
-        "/book",
         "/travel",
         "/cycling",
         "/syssetting",

@@ -1,33 +1,106 @@
 <template>
   <div id="app">
-    <el-col :span="14"><el-row>
-        <el-button type="primary" icon="el-icon-refresh" @click="get_fund_estimate_data">刷新
+    <el-col :span="14"
+      ><el-row>
+        <el-button
+          type="primary"
+          icon="el-icon-refresh"
+          @click="get_fund_estimate_data"
+          >刷新
         </el-button>
-        <el-button type="primary" icon="el-icon-refresh" @click="getestimatenow">获取净值
+        <el-button type="primary" icon="el-icon-refresh" @click="getestimatenow"
+          >获取净值
         </el-button>
       </el-row>
       <el-row>
-        <el-table :data="estimatedata" style="width: 100%" :cell-style="estimatepricestyle" show-summary
-          :summary-method="getestimateSummaries" @row-click="changeestimate" height="900"
-          :default-sort="{ prop: 'net_change', order: 'descending' }">
-          <el-table-column prop="fund_name" label="基金名称" width="220"></el-table-column>
-          <el-table-column prop="fund_label" sortable label="行业" width="140"></el-table-column>
-          <el-table-column prop="operation_label" sortable label="标签" width="80"></el-table-column>
-          <el-table-column prop="holding_amount" sortable label="持有金额" width="100"></el-table-column>
-          <el-table-column prop="holding_profit" sortable label="持收" width="100"></el-table-column>
-          <el-table-column prop="holding_return_rate" sortable label="收益率" width="100"></el-table-column>
-          <el-table-column prop="net_change" sortable label="预估" width="100"></el-table-column>
-          <el-table-column prop="estimate_profit" sortable label="预估收益" width="100"></el-table-column>
-          <el-table-column prop="net_value_time" label="预估时间" width="160"></el-table-column>
+        <el-table
+          :data="estimatedata"
+          style="width: 100%"
+          :cell-style="estimatepricestyle"
+          show-summary
+          :summary-method="getestimateSummaries"
+          @row-click="changeestimate"
+          height="900"
+          :default-sort="{ prop: 'net_change', order: 'descending' }"
+        >
+          <el-table-column
+            prop="fund_name"
+            label="基金名称"
+            width="220"
+          ></el-table-column>
+          <el-table-column
+            prop="fund_label"
+            sortable
+            label="行业"
+            width="140"
+          ></el-table-column>
+          <el-table-column
+            prop="operation_label"
+            sortable
+            label="标签"
+            width="80"
+          ></el-table-column>
+          <el-table-column
+            prop="holding_amount"
+            sortable
+            label="持有金额"
+            width="100"
+          ></el-table-column>
+          <el-table-column
+            prop="holding_profit"
+            sortable
+            label="持收"
+            width="100"
+          ></el-table-column>
+          <el-table-column
+            prop="holding_return_rate"
+            sortable
+            label="收益率"
+            width="100"
+          ></el-table-column>
+          <el-table-column
+            prop="net_change"
+            sortable
+            label="预估"
+            width="100"
+          ></el-table-column>
+          <el-table-column
+            prop="estimate_profit"
+            sortable
+            label="预估收益"
+            width="100"
+          ></el-table-column>
+          <el-table-column
+            prop="net_value_time"
+            label="预估时间"
+            width="160"
+          ></el-table-column>
         </el-table>
       </el-row>
     </el-col>
     <el-col :span="10">
       <el-row>
-        <el-table :data="estimatebuydata" style="width: 100%" height="370" :default-sort="{ prop: 'trade_time' }">
-          <el-table-column prop="trade_time" label="交易时间" width="220"></el-table-column>
-          <el-table-column prop="order_amount" label="订单金额" width="220"></el-table-column>
-          <el-table-column prop="remain_volume" label="份额" width="220"></el-table-column>
+        <el-table
+          :data="estimatebuydata"
+          style="width: 100%"
+          height="370"
+          :default-sort="{ prop: 'trade_time' }"
+        >
+          <el-table-column
+            prop="trade_time"
+            label="交易时间"
+            width="220"
+          ></el-table-column>
+          <el-table-column
+            prop="order_amount"
+            label="订单金额"
+            width="220"
+          ></el-table-column>
+          <el-table-column
+            prop="remain_volume"
+            label="份额"
+            width="220"
+          ></el-table-column>
         </el-table>
       </el-row>
       <el-row>
@@ -153,5 +226,8 @@ export default {
 <style>
 .formlabelwidth {
   width: 120px;
+}
+.el-table {
+  overflow: visible !important;
 }
 </style>

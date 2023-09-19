@@ -2,43 +2,97 @@
   <div id="app">
     <el-col :span="10">
       <el-row>
-        <el-button type="primary" @click="getfundtable" icon="el-icon-refresh">刷新
+        <el-button type="primary" @click="getfundtable" icon="el-icon-refresh"
+          >刷新
         </el-button>
-        <el-button type="primary" @click="getfryfundtable" icon="el-icon-refresh">只看鱼塘
+        <el-button
+          type="primary"
+          @click="getfryfundtable"
+          icon="el-icon-refresh"
+          >只看鱼塘
         </el-button>
-        <el-button type="primary" @click="getfundalldata" icon="el-icon-refresh">查看所有
+        <el-button type="primary" @click="getfundalldata" icon="el-icon-refresh"
+          >查看所有
         </el-button>
-        <el-select label="标题" :label-width="formLabelWidth" v-model="label_select" clearable filterable
-          @change="updatelabeloption" default-first-option placeholder="请选择" style="width: 220px">
-          <el-option v-for="item in labeloption" :key="item.value" :label="item.label" :value="item.value">
+        <el-select
+          label="标题"
+          :label-width="formLabelWidth"
+          v-model="label_select"
+          clearable
+          filterable
+          @change="updatelabeloption"
+          default-first-option
+          placeholder="请选择"
+          style="width: 220px"
+        >
+          <el-option
+            v-for="item in labeloption"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          >
           </el-option>
         </el-select>
       </el-row>
       <el-row>
-        <el-table :data="fundnowdata.filter(
-          (v) => v.fund_label.includes(label_select) || !label_select
-        )
-          " show-summary :summary-method="getSummaries" style="width: 100%" height="850" :cell-style="pricestyle"
-          ref="fundnowdata" @row-click="changefundchart"
-          :default-sort="{ prop: 'holding_return_rate', order: 'descending' }">
+        <el-table
+          :data="
+            fundnowdata.filter(
+              (v) => v.fund_label.includes(label_select) || !label_select
+            )
+          "
+          show-summary
+          :summary-method="getSummaries"
+          style="width: 100%"
+          height="850"
+          :cell-style="pricestyle"
+          ref="fundnowdata"
+          @row-click="changefundchart"
+          :default-sort="{ prop: 'holding_return_rate', order: 'descending' }"
+        >
           <el-table-column prop="fund_name" label="基金名称" width="220">
           </el-table-column>
-          <el-table-column prop="holding_amount" sortable label="持有金额" width="100">
+          <el-table-column
+            prop="holding_amount"
+            sortable
+            label="持有金额"
+            width="100"
+          >
           </el-table-column>
           <el-table-column prop="fund_label" label="行业" width="140">
           </el-table-column>
-          <el-table-column prop="cumulative_profit" sortable label="累计收益" width="100">
+          <el-table-column
+            prop="cumulative_profit"
+            sortable
+            label="累计收益"
+            width="100"
+          >
           </el-table-column>
-          <el-table-column prop="holding_profit" sortable label="持有收益" width="100">
+          <el-table-column
+            prop="holding_profit"
+            sortable
+            label="持有收益"
+            width="100"
+          >
           </el-table-column>
-          <el-table-column prop="holding_return_rate" sortable label="收益率" width="100">
+          <el-table-column
+            prop="holding_return_rate"
+            sortable
+            label="收益率"
+            width="100"
+          >
           </el-table-column>
           <!-- <el-table-column prop="earn_total" label="累计收益">
               </el-table-column> -->
           <!-- <el-table-column prop="cost" label="持仓成本"> </el-table-column> -->
           <el-table-column label="操作" width="60">
             <template slot-scope="scope">
-              <el-button @click="diashowreview(scope.row)" type="text" size="small">复盘</el-button>
+              <el-button
+                @click="diashowreview(scope.row)"
+                type="text"
+                size="small"
+                >复盘</el-button
+              >
             </template>
           </el-table-column>
         </el-table>
@@ -49,7 +103,8 @@
         <div id="div_one_remain" style="height: 370px"></div>
       </el-row>
       <el-row :span="5">
-        <el-button type="primary" @click="getfundnow" icon="el-icon-refresh">实时
+        <el-button type="primary" @click="getfundnow" icon="el-icon-refresh"
+          >实时
         </el-button>
         <!-- <el-button type="primary" @click="revertwatch" icon="el-icon-back">
             </el-button> -->
@@ -73,7 +128,6 @@
         <div id="div_one_total" style="height: 480px"></div>
       </el-row>
     </el-col>
-
   </div>
 </template>
   
@@ -289,8 +343,8 @@ export default {
     };
   },
   mounted: function () {
-    let that = this
-    this.init()
+    let that = this;
+    this.init();
     this.one_remain_chart = echarts.init(
       document.getElementById("div_one_remain"),
       "white",
@@ -303,8 +357,7 @@ export default {
       that.one_remain_option.title[2].text =
         "盈利:" + that.one_remain_chart_datail[params.name]["res_earn"];
       that.one_remain_option.title[3].text =
-        "份额:" +
-        that.one_remain_chart_datail[params.name]["res_remain_share"];
+        "份额:" + that.one_remain_chart_datail[params.name]["res_remain_share"];
       that.one_remain_option.title[4].text =
         that.one_remain_chart_datail[params.name]["res_earn_percent"];
       that.one_remain_chart.setOption(that.one_remain_option);
@@ -327,7 +380,7 @@ export default {
         that.watch_list[0]["coord"].push(params.name);
         that.watch_list[0]["coord"].push(
           that.one_total_option.series[0].data[
-          that.one_total_option.xAxis.data.indexOf(params.name)
+            that.one_total_option.xAxis.data.indexOf(params.name)
           ][1]
         );
         that.watch_label = params.name;
@@ -337,13 +390,12 @@ export default {
         that.watch_list[1]["coord"].push(params.name);
         that.watch_list[1]["coord"].push(
           that.one_total_option.series[0].data[
-          that.one_total_option.xAxis.data.indexOf(params.name)
+            that.one_total_option.xAxis.data.indexOf(params.name)
           ][1]
         );
         that.watch_label = that.watch_label + "-----" + params.name;
         that.watch_list[0]["name"] = (
-          ((that.watch_list[1]["coord"][1] -
-            that.watch_list[0]["coord"][1]) /
+          ((that.watch_list[1]["coord"][1] - that.watch_list[0]["coord"][1]) /
             that.watch_list[1]["coord"][1]) *
           100
         ).toFixed(2);
@@ -353,7 +405,7 @@ export default {
   },
   methods: {
     init() {
-      this.getfundtable()
+      this.getfundtable();
     },
     getfundtable() {
       axios.get("/get_fund_total_data").then((response) => {
@@ -587,5 +639,8 @@ export default {
 <style>
 .formlabelwidth {
   width: 120px;
+}
+.el-table {
+  overflow: visible !important;
 }
 </style>
