@@ -86,7 +86,7 @@
           <el-table-column
             prop="sub_type"
             label="二级分类"
-            width="80"
+            width="120"
           ></el-table-column>
           <el-table-column prop="task_name" label="内容"></el-table-column>
           <el-table-column

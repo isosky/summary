@@ -169,7 +169,7 @@
           filterable
           allow-create
           default-first-option
-          placeholder="请选择行业"
+          placeholder="请选择风格"
           style="width: 120px"
         >
           <el-option
