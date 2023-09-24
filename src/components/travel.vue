@@ -83,6 +83,7 @@ export default {
   },
   methods: {
     init: function () {
+      console.log(this.bmap);
       this.travel_chart = echarts.init(
         document.getElementById("travel_div"),
         "white",

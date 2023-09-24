@@ -137,8 +137,7 @@
                 <template slot-scope="scope">
                   <!-- TODO 图片的展示方式 -->
                   <el-button
-                    @click="freshonepost(scope.row)"
-                    v-if="scope.row.had_image > 0"
+                    v-if="scope.row.has_image > 0"
                     type="text"
                     size="small"
                     >图</el-button
@@ -206,7 +205,7 @@ export default {
       axios
         .post("/getreplytabledata", { tid: this.post_click })
         .then((response) => {
-          console.log(response);
+          // console.log(response);
           this.nga_reply_table = response.data;
           this.totalCount = response.data.length;
           return true;
@@ -222,6 +221,7 @@ export default {
       this.currentPage = val;
     },
     freshonepost: function (event) {
+      // TODO 还没实现，哈哈。
       console.log(event);
     },
     tablepostRowClassName({ row, rowIndex }) {
