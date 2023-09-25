@@ -19,6 +19,40 @@
         </el-table>
       </el-row>
     </el-col>
+    <el-col :span="5">
+      <!-- TODO 过滤 -->
+      <el-row :span="5">
+        <el-input
+          v-model="new_fund_code"
+          style="width: 150px"
+          placeholder="code"
+        ></el-input>
+        <el-input
+          v-model="new_fund_name"
+          style="width: 180px"
+          placeholder="name"
+        ></el-input>
+        <el-button
+          type="primary"
+          @click="add_new_fund"
+          icon="el-icon-check"
+        ></el-button>
+      </el-row>
+      <el-row :span="5">
+        <el-table :data="fund_base" height="800">
+          <el-table-column
+            prop="fund_code"
+            label="code"
+            width="80"
+          ></el-table-column>
+          <el-table-column
+            prop="fund_name"
+            label="name"
+            width="240"
+          ></el-table-column>
+        </el-table>
+      </el-row>
+    </el-col>
     <el-col :span="6">
       <el-row :span="5">
         <el-select
@@ -220,6 +254,9 @@ export default {
   data() {
     return {
       new_fund_label: "",
+      new_fund_code: "",
+      new_fund_name: "",
+      fund_base: "",
       fund_base_label: [],
       fund_base_label_selected: "",
       fund_base_label_option: [],
@@ -249,6 +286,7 @@ export default {
   methods: {
     freshall: function () {
       this.get_fund_base_label();
+      this.get_fund_base();
       this.get_fund_option();
       this.get_fund_base_label_data();
       this.get_author_app_option();
@@ -265,6 +303,25 @@ export default {
           this.new_fund_label = "";
           this.freshall();
         });
+    },
+    // 添加新基金
+    add_new_label: function () {
+      axios
+        .post("/add_new_fund", {
+          new_fund_code: this.new_fund_code,
+          new_fund_name: this.new_fund_name,
+        })
+        .then((response) => {
+          this.new_fund_code = "";
+          this.new_fund_name = "";
+          this.freshall();
+        });
+    },
+    // 获取基金
+    get_fund_base: function () {
+      axios.get("/get_fund_base").then((response) => {
+        this.fund_base = response.data.data;
+      });
     },
     // 获取行业标签table和标签option
     get_fund_base_label: function () {
