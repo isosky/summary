@@ -28,7 +28,7 @@
           </el-input>
         </el-row>
         <el-row>
-          <el-col :span="17" v-if="is_gloabl">
+          <el-col :span="22" v-if="is_gloabl">
             <el-table
               :data="nga_post_table"
               style="width: 100%"
@@ -40,7 +40,7 @@
               <el-table-column
                 prop="post_name"
                 label="帖子名称"
-                width="420"
+                width="520"
               ></el-table-column>
               <el-table-column
                 prop="user_name"
@@ -80,6 +80,20 @@
                 <template slot-scope="scope">
                   <!-- TODO 手动更新一下某个帖子，然后局部刷新 -->
                   <el-button
+                    v-if="!scope.row.st"
+                    @click="add_nga_special_post(scope.row)"
+                    type="text"
+                    size="small"
+                    >加</el-button
+                  >
+                  <el-button
+                    v-if="scope.row.st"
+                    @click="delete_nga_special_post(scope.row)"
+                    type="text"
+                    size="small"
+                    >删</el-button
+                  >
+                  <el-button
                     @click="freshonepost(scope.row)"
                     type="text"
                     size="small"
@@ -89,7 +103,7 @@
               </el-table-column>
             </el-table>
           </el-col>
-          <el-col :span="16" v-if="!is_gloabl">
+          <el-col :span="22" v-if="!is_gloabl">
             <el-table
               :data="
                 nga_reply_table.slice(
@@ -121,7 +135,7 @@
               <el-table-column
                 prop="content"
                 label="回复"
-                width="480"
+                width="680"
               ></el-table-column>
               <el-table-column
                 prop="fund_relation"
@@ -193,6 +207,25 @@ export default {
     init: function () {
       this.getposttabledata();
       this.getreplytabledata();
+    },
+    delete_nga_special_post: function (event) {
+      //   console.log(event);
+      axios
+        .post("/delete_nga_special_post", {
+          delete_nga_special_post_id: event.tid,
+        })
+        .then((response) => {
+          this.getposttabledata();
+        });
+    },
+    add_nga_special_post: function (event) {
+      axios
+        .post("/add_nga_special_post", {
+          new_nga_special_post_id: event.tid,
+        })
+        .then((response) => {
+          this.getposttabledata();
+        });
     },
     getposttabledata: function () {
       axios.get("/getposttabledata").then((response) => {
