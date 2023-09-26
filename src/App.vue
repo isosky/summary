@@ -42,6 +42,10 @@
                 ><i class="el-icon-view"></i>
                 <span>基金买卖</span>
               </el-menu-item>
+              <el-menu-item index="/fund_treemap_label"
+                ><i class="el-icon-view"></i>
+                <span>基金统计</span>
+              </el-menu-item>
               <el-menu-item index="/fund_setting"
                 ><i class="el-icon-view"></i>
                 <span>基金设置</span>

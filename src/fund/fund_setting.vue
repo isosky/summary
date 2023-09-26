@@ -394,7 +394,7 @@ export default {
     delete_fund_customer_label: function (event) {
       axios
         .post("/delete_fund_customer_label", {
-          fund_operation_lable_id: event.id,
+          fund_operation_label_id: event.id,
         })
         .then((response) => {
           this.fund_customer_label_selected = "";
