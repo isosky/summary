@@ -128,6 +128,66 @@
         <div id="div_one_total" style="height: 480px"></div>
       </el-row>
     </el-col>
+    <el-dialog :visible.sync="dialogreviewFormVisible" width="30%">
+      <el-form :model="reviewform">
+        <el-row :span="5">
+          <el-form-item label="基金代码" :label-width="formLabelWidth">
+            <el-input
+              v-model="reviewform.fund_name"
+              disabled
+              style="width: 450px"
+            ></el-input>
+          </el-form-item>
+          <el-form-item label="复盘日期" :label-width="formLabelWidth">
+            <el-date-picker
+              v-model="reviewform.fund_review_time"
+              value-format="yyyy-MM-dd"
+              type="date"
+              placeholder="选择日期"
+              @change="get_fund_review(true)"
+            >
+            </el-date-picker>
+          </el-form-item>
+        </el-row>
+        <el-row :span="5">
+          <el-form-item label="走势预期" :label-width="formLabelWidth">
+            <el-slider
+              :min="-10"
+              :max="10"
+              :step="2.5"
+              show-input
+              show-stops
+              v-model="reviewform.fund_review_attitude"
+              style="width: 450px"
+            ></el-slider>
+          </el-form-item>
+        </el-row>
+        <el-row :span="5">
+          <el-form-item label="操作想法" :label-width="formLabelWidth">
+            <el-radio-group v-model="reviewform.operation" size="medium">
+              <el-radio label="退场"></el-radio>
+              <el-radio label="低吸"></el-radio>
+              <el-radio label="观望"></el-radio>
+              <el-radio label="加仓"></el-radio>
+              <el-radio label="止盈"></el-radio>
+            </el-radio-group>
+          </el-form-item>
+        </el-row>
+        <el-row :span="5">
+          <el-form-item label="review" :label-width="formLabelWidth">
+            <el-input
+              type="textarea"
+              v-model="reviewform.fund_review"
+              :autosize="{ minRows: 5 }"
+            ></el-input>
+          </el-form-item>
+        </el-row>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogreviewFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="add_fund_review">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
   
@@ -143,6 +203,18 @@ export default {
       labeloption: [],
       fundnowdata: [],
       watch_label: "",
+      dialogreviewFormVisible: false,
+      reviewform: {
+        fund_code: "",
+        fund_name: "",
+        fund_review_time: "",
+        fund_review_attitude: 0,
+        fund_review: "",
+        operation: "观望",
+        fund_label: null,
+      },
+      fundnamesearch: "",
+      title: "qqq",
       watch_list: [
         {
           name: "",
@@ -616,6 +688,57 @@ export default {
         this.one_total_option.series[0].markLine.data.push(this.watch_list);
         this.one_total_chart.setOption(this.one_total_option);
       }
+    },
+    diashowreview: function (event) {
+      // console.log(event);
+      let y = new Date().getFullYear() + "-";
+      let m =
+        new Date().getMonth() + 1 < 10
+          ? "0" + (new Date().getMonth() + 1) + "-"
+          : new Date().getMonth() + 1 + "-";
+      let d =
+        new Date().getDate() < 10
+          ? "0" + new Date().getDate()
+          : new Date().getDate();
+      let currentDate = y + m + d;
+      this.reviewform.fund_code = event.fund_code;
+      this.reviewform.fund_name = event.fund_name;
+      this.reviewform.fund_review_time = currentDate;
+      this.get_fund_review(true);
+      this.dialogreviewFormVisible = true;
+    },
+    add_fund_review: function () {
+      // console.log(this.reviewform);
+      axios
+        .post("/add_fund_review", {
+          reviewform: this.reviewform,
+        })
+        .then((response) => {
+          this.reviewform = this.$options.data().reviewform;
+          this.dialogreviewFormVisible = false;
+        });
+    },
+    get_fund_review: function (event) {
+      // console.log(event);
+      axios
+        .post("/get_fund_review", {
+          reviewform: this.reviewform,
+          oneday: event,
+        })
+        .then((response) => {
+          // console.log(response);
+          if (response.data.response_code == 200) {
+            // console.log("aaaaaaaaaaaaa");
+            this.reviewform.fund_review_attitude =
+              response.data.res.fund_review_attitude;
+            this.reviewform.fund_review = response.data.res.fund_review;
+            this.reviewform.operation = response.data.res.operation;
+          } else {
+            this.reviewform.fund_review_attitude = 0;
+            this.reviewform.fund_review = "";
+            this.reviewform.operation = "观望";
+          }
+        });
     },
     calculateMA: function (dayCount, k_data) {
       var result = [];
