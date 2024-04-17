@@ -21,11 +21,11 @@
           </el-table-column>
           <el-table-column prop="trade_time" label="交易时间" width="120">
           </el-table-column>
-          <el-table-column prop="order_amount" label="份额" width="80">
+          <el-table-column prop="order_amount" label="交易金额" width="80">
           </el-table-column>
           <el-table-column prop="unit_net_value" label="确认净值" width="80">
           </el-table-column>
-          <el-table-column prop="transaction_amount" label="总金额" width="80">
+          <el-table-column prop="transaction_amount" label="份额" width="80">
           </el-table-column>
           <el-table-column prop="order_date" label="确认时间" width="120">
           </el-table-column>
