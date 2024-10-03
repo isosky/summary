@@ -3,15 +3,15 @@
     <el-row v-if="islogin">
       <el-col :span="1" v-if="islogin">
         <div>
-          <el-menu
-            :default-active="defaultactive"
-            class="el-menu-vertical-demo"
-            :collapse="isCollapse"
-            @select="moveto"
-          >
+          <el-menu :default-active="defaultactive" class="el-menu-vertical-demo" :collapse="isCollapse"
+            @select="moveto">
             <el-menu-item index="/task">
               <i class="el-icon-s-claim"></i>
               <span slot="title">任务管理</span>
+            </el-menu-item>
+            <el-menu-item index="/project">
+              <i class="el-icon-collection"></i>
+              <span slot="title">项目分析</span>
             </el-menu-item>
             <el-menu-item index="/dft">
               <i class="el-icon-data-board"></i>
@@ -42,16 +42,13 @@
                 <i class="el-icon-view"></i>
                 <span>基金复盘</span>
               </el-menu-item>
-              <el-menu-item index="/fund_orders"
-                ><i class="el-icon-view"></i>
+              <el-menu-item index="/fund_orders"><i class="el-icon-view"></i>
                 <span>基金买卖</span>
               </el-menu-item>
-              <el-menu-item index="/fund_treemap_label"
-                ><i class="el-icon-view"></i>
+              <el-menu-item index="/fund_treemap_label"><i class="el-icon-view"></i>
                 <span>基金分布</span>
               </el-menu-item>
-              <el-menu-item index="/fund_setting"
-                ><i class="el-icon-view"></i>
+              <el-menu-item index="/fund_setting"><i class="el-icon-view"></i>
                 <span>基金设置</span>
               </el-menu-item>
             </el-submenu>
@@ -111,11 +108,7 @@
     </el-row>
     <el-row v-if="!islogin">
       <el-input v-model="todo_user_name" placeholder="请输入内容"></el-input>
-      <el-input
-        placeholder="请输入密码"
-        v-model="todo_user_pass"
-        show-password
-      ></el-input>
+      <el-input placeholder="请输入密码" v-model="todo_user_pass" show-password></el-input>
       <el-button type="primary" @click="login">确 定</el-button>
     </el-row>
   </div>
@@ -164,4 +157,3 @@ export default {
   },
 };
 </script>
-
