@@ -1,335 +1,381 @@
 <template>
-<!-- TODO 重构界面 增加  4象限，然后展示4象限-->
-<div id="app">
-    <el-row :gutter="5">
-        <!-- 左侧面板 -->
-        <el-col :span="11">
-            <!-- 任务管理条 -->
-            <el-row :gutter="5">
-                <el-col :span="3">
-                    <el-select @change="updatelevel2option" clearable filterable allow-create default-first-option v-model="task_level1_select" placeholder="请选择">
-                        <el-option v-for="item in task_level1_option" :key="item.value" :label="item.label" :value="item.value"></el-option>
-                    </el-select>
-                </el-col>
-                <el-col :span="4">
-                    <el-select @change="updatelevel3option" v-model="task_level2_select" filterable clearable allow-create default-first-option placeholder="请选择">
-                        <el-option v-for="item in task_level2_option" :key="item.value" :label="item.label" :value="item.value"></el-option>
-                    </el-select>
-                </el-col>
-                <el-col :span="4">
-                    <el-select v-model="task_level3_select" filterable clearable allow-create default-first-option placeholder="请选择">
-                        <el-option v-for="item in task_level3_option" :key="item.value" :label="item.label" :value="item.value"></el-option>
-                    </el-select>
-                </el-col>
-                <el-col :span="6">
-                    <el-date-picker :picker-options="{ firstDayOfWeek: 1 }" v-model="new_edate" value-format="yyyy-MM-dd" type="date" placeholder="ddl" @change="setdate"></el-date-picker>
-                </el-col>
-            </el-row>
-            <el-row>
-                <el-col :span="4">
-                    <el-input v-model="task_title" style="width: 640px" placeholder="请输入内容"></el-input>
-                </el-col>
-            </el-row>
-            <el-row :gutter="5">
-                <el-col :span="10">
-                    <el-date-picker v-model="query_duration" type="daterange" unlink-panels value-format="yyyy-MM-dd" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" :picker-options="pickerOptions" @change="setdate">
-                    </el-date-picker>
-                </el-col>
-                <el-col :span="5">
-                    <el-checkbox-button v-model="isstime" @change="setdate">查添加日期</el-checkbox-button>
-                    <el-checkbox-button v-model="isqueryall">全查</el-checkbox-button>
-                </el-col>
-                <el-col :span="9">
-                    <el-button @click="querytask_week" icon="el-icon-date" circle type="warning" style="float: right; margin: 0 5px 0 5px"></el-button>
-                    <el-button @click="resetall" icon="el-icon-refresh" circle type="warning" style="float: right; margin: 0 5px 0 5px"></el-button>
-                    <el-button @click="querytask('table')" icon="el-icon-search" type="success" circle style="float: right; margin: 0 5px 0 5px"></el-button>
-                    <!-- <el-badge :value="12" class="item"> -->
-                    <el-button @click="diashowperson()" icon="el-icon-user" circle type="success" style="float: right; margin: 0 5px 0 5px"></el-button>
-                    <!-- </el-badge> -->
-                    <el-button @click="addtask" icon="el-icon-check" circle type="success" style="float: right; margin: 0 5px 0 5px"></el-button>
-                </el-col>
-            </el-row>
-            <div class="grid-content">
-                <el-table :data="tableData" border height="855" :cell-style="isoverdate" style="width: 100%" :default-sort="{ prop: 'tetime', order: 'ascending' }" @cell-click="showprocess">
-                    <el-table-column fixed prop="etime" sortable label="DDL" width="95"></el-table-column>
-                    <el-table-column prop="level1" label="一级" width="80"></el-table-column>
-                    <el-table-column prop="level2" label="二级" width="80"></el-table-column>
-                    <el-table-column prop="level3" label="三级" width="80"></el-table-column>
-                    <el-table-column prop="task_name" label="标题"></el-table-column>
-                    <el-table-column prop="num_person" label="人员" width="60"></el-table-column>
-                    <el-table-column prop="num_process" label="进展" width="60"></el-table-column>
-                    <el-table-column label="操作" width="170">
-                        <template slot-scope="scope">
-                            <el-button @click="diashowprocess(scope.row)" type="text" size="small">更新</el-button>
-                            <el-button @click="finishtask(scope.row)" type="text" size="small">完成</el-button>
-                            <el-button @click="updatetask(scope.row)" type="text" size="small">修改</el-button>
-                            <el-button @click="deletetask(scope.row)" type="text" size="small">删除</el-button>
-                        </template>
-                    </el-table-column>
-                </el-table>
-            </div>
-        </el-col>
-        <!-- 右侧面板 -->
-        <el-col :span="13">
-            <el-row :gutter="5">
-                <el-col :span="8">
-                    <div id="b_task" style="height: 220px"></div>
-                </el-col>
-                <el-col :span="8">
-                    <div id="task_pie_subject" style="height: 220px"></div>
-                </el-col>
-                <el-col :span="8">
-                    <div id="task_pie_summary" style="height: 220px"></div>
-                </el-col>
-            </el-row>
-            <el-row :gutter="5">
-                <el-tabs v-model="tabs_select" :lazy="true" type="border-card" @tab-click="tabclick">
-                    <el-tab-pane name="summary" label="统计">
-                        <div id="task_summary" style="height: 650px"></div>
-                    </el-tab-pane>
-                    <el-tab-pane name="process" label="进展">
-                        <el-table :data="tableprocess" border height="455" style="width: 100%">
-                            <el-table-column prop="stime" label="日期" width="100"></el-table-column>
-                            <el-table-column prop="process_name" label="内容" width="400"></el-table-column>
-                            <el-table-column prop="isfinish" label="状态" width="100"></el-table-column>
-                            <el-table-column label="操作" width="170">
-                                <template slot-scope="scope">
-                                    <el-button @click="deleteprocess(scope.row)" type="text" size="small">删除</el-button>
-                                    <el-button @click="showupdateprocess(scope.row)" type="text" size="small">修改</el-button>
-                                    <el-button v-if="scope.row.isfinish == '完成'" @click="resetprocess(scope.row)" type="text" size="small">待做</el-button>
-                                    <el-button v-if="scope.row.isfinish == '待做'" @click="finishprocess(scope.row)" type="text" size="small">完成</el-button>
-                                </template>
-                            </el-table-column>
-                        </el-table>
-                    </el-tab-pane>
-                    <el-tab-pane name="person" label="人员">
-                        <el-row :gutter="5">
-                            <el-select v-model="person" filterable :filter-method="personFilter" clearable multiple default-first-option style="width: 400px" placeholder="请选择相关人员">
-                                <el-option v-for="item in person_option" :key="item.value" :label="item.label" :value="item.value"></el-option>
-                            </el-select>
-                            <el-button @click="appendtaskperson" type="success">追加人员</el-button>
-                        </el-row>
-                        <el-row :gutter="5">
-                            <el-table :data="persondata" style="width: 100%">
-                                <el-table-column prop="company" label="单位" width="180">
-                                </el-table-column>
-                                <el-table-column prop="person_name" label="名称" width="180">
-                                </el-table-column>
-                                <el-table-column prop="sub_activity" label="本分类积极性" width="120">
-                                </el-table-column>
-                                <el-table-column prop="sub_critical" label="本分类批评性" width="120">
-                                </el-table-column>
-                                <el-table-column prop="all_activity" label="平均积极性" width="120">
-                                </el-table-column>
-                                <el-table-column prop="all_critical" label="平均批评性" width="120">
-                                </el-table-column>
+    <!-- TODO 重构界面 增加  4象限，然后展示4象限-->
+    <div id="app">
+        <el-row :gutter="5">
+            <!-- 左侧面板 -->
+            <el-col :span="11">
+                <!-- 任务管理条 -->
+                <el-row :gutter="5">
+                    <el-col :span="3">
+                        <el-select @change="updatelevel2option" clearable filterable allow-create default-first-option
+                            v-model="task_level1_select" placeholder="请选择">
+                            <el-option v-for="item in task_level1_option" :key="item.value" :label="item.label"
+                                :value="item.value"></el-option>
+                        </el-select>
+                    </el-col>
+                    <el-col :span="4">
+                        <el-select @change="updatelevel3option" v-model="task_level2_select" filterable clearable
+                            allow-create default-first-option placeholder="请选择">
+                            <el-option v-for="item in task_level2_option" :key="item.value" :label="item.label"
+                                :value="item.value"></el-option>
+                        </el-select>
+                    </el-col>
+                    <el-col :span="4">
+                        <el-select v-model="task_level3_select" filterable clearable allow-create default-first-option
+                            placeholder="请选择">
+                            <el-option v-for="item in task_level3_option" :key="item.value" :label="item.label"
+                                :value="item.value"></el-option>
+                        </el-select>
+                    </el-col>
+                    <el-col :span="6">
+                        <el-date-picker :picker-options="{ firstDayOfWeek: 1 }" v-model="new_edate"
+                            value-format="yyyy-MM-dd" type="date" placeholder="ddl" @change="setdate"></el-date-picker>
+                    </el-col>
+                </el-row>
+                <el-row>
+                    <el-col :span="4">
+                        <el-input v-model="task_title" style="width: 640px" placeholder="请输入内容"></el-input>
+                    </el-col>
+                </el-row>
+                <el-row :gutter="5">
+                    <el-col :span="10">
+                        <el-date-picker v-model="query_duration" type="daterange" unlink-panels
+                            value-format="yyyy-MM-dd" range-separator="至" start-placeholder="开始日期"
+                            end-placeholder="结束日期" :picker-options="pickerOptions" @change="setdate">
+                        </el-date-picker>
+                    </el-col>
+                    <el-col :span="5">
+                        <el-checkbox-button v-model="isstime" @change="setdate">查添加日期</el-checkbox-button>
+                        <el-checkbox-button v-model="isqueryall">全查</el-checkbox-button>
+                    </el-col>
+                    <el-col :span="9">
+                        <el-button @click="querytask_week" icon="el-icon-date" circle type="warning"
+                            style="float: right; margin: 0 5px 0 5px"></el-button>
+                        <el-button @click="resetall" icon="el-icon-refresh" circle type="warning"
+                            style="float: right; margin: 0 5px 0 5px"></el-button>
+                        <el-button @click="querytask('table')" icon="el-icon-search" type="success" circle
+                            style="float: right; margin: 0 5px 0 5px"></el-button>
+                        <!-- <el-badge :value="12" class="item"> -->
+                        <el-button @click="diashowperson()" icon="el-icon-user" circle type="success"
+                            style="float: right; margin: 0 5px 0 5px"></el-button>
+                        <!-- </el-badge> -->
+                        <el-button @click="addtask" icon="el-icon-check" circle type="success"
+                            style="float: right; margin: 0 5px 0 5px"></el-button>
+                    </el-col>
+                </el-row>
+                <div class="grid-content">
+                    <el-table :data="tableData" border height="855" :cell-style="isoverdate" style="width: 100%"
+                        :default-sort="{ prop: 'tetime', order: 'ascending' }" @cell-click="showprocess">
+                        <el-table-column fixed prop="etime" sortable label="DDL" width="95"></el-table-column>
+                        <el-table-column prop="level1" label="一级" width="80"></el-table-column>
+                        <el-table-column prop="level2" label="二级" width="80"></el-table-column>
+                        <el-table-column prop="level3" label="三级" width="80"></el-table-column>
+                        <el-table-column prop="task_name" label="标题"></el-table-column>
+                        <el-table-column prop="num_person" label="人员" width="60"></el-table-column>
+                        <el-table-column prop="num_process" label="进展" width="60"></el-table-column>
+                        <el-table-column label="操作" width="170">
+                            <template slot-scope="scope">
+                                <el-button @click="diashowprocess(scope.row)" type="text" size="small">更新</el-button>
+                                <el-button @click="finishtask(scope.row)" type="text" size="small">完成</el-button>
+                                <el-button @click="updatetask(scope.row)" type="text" size="small">修改</el-button>
+                                <el-button @click="deletetask(scope.row)" type="text" size="small">删除</el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </div>
+            </el-col>
+            <!-- 右侧面板 -->
+            <el-col :span="13">
+                <el-row :gutter="5">
+                    <el-col :span="8">
+                        <div id="b_task" style="height: 220px"></div>
+                    </el-col>
+                    <el-col :span="8">
+                        <div id="task_pie_subject" style="height: 220px"></div>
+                    </el-col>
+                    <el-col :span="8">
+                        <div id="task_pie_summary" style="height: 220px"></div>
+                    </el-col>
+                </el-row>
+                <el-row :gutter="5">
+                    <el-tabs v-model="tabs_select" :lazy="true" type="border-card" @tab-click="tabclick">
+                        <el-tab-pane name="summary" label="统计">
+                            <div id="task_summary" style="height: 650px"></div>
+                        </el-tab-pane>
+                        <el-tab-pane name="process" label="进展">
+                            <el-table :data="tableprocess" border height="455" style="width: 100%">
+                                <el-table-column prop="stime" label="日期" width="100"></el-table-column>
+                                <el-table-column prop="process_name" label="内容" width="400"></el-table-column>
+                                <el-table-column prop="isfinish" label="状态" width="100"></el-table-column>
                                 <el-table-column label="操作" width="170">
                                     <template slot-scope="scope">
-                                        <el-button @click="deletetaskperson(scope.row)" type="text" size="small">删除</el-button>
+                                        <el-button @click="deleteprocess(scope.row)" type="text"
+                                            size="small">删除</el-button>
+                                        <el-button @click="showupdateprocess(scope.row)" type="text"
+                                            size="small">修改</el-button>
+                                        <el-button v-if="scope.row.isfinish == '完成'" @click="resetprocess(scope.row)"
+                                            type="text" size="small">待做</el-button>
+                                        <el-button v-if="scope.row.isfinish == '待做'" @click="finishprocess(scope.row)"
+                                            type="text" size="small">完成</el-button>
                                     </template>
                                 </el-table-column>
                             </el-table>
-                        </el-row>
-                    </el-tab-pane>
-                    <el-tab-pane name="finishtask" label="任务对应分类">
-                        <el-table :data="finishtaskdata" style="width: 100%">
-                            <el-table-column prop="dir" label="类型" width="120">
-                            </el-table-column>
-                            <el-table-column prop="sub_dir" label="子类型" width="120">
-                            </el-table-column>
-                            <el-table-column prop="hours" label="耗时" width="120">
-                            </el-table-column>
-                        </el-table>
-                    </el-tab-pane>
-                </el-tabs>
-            </el-row>
-        </el-col>
-    </el-row>
-    <!-- 各种弹出框 -->
-    <!-- 更新 -->
-    <el-dialog @close="dialogpersonVisible = false" title="添加人员" :visible="dialogpersonVisible" width="40%">
-        <div>
-            <el-checkbox-group v-model="personrecommendselected">
-                <el-checkbox v-for="t in personrecommend" :key="t.id" :label="t.label" @change="addrecommendperson(t.id)"></el-checkbox>
-            </el-checkbox-group>
-        </div>
-        <el-divider></el-divider>
-        <el-transfer v-model="person" :data="pppdata" filterable :filter-method="personfilterMethod" filter-placeholder="请输入拼音首字母" :titles="['所有人', '关联人']"></el-transfer>
-        <span slot="footer" class="dialog-footer">
-            <el-button @click="dialogpersonVisible = false">关 闭</el-button>
-        </span>
-    </el-dialog>
-
-    <el-dialog @close="closedialog" title="提示" :visible.sync="dialogpVisible" width="30%">
-        <div>{{ v_task_content }}</div>
-        <el-input v-model="input_process" type="textarea" style="width: 500px" :autosize="{ minRows: 5 }" placeholder="请输入进展"></el-input>
-
-        <span slot="footer" class="dialog-footer">
-            <el-button @click="dialogpVisible = false">取 消</el-button>
-            <el-button type="primary" @click="dialogaddprocess">确 定</el-button>
-        </span>
-    </el-dialog>
-
-    <!-- 完成 -->
-    <!-- TODO 修改这个面板 -->
-    <el-dialog @close="closedialog" title="提示" :visible.sync="dialogsVisible" width="70%">
-        <el-container>
-            <el-main>
-                <el-form ref="form" :model="finishtaskform" label-width="80px">
-                    <el-form-item label="耗时">
-                        <el-slider :min="0" :max="8" :step="0.5" show-input show-stops v-model="finishtaskform.hours"></el-slider>
-                    </el-form-item>
-                    <el-row>
-                        <el-col :span="3">
-                            <el-form-item label="是否有效">
-                                <el-switch v-model="finishtaskform.isok"></el-switch>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-
-                    <el-row>
-                        <el-col :span="12">
-                            <el-row>
-                                <el-col :span="6">
-                                    <el-select @change="updatediroption" clearable filterable allow-create default-first-option v-model="dir_select" placeholder="请选择">
-                                        <el-option v-for="item in dir_select_option" :key="item.value" :label="item.label" :value="item.value"></el-option>
-                                    </el-select>
-                                </el-col>
-                                <el-col :span="6">
-                                    <el-select v-model="dir_sub_select" filterable clearable allow-create default-first-option placeholder="请选择">
-                                        <el-option v-for="item in dir_sub_select_option" :key="item.value" :label="item.label" :value="item.value"></el-option>
-                                    </el-select>
-                                </el-col>
-                                <el-col :span="6">
-                                    <el-input v-model="dir_hours" style="width: 120px" placeholder="请输时长"></el-input>
-                                </el-col>
-                                <el-button @click="adddir" icon="el-icon-check" circle type="success" style="float: right; margin: 0 5px 0 5px"></el-button>
+                        </el-tab-pane>
+                        <el-tab-pane name="person" label="人员">
+                            <el-row :gutter="5">
+                                <el-select v-model="person" filterable :filter-method="personFilter" clearable multiple
+                                    default-first-option style="width: 400px" placeholder="请选择相关人员">
+                                    <el-option v-for="item in person_option" :key="item.value" :label="item.label"
+                                        :value="item.value"></el-option>
+                                </el-select>
+                                <el-button @click="appendtaskperson" type="success">追加人员</el-button>
                             </el-row>
-                            <el-row>
-                                <el-table :data="finishtaskform.dirtable" style="width: 100%">
-                                    <el-table-column prop="dir" label="父类"> </el-table-column>
-                                    <el-table-column prop="sub_dir" label="子类">
+                            <el-row :gutter="5">
+                                <el-table :data="persondata" style="width: 100%">
+                                    <el-table-column prop="company" label="单位" width="180">
                                     </el-table-column>
-                                    <el-table-column prop="hours" label="时长">
+                                    <el-table-column prop="person_name" label="名称" width="180">
+                                    </el-table-column>
+                                    <el-table-column prop="sub_activity" label="本分类积极性" width="120">
+                                    </el-table-column>
+                                    <el-table-column prop="sub_critical" label="本分类批评性" width="120">
+                                    </el-table-column>
+                                    <el-table-column prop="all_activity" label="平均积极性" width="120">
+                                    </el-table-column>
+                                    <el-table-column prop="all_critical" label="平均批评性" width="120">
                                     </el-table-column>
                                     <el-table-column label="操作" width="170">
-                                        <template slot-scope="dirscope">
-                                            <el-button @click="
-                          dirdeletetask(
-                            dirscope.$index,
-                            finishtaskform.dirtable
-                          )
-                          " type="text" size="small">删除</el-button>
+                                        <template slot-scope="scope">
+                                            <el-button @click="deletetaskperson(scope.row)" type="text"
+                                                size="small">删除</el-button>
                                         </template>
                                     </el-table-column>
                                 </el-table>
                             </el-row>
-                        </el-col>
-                        <el-col :span="12">
-                            <el-row>
-                                <el-button @click="scoresth($event)" type="success" name="1">1</el-button>
-                                <el-button @click="scoresth($event)" type="success" name="2">2</el-button>
-                                <el-button @click="scoresth($event)" type="success" name="3">3</el-button>
-                                <el-button @click="scoresth($event)" type="success" name="4">4</el-button>
-                                <el-button @click="scoresth($event)" type="success" name="5">5</el-button>
-                                <el-button @click="scoresth($event)" type="success" name="6">6</el-button>
-                                <el-button @click="scoresth($event)" type="success" name="7">7</el-button>
-                                <el-button @click="leaveclick" icon="el-icon-check" type="success"></el-button>
-                            </el-row>
-                            <el-row>
-                                <el-table ref="singleTable" :data="finishtaskform.peoples" style="width: 100%" class="tb-edit" highlight-current-row :row-class-name="tableRowClassName" @row-click="handleCurrentChange">
-                                    <el-table-column prop="person_name" label="姓名" align="center">
-                                    </el-table-column>
-                                    <el-table-column prop="score_activity" label="积极性" align="center">
-                                        <template scope="scope">
-                                            <el-input size="small" v-model="scope.row.score_activity" placeholder="请输入内容" @change="handleEdit(scope.$index, scope.row)"></el-input>
-                                            <span>{{ scope.row.score_activity }}</span>
-                                        </template>
-                                    </el-table-column>
-                                    <el-table-column prop="score_critical" label="批判性" align="center">
-                                        <template scope="scope">
-                                            <el-input size="small" v-model="scope.row.score_critical" placeholder="请输入内容" @change="handleEdit(scope.$index, scope.row)"></el-input>
-                                            <span>{{ scope.row.score_critical }}</span>
-                                        </template>
-                                    </el-table-column>
-                                </el-table>
-                            </el-row>
-                        </el-col>
+                        </el-tab-pane>
+                        <el-tab-pane name="finishtask" label="任务对应分类">
+                            <el-table :data="finishtaskdata" style="width: 100%">
+                                <el-table-column prop="dir" label="类型" width="120">
+                                </el-table-column>
+                                <el-table-column prop="sub_dir" label="子类型" width="120">
+                                </el-table-column>
+                                <el-table-column prop="hours" label="耗时" width="120">
+                                </el-table-column>
+                            </el-table>
+                        </el-tab-pane>
+                    </el-tabs>
+                </el-row>
+            </el-col>
+        </el-row>
+        <!-- 各种弹出框 -->
+        <!-- 更新 -->
+        <el-dialog @close="dialogpersonVisible = false" title="添加人员" :visible="dialogpersonVisible" width="40%">
+            <div>
+                <el-checkbox-group v-model="personrecommendselected">
+                    <el-checkbox v-for="t in personrecommend" :key="t.id" :label="t.label"
+                        @change="addrecommendperson(t.id)"></el-checkbox>
+                </el-checkbox-group>
+            </div>
+            <el-divider></el-divider>
+            <el-transfer v-model="person" :data="pppdata" filterable :filter-method="personfilterMethod"
+                filter-placeholder="请输入拼音首字母" :titles="['所有人', '关联人']"></el-transfer>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="dialogpersonVisible = false">关 闭</el-button>
+            </span>
+        </el-dialog>
+
+        <el-dialog @close="closedialog" title="提示" :visible.sync="dialogpVisible" width="30%">
+            <div>{{ v_task_content }}</div>
+            <el-input v-model="input_process" type="textarea" style="width: 500px" :autosize="{ minRows: 5 }"
+                placeholder="请输入进展"></el-input>
+
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="dialogpVisible = false">取 消</el-button>
+                <el-button type="primary" @click="dialogaddprocess">确 定</el-button>
+            </span>
+        </el-dialog>
+
+        <!-- 完成 -->
+        <!-- TODO 修改这个面板 -->
+        <el-dialog @close="closedialog" title="提示" :visible.sync="dialogsVisible" width="70%">
+            <el-container>
+                <el-main>
+                    <el-form ref="form" :model="finishtaskform" label-width="80px">
+                        <el-form-item label="耗时">
+                            <el-slider :min="0" :max="8" :step="0.5" show-input show-stops
+                                v-model="finishtaskform.hours"></el-slider>
+                        </el-form-item>
+                        <el-row>
+                            <el-col :span="3">
+                                <el-form-item label="是否有效">
+                                    <el-switch v-model="finishtaskform.isok"></el-switch>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+
+                        <el-row>
+                            <el-col :span="12">
+                                <el-row>
+                                    <el-col :span="6">
+                                        <el-select @change="updatediroption" clearable filterable allow-create
+                                            default-first-option v-model="dir_select" placeholder="请选择">
+                                            <el-option v-for="item in dir_select_option" :key="item.value"
+                                                :label="item.label" :value="item.value"></el-option>
+                                        </el-select>
+                                    </el-col>
+                                    <el-col :span="6">
+                                        <el-select v-model="dir_sub_select" filterable clearable allow-create
+                                            default-first-option placeholder="请选择">
+                                            <el-option v-for="item in dir_sub_select_option" :key="item.value"
+                                                :label="item.label" :value="item.value"></el-option>
+                                        </el-select>
+                                    </el-col>
+                                    <el-col :span="6">
+                                        <el-input v-model="dir_hours" style="width: 120px"
+                                            placeholder="请输时长"></el-input>
+                                    </el-col>
+                                    <el-button @click="adddir" icon="el-icon-check" circle type="success"
+                                        style="float: right; margin: 0 5px 0 5px"></el-button>
+                                </el-row>
+                                <el-row>
+                                    <el-table :data="finishtaskform.dirtable" style="width: 100%">
+                                        <el-table-column prop="dir" label="父类"> </el-table-column>
+                                        <el-table-column prop="sub_dir" label="子类">
+                                        </el-table-column>
+                                        <el-table-column prop="hours" label="时长">
+                                        </el-table-column>
+                                        <el-table-column label="操作" width="170">
+                                            <template slot-scope="dirscope">
+                                                <el-button @click="
+                                                    dirdeletetask(
+                                                        dirscope.$index,
+                                                        finishtaskform.dirtable
+                                                    )
+                                                    " type="text" size="small">删除</el-button>
+                                            </template>
+                                        </el-table-column>
+                                    </el-table>
+                                </el-row>
+                            </el-col>
+                            <el-col :span="12">
+                                <el-row>
+                                    <el-button @click="scoresth($event)" type="success" name="1">1</el-button>
+                                    <el-button @click="scoresth($event)" type="success" name="2">2</el-button>
+                                    <el-button @click="scoresth($event)" type="success" name="3">3</el-button>
+                                    <el-button @click="scoresth($event)" type="success" name="4">4</el-button>
+                                    <el-button @click="scoresth($event)" type="success" name="5">5</el-button>
+                                    <el-button @click="scoresth($event)" type="success" name="6">6</el-button>
+                                    <el-button @click="scoresth($event)" type="success" name="7">7</el-button>
+                                    <el-button @click="leaveclick" icon="el-icon-check" type="success"></el-button>
+                                </el-row>
+                                <el-row>
+                                    <el-table ref="singleTable" :data="finishtaskform.peoples" style="width: 100%"
+                                        class="tb-edit" highlight-current-row :row-class-name="tableRowClassName"
+                                        @row-click="handleCurrentChange">
+                                        <el-table-column prop="person_name" label="姓名" align="center">
+                                        </el-table-column>
+                                        <el-table-column prop="score_activity" label="积极性" align="center">
+                                            <template scope="scope">
+                                                <el-input size="small" v-model="scope.row.score_activity"
+                                                    placeholder="请输入内容"
+                                                    @change="handleEdit(scope.$index, scope.row)"></el-input>
+                                                <span>{{ scope.row.score_activity }}</span>
+                                            </template>
+                                        </el-table-column>
+                                        <el-table-column prop="score_critical" label="批判性" align="center">
+                                            <template scope="scope">
+                                                <el-input size="small" v-model="scope.row.score_critical"
+                                                    placeholder="请输入内容"
+                                                    @change="handleEdit(scope.$index, scope.row)"></el-input>
+                                                <span>{{ scope.row.score_critical }}</span>
+                                            </template>
+                                        </el-table-column>
+                                    </el-table>
+                                </el-row>
+                            </el-col>
+                        </el-row>
+
+                        <el-form-item label="描述">
+                            <el-input type="textarea" v-model="finishtaskform.desc"></el-input>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-button type="primary" @click="committask">完成任务</el-button>
+                        </el-form-item>
+                    </el-form>
+                </el-main>
+                <el-aside width="350px" style="background-color: rgb(238, 241, 246)">
+                    <el-row>
+                        <span>积极性评价</span>
                     </el-row>
+                    <el-row>
+                        <el-table :data="scoreactivity" style="width: 100%">
+                            <el-table-column prop="stype" label="项目"> </el-table-column>
+                            <el-table-column prop="pic" label="负责人"> </el-table-column>
+                            <el-table-column prop="pe" label="参与者"> </el-table-column>
+                            <el-table-column prop="po" label="其他"> </el-table-column>
+                        </el-table>
+                    </el-row>
+                    <el-row> <span>批判性评价</span></el-row>
+                    <el-row>
+                        <el-table :data="scorecritical" style="width: 100%">
+                            <el-table-column prop="stype" label="项目"> </el-table-column>
+                            <el-table-column prop="pic" label="负责人"> </el-table-column>
+                            <el-table-column prop="pe" label="参与者"> </el-table-column>
+                            <el-table-column prop="po" label="其他"> </el-table-column>
+                        </el-table>
+                    </el-row>
+                </el-aside>
+            </el-container>
+        </el-dialog>
 
-                    <el-form-item label="描述">
-                        <el-input type="textarea" v-model="finishtaskform.desc"></el-input>
-                    </el-form-item>
-                    <el-form-item>
-                        <el-button type="primary" @click="committask">完成任务</el-button>
-                    </el-form-item>
-                </el-form>
-            </el-main>
-            <el-aside width="350px" style="background-color: rgb(238, 241, 246)">
-                <el-row>
-                    <span>积极性评价</span>
-                </el-row>
-                <el-row>
-                    <el-table :data="scoreactivity" style="width: 100%">
-                        <el-table-column prop="stype" label="项目"> </el-table-column>
-                        <el-table-column prop="pic" label="负责人"> </el-table-column>
-                        <el-table-column prop="pe" label="参与者"> </el-table-column>
-                        <el-table-column prop="po" label="其他"> </el-table-column>
-                    </el-table>
-                </el-row>
-                <el-row> <span>批判性评价</span></el-row>
-                <el-row>
-                    <el-table :data="scorecritical" style="width: 100%">
-                        <el-table-column prop="stype" label="项目"> </el-table-column>
-                        <el-table-column prop="pic" label="负责人"> </el-table-column>
-                        <el-table-column prop="pe" label="参与者"> </el-table-column>
-                        <el-table-column prop="po" label="其他"> </el-table-column>
-                    </el-table>
-                </el-row>
-            </el-aside>
-        </el-container>
-    </el-dialog>
+        <!-- 修改 -->
+        <el-dialog @close="closedialog" title="确认修改任务？？" :visible.sync="dialoguVisible" width="40%">
+            <el-date-picker :picker-options="{ firstDayOfWeek: 1 }" v-model="duetime" value-format="yyyy-MM-dd"
+                type="date" style="width: 150px"></el-date-picker>
+            <!-- 修改任务面板里面的一级分类 -->
+            <el-select @change="updatelevel2option" clearable default-first-option v-model="task_level1_select"
+                style="width: 120px" placeholder="请选择">
+                <el-option v-for="item in task_level1_option" :key="item.value" :label="item.label"
+                    :value="item.value"></el-option>
+            </el-select>
+            <!-- 修改任务面板里面的二级分类 -->
+            <el-select @change="updatelevel3option" v-model="task_level2_select" filterable clearable allow-create
+                default-first-option style="width: 120px" placeholder="请选择">
+                <el-option v-for="item in task_level2_option" :key="item.value" :label="item.label"
+                    :value="item.value"></el-option>
+            </el-select>
+            <!-- 修改任务面板里面的三级分类 -->
+            <el-select v-model="task_level3_select" filterable clearable allow-create default-first-option
+                style="width: 120px" placeholder="请选择">
+                <el-option v-for="item in task_level3_option" :key="item.value" :label="item.label"
+                    :value="item.value"></el-option>
+            </el-select>
+            <el-input v-model="dutitle" style="width: 300px"></el-input>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="dialoguVisible = false">取 消</el-button>
+                <el-button type="primary" @click="dialogupdate">确 定</el-button>
+            </span>
+        </el-dialog>
 
-    <!-- 修改 -->
-    <el-dialog @close="closedialog" title="确认修改任务？？" :visible.sync="dialoguVisible" width="40%">
-        <el-date-picker :picker-options="{ firstDayOfWeek: 1 }" v-model="duetime" value-format="yyyy-MM-dd" type="date" style="width: 150px"></el-date-picker>
-        <!-- 修改任务面板里面的一级分类 -->
-        <el-select @change="updatelevel2option" clearable default-first-option v-model="task_level1_select" style="width: 120px" placeholder="请选择">
-            <el-option v-for="item in task_level1_option" :key="item.value" :label="item.label" :value="item.value"></el-option>
-        </el-select>
-        <!-- 修改任务面板里面的二级分类 -->
-        <el-select @change="updatelevel3option" v-model="task_level2_select" filterable clearable allow-create default-first-option style="width: 120px" placeholder="请选择">
-            <el-option v-for="item in task_level2_option" :key="item.value" :label="item.label" :value="item.value"></el-option>
-        </el-select>
-        <!-- 修改任务面板里面的三级分类 -->
-        <el-select v-model="task_level3_select" filterable clearable allow-create default-first-option style="width: 120px" placeholder="请选择">
-            <el-option v-for="item in task_level3_option" :key="item.value" :label="item.label" :value="item.value"></el-option>
-        </el-select>
-        <el-input v-model="dutitle" style="width: 300px"></el-input>
-        <span slot="footer" class="dialog-footer">
-            <el-button @click="dialoguVisible = false">取 消</el-button>
-            <el-button type="primary" @click="dialogupdate">确 定</el-button>
-        </span>
-    </el-dialog>
+        <!-- 删除 -->
+        <el-dialog @close="closedialog" title="确认删除任务？？" :visible.sync="dialogcVisible" width="30%">
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="dialogcVisible = false">取 消</el-button>
+                <el-button type="primary" @click="dialogdelete">确 定</el-button>
+            </span>
+        </el-dialog>
 
-    <!-- 删除 -->
-    <el-dialog @close="closedialog" title="确认删除任务？？" :visible.sync="dialogcVisible" width="30%">
-        <span slot="footer" class="dialog-footer">
-            <el-button @click="dialogcVisible = false">取 消</el-button>
-            <el-button type="primary" @click="dialogdelete">确 定</el-button>
-        </span>
-    </el-dialog>
-
-    <!-- 修改process -->
-    <el-dialog @close="closedialog" title="提示" :visible.sync="dialogprocessVisible" width="30%">
-        <div>{{ process_content }}</div>
-        <el-input v-model="process_content" type="textarea" placeholder="请输入完成情况" style="width: 500px" :autosize="{ minRows: 5 }"></el-input>
-        <span slot="footer" class="dialog-footer">
-            <el-button @click="dialogprocessVisible = false">取 消</el-button>
-            <el-button type="primary" @click="updateprocess">确 定</el-button>
-        </span>
-    </el-dialog>
-</div>
+        <!-- 修改process -->
+        <el-dialog @close="closedialog" title="提示" :visible.sync="dialogprocessVisible" width="30%">
+            <div>{{ process_content }}</div>
+            <el-input v-model="process_content" type="textarea" placeholder="请输入完成情况" style="width: 500px"
+                :autosize="{ minRows: 5 }"></el-input>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="dialogprocessVisible = false">取 消</el-button>
+                <el-button type="primary" @click="updateprocess">确 定</el-button>
+            </span>
+        </el-dialog>
+    </div>
 </template>
 
 <script>
@@ -341,54 +387,54 @@ export default {
         return {
             currentRow: null,
             scoreactivity: [{
-                    stype: "初始",
-                    pic: 1.5,
-                    pe: 0,
-                    po: -2.5
-                },
-                {
-                    stype: "延期",
-                    pic: 0,
-                    pe: -1.5,
-                    po: -2.5
-                },
-                {
-                    stype: "有追踪",
-                    pic: "+0.5",
-                    pe: "+0.5",
-                    po: "+0.5"
-                },
+                stype: "初始",
+                pic: 1.5,
+                pe: 0,
+                po: -2.5
+            },
+            {
+                stype: "延期",
+                pic: 0,
+                pe: -1.5,
+                po: -2.5
+            },
+            {
+                stype: "有追踪",
+                pic: "+0.5",
+                pe: "+0.5",
+                po: "+0.5"
+            },
             ],
             scorecritical: [{
-                    stype: "初始",
-                    pic: 1.5,
-                    pe: 0,
-                    po: -2.5
-                },
-                {
-                    stype: "有效质疑",
-                    pic: "0",
-                    pe: "+1.5",
-                    po: "+1"
-                },
-                {
-                    stype: "有效答疑",
-                    pic: "+0.5",
-                    pe: "0",
-                    po: "0"
-                },
-                {
-                    stype: "无效答疑",
-                    pic: "-0.5",
-                    pe: "0",
-                    po: "0"
-                },
-                {
-                    stype: "有效建议",
-                    pic: "0",
-                    pe: "+0.5",
-                    po: "+0.5"
-                },
+                stype: "初始",
+                pic: 1.5,
+                pe: 0,
+                po: -2.5
+            },
+            {
+                stype: "有效质疑",
+                pic: "0",
+                pe: "+1.5",
+                po: "+1"
+            },
+            {
+                stype: "有效答疑",
+                pic: "+0.5",
+                pe: "0",
+                po: "0"
+            },
+            {
+                stype: "无效答疑",
+                pic: "-0.5",
+                pe: "0",
+                po: "0"
+            },
+            {
+                stype: "有效建议",
+                pic: "0",
+                pe: "+0.5",
+                po: "+0.5"
+            },
             ],
             tabs_select: "summary",
             task_option: {
@@ -472,80 +518,80 @@ export default {
                     data: [],
                 },
                 series: [{
-                        name: "逾期完成",
-                        type: "bar",
-                        stack: "总量",
-                        label: {
-                            show: true,
-                            position: "insideRight",
-                            formatter: function (num) {
-                                if (num.value == 0) {
-                                    return "";
-                                }
-                            },
+                    name: "逾期完成",
+                    type: "bar",
+                    stack: "总量",
+                    label: {
+                        show: true,
+                        position: "insideRight",
+                        formatter: function (num) {
+                            if (num.value == 0) {
+                                return "";
+                            }
                         },
-                        data: [],
                     },
-                    {
-                        name: "待做逾期",
-                        type: "bar",
-                        stack: "总量",
-                        label: {
-                            show: true,
-                            position: "insideRight",
-                            formatter: function (num) {
-                                if (num.value == 0) {
-                                    return "";
-                                }
-                            },
+                    data: [],
+                },
+                {
+                    name: "待做逾期",
+                    type: "bar",
+                    stack: "总量",
+                    label: {
+                        show: true,
+                        position: "insideRight",
+                        formatter: function (num) {
+                            if (num.value == 0) {
+                                return "";
+                            }
                         },
-                        data: [],
                     },
-                    {
-                        name: "待做",
-                        type: "bar",
-                        stack: "总量",
-                        label: {
-                            show: true,
-                            position: "insideRight",
-                            formatter: function (num) {
-                                if (num.value == 0) {
-                                    return "";
-                                }
-                            },
+                    data: [],
+                },
+                {
+                    name: "待做",
+                    type: "bar",
+                    stack: "总量",
+                    label: {
+                        show: true,
+                        position: "insideRight",
+                        formatter: function (num) {
+                            if (num.value == 0) {
+                                return "";
+                            }
                         },
-                        data: [],
                     },
-                    {
-                        name: "正常完成",
-                        type: "bar",
-                        stack: "总量",
-                        label: {
-                            show: true,
-                            position: "insideRight",
-                            formatter: function (num) {
-                                if (num.value == 0) {
-                                    return "";
-                                }
-                            },
+                    data: [],
+                },
+                {
+                    name: "正常完成",
+                    type: "bar",
+                    stack: "总量",
+                    label: {
+                        show: true,
+                        position: "insideRight",
+                        formatter: function (num) {
+                            if (num.value == 0) {
+                                return "";
+                            }
                         },
-                        data: [],
                     },
-                    {
-                        name: "作废",
-                        type: "bar",
-                        stack: "总量",
-                        label: {
-                            show: true,
-                            position: "insideRight",
-                            formatter: function (num) {
-                                if (num.value == 0) {
-                                    return "";
-                                }
-                            },
+                    data: [],
+                },
+                {
+                    name: "作废",
+                    type: "bar",
+                    stack: "总量",
+                    label: {
+                        show: true,
+                        position: "insideRight",
+                        formatter: function (num) {
+                            if (num.value == 0) {
+                                return "";
+                            }
                         },
-                        data: [],
                     },
+                    data: [],
+                },
                 ],
             },
             // pie subject图
@@ -570,29 +616,29 @@ export default {
                     formatter: "{a} <br/>{b} : {c} ({d}%)",
                 },
                 series: [{
-                        name: "任务情况",
-                        type: "pie",
-                        radius: ["45%", "60%"],
-                        center: ["50%", "60%"],
-                        data: [],
-                        label: {
-                            show: true,
-                            position: "outer",
-                            alignTo: "labelLine",
-                            formatter: "{b}：{c}",
-                        },
+                    name: "任务情况",
+                    type: "pie",
+                    radius: ["45%", "60%"],
+                    center: ["50%", "60%"],
+                    data: [],
+                    label: {
+                        show: true,
+                        position: "outer",
+                        alignTo: "labelLine",
+                        formatter: "{b}：{c}",
                     },
-                    {
-                        name: "分类",
-                        type: "pie",
-                        label: {
-                            position: "inner",
-                        },
-                        // color: ["gray"],
-                        radius: ["0%", "30%"],
-                        center: ["50%", "60%"],
-                        data: [],
+                },
+                {
+                    name: "分类",
+                    type: "pie",
+                    label: {
+                        position: "inner",
                     },
+                    // color: ["gray"],
+                    radius: ["0%", "30%"],
+                    center: ["50%", "60%"],
+                    data: [],
+                },
                 ],
             },
             // pie summary图
@@ -618,17 +664,17 @@ export default {
                         alignTo: "labelLine",
                         formatter: "{b}：{c}",
                     },
-                }, ],
+                },],
             },
             // left input
             select_option: [{
-                    value: "step",
-                    label: "步数",
-                },
-                {
-                    value: "weight",
-                    label: "体重",
-                },
+                value: "step",
+                label: "步数",
+            },
+            {
+                value: "weight",
+                label: "体重",
+            },
             ],
             // right input      
             new_edate: "",
@@ -655,32 +701,32 @@ export default {
             isqueryall: true,
             pickerOptions: {
                 shortcuts: [{
-                        text: "最近一周",
-                        onClick(picker) {
-                            const end = new Date();
-                            const start = new Date();
-                            start.setTime(start.getTime() - 3600 * 1000 * 24 * 7);
-                            picker.$emit("pick", [start, end]);
-                        },
+                    text: "最近一周",
+                    onClick(picker) {
+                        const end = new Date();
+                        const start = new Date();
+                        start.setTime(start.getTime() - 3600 * 1000 * 24 * 7);
+                        picker.$emit("pick", [start, end]);
                     },
-                    {
-                        text: "最近一个月",
-                        onClick(picker) {
-                            const end = new Date();
-                            const start = new Date();
-                            start.setTime(start.getTime() - 3600 * 1000 * 24 * 30);
-                            picker.$emit("pick", [start, end]);
-                        },
+                },
+                {
+                    text: "最近一个月",
+                    onClick(picker) {
+                        const end = new Date();
+                        const start = new Date();
+                        start.setTime(start.getTime() - 3600 * 1000 * 24 * 30);
+                        picker.$emit("pick", [start, end]);
                     },
-                    {
-                        text: "最近三个月",
-                        onClick(picker) {
-                            const end = new Date();
-                            const start = new Date();
-                            start.setTime(start.getTime() - 3600 * 1000 * 24 * 90);
-                            picker.$emit("pick", [start, end]);
-                        },
+                },
+                {
+                    text: "最近三个月",
+                    onClick(picker) {
+                        const end = new Date();
+                        const start = new Date();
+                        start.setTime(start.getTime() - 3600 * 1000 * 24 * 90);
+                        picker.$emit("pick", [start, end]);
                     },
+                },
                 ],
             },
             query_duration: null,
@@ -795,8 +841,8 @@ export default {
         this.tasksummary_chart = echarts.init(
             document.getElementById("task_summary"),
             "white", {
-                renderer: "canvas",
-            }
+            renderer: "canvas",
+        }
         );
         this.tasksummary_chart.on("click", function (params) {
             // console.log(params["name"]);
@@ -817,14 +863,14 @@ export default {
         this.tasktype_pie_chart = echarts.init(
             document.getElementById("task_pie_subject"),
             "white", {
-                renderer: "canvas",
-            }
+            renderer: "canvas",
+        }
         );
         this.tasksummary_pie_chart = echarts.init(
             document.getElementById("task_pie_summary"),
             "white", {
-                renderer: "canvas",
-            }
+            renderer: "canvas",
+        }
         );
         this.freshright();
     },
@@ -1125,7 +1171,7 @@ export default {
             this.dir_sub_select = "";
             this.dir_hours = "";
         },
-        getdiroption: function () {},
+        getdiroption: function () { },
         updatediroption: function (event) {
             // console.log('update option');
             this.dir_sub_select = "";

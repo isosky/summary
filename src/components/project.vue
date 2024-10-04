@@ -19,7 +19,29 @@
         </el-col>
         <el-col :span="19">
             <el-row :span="18">
-                <div height="400"></div>
+                <div
+                    style="display: flex;  align-items: center;  padding: 0;  border-bottom: 1px solid #c2c4ca; margin: 0 auto;">
+                    <div style="line-height: 30px; padding: 0;">
+                        <ul>
+                            <li>
+                                项目名称：{{ this.project_name }}
+                            </li>
+                            <li>
+                                开始时间：{{ this.project_start_time }}
+                            </li>
+                            <li>
+                                最后时间：{{ this.project_last_time }}
+                            </li>
+                        </ul>
+                    </div>
+                    <div style="line-height: 30px; left: 100px; width: 800px;"> 项目简介
+                        <el-input type="textarea" v-model="project_desc"></el-input>
+                    </div>
+                    <div>
+                        <el-button icon="el-icon-check" type="success" circle @click="updateprojectdesc"></el-button>
+                    </div>
+                </div>
+
             </el-row>
             <el-row :gutter="5">
                 <el-tabs v-model="tabs_select" :lazy="true" type="border-card" @tab-click="tabclick">
@@ -80,6 +102,10 @@ export default {
             projectdata: [],
             select_project_id: '',
             tabs_select: "project_task",
+            project_name: '',
+            project_start_time: '',
+            project_last_time: '',
+            project_desc: '',
             project_task_data: [],
             project_task_summary_chart: '',
             project_taskstatus_summary_chart: "",
@@ -171,6 +197,7 @@ export default {
                     },
                 },],
             },
+            project_desc: '',
             project_person_data: [],
             project_person_graph_chart: '',
             project_person_graph_chart_option: {
@@ -241,7 +268,22 @@ export default {
             } else {
                 this.get_project_person()
             }
+            this.get_project_detail()
 
+        },
+        get_project_detail: function () {
+            axios.post("/update_project_detail", { project_id: this.select_project_id }).then((response) => {
+                this.project_desc = response.data.project_desc
+                this.project_last_time = response.data.project_last_time
+                this.project_start_time = response.data.project_start_time
+                this.project_name = response.data.project_name
+
+            })
+        },
+        updateprojectdesc: function () {
+            axios.post("/update_project_desc", { project_id: this.select_project_id, project_desc: this.project_desc }).then((response) => {
+
+            })
         },
         get_project_task: function () {
             axios
