@@ -221,13 +221,8 @@ export default {
                         categories: [],
                         data: [],
                         links: [],
-                        lineStyle: {
-                            opacity: 0.9,
-                            width: 2,
-                            curveness: 0
-                        },
                         force: {
-                            repulsion: 100
+                            repulsion: 1000
                         }
                     }
                 ]
