@@ -1,14 +1,14 @@
 <template>
   <div id="app">
-    <el-col :span="5">
+    <el-col :span="6">
       <el-row :span="6">
-        <el-select v-model="company" filterable allow-create default-first-option placeholder="请选择单位"
-          style="width: 140px">
+        <el-select @change="updatelevel2option" v-model="company" filterable allow-create default-first-option
+          placeholder="请选择单位" style="width: 140px">
           <el-option v-for="item in company_option" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
-        <el-select v-model="department" filterable allow-create default-first-option placeholder="请选择部门"
-          style="width: 140px">
+        <el-select @change="updatelevel3option" v-model="department" filterable allow-create default-first-option
+          placeholder="请选择部门" style="width: 140px">
           <el-option v-for="item in department_option" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
@@ -26,12 +26,12 @@
       </el-row>
       <el-row :span="6">
         <!-- TODO 表格排序 -->
-        <el-table :data="persondata" height="800" style="width: 100%" @cell-click="showpersondetail">
-          <el-table-column prop="company" label="单位" width="80">
+        <el-table :data="persondata" border height="800" style="width: 100%" @cell-click="showpersondetail">
+          <el-table-column prop="company" label="单位" width="100">
           </el-table-column>
-          <el-table-column prop="department" label="部门" width="80">
+          <el-table-column prop="department" label="部门" width="100">
           </el-table-column>
-          <el-table-column prop="post" label="职位" width="80">
+          <el-table-column prop="post" label="职位" width="100">
           </el-table-column>
           <el-table-column prop="person_name" label="名称" width="120">
           </el-table-column>
@@ -46,10 +46,10 @@
         </el-table>
       </el-row>
     </el-col>
-    <el-col :span="19">
+    <el-col :span="18">
       <el-row :span="6"></el-row>
       <el-row :span="6">
-        <el-col :span="7">
+        <el-col :span="8">
           <el-row :span="6">
             <el-date-picker :picker-options="{ firstDayOfWeek: 1 }" v-model="person_profile_start"
               value-format="yyyy-MM-dd" type="date" placeholder="开始时间" @change="setdate"
@@ -77,7 +77,7 @@
               </el-option>
             </el-select>
           </el-row>
-          <el-table :data="person_profile_data" height="800" style="width: 100%">
+          <el-table :data="person_profile_data" border height="800" style="width: 100%">
             <el-table-column prop="start_date" label="开始时间" width="100">
             </el-table-column>
             <el-table-column prop="end_date" label="结束时间" width="100">
@@ -101,7 +101,7 @@
         </el-col>
         <el-col :span="10">
           <!-- TODO 单元格颜色弄一下，然后醒目点 -->
-          <el-table :data="person_task_data" height="800" style="width: 100%" @cell-click="showpersonleveltask"
+          <el-table :data="person_task_data" border height="800" style="width: 100%" @cell-click="showpersonleveltask"
             :cell-style="persontaskdatastyle">
             <el-table-column prop="level2" label="level2" width="120">
             </el-table-column>
@@ -119,8 +119,8 @@
             </el-table-column>
           </el-table>
         </el-col>
-        <el-col :span="6">
-          <el-table :data="person_record_data" height="800" style="width: 100%">
+        <el-col :span="5">
+          <el-table :data="person_record_data" border height="800" style="width: 100%">
             <el-table-column prop="company" label="单位" width="80">
             </el-table-column>
             <el-table-column prop="department" label="部门" width="80">
@@ -128,14 +128,6 @@
             <el-table-column prop="post" label="职位" width="80">
             </el-table-column>
             <el-table-column prop="person_name" label="名称" width="120">
-            </el-table-column>
-            <el-table-column label="操作" width="120">
-              <template slot-scope="scope">
-                <el-button @click="showdialogperson(scope.row)" type="text" size="small">编辑
-                </el-button>
-                <el-button @click="deleteperson(scope.row)" type="text" size="small">删除
-                </el-button>
-              </template>
             </el-table-column>
           </el-table>
         </el-col>
@@ -181,8 +173,10 @@ export default {
       person_name: "",
       company: "",
       company_option: [],
+      company_department_options: [],
+      department_post_options: [],
       department: "",
-      department_option: "",
+      department_option: [],
       post: "",
       post_option: [],
       person_forceadd: false,
@@ -210,8 +204,8 @@ export default {
       axios.get("/getpersonoptions").then((response) => {
         // console.log(response);
         this.company_option = response.data.company_options;
-        this.department_option = response.data.department_options;
-        this.post_option = response.data.post_options;
+        this.company_department_options = response.data.company_department_options;
+        this.department_post_options = response.data.department_post_options;
       });
     },
     getperson: function () {
@@ -403,6 +397,40 @@ export default {
           return "";
         }
         return "";
+      }
+    },
+    updatelevel2option: function (event) {
+      // console.log('update option');
+      this.department = "";
+      if (this.company != "" && this.department_option != []) {
+        this.department_option = [];
+        let temp = this.company_department_options[this.company];
+        if (temp) {
+          this.department_option = [];
+          for (let i in temp) {
+            this.department_option.push({
+              value: temp[i],
+              label: temp[i],
+            });
+          }
+        }
+      }
+    },
+    updatelevel3option: function (event) {
+      // console.log('update option');
+      this.post = "";
+      if (this.department != "" && this.post_option != []) {
+        this.post_option = [];
+        let temp = this.department_post_options[this.department];
+        if (temp) {
+          this.post_option = [];
+          for (let i in temp) {
+            this.post_option.push({
+              value: temp[i],
+              label: temp[i],
+            });
+          }
+        }
       }
     },
   },
