@@ -834,6 +834,7 @@ export default {
             that.task_title = "";
             that.task_level1_select = "";
             that.task_level2_select = "";
+            that.task_level3_select = "";
             that.isqueryall = true;
             that.tabs_select = "summary";
             that.querytask("table");
@@ -881,6 +882,7 @@ export default {
             this.task_title = "";
             this.task_level1_select = "";
             this.task_level2_select = "";
+            this.task_level3_select = "";
             this.new_edate = "";
             this.isstime = false;
             this.query_duration = [];
@@ -1358,8 +1360,8 @@ export default {
                     this.task_title = "";
                     this.new_edate = "";
                     this.task_level1_select = "";
-                    this.task_level1_select = "";
                     this.task_level2_select = "";
+                    this.task_level3_select = "";
                     this.dustatus = "";
                     this.freshright();
                 });
@@ -1422,6 +1424,7 @@ export default {
         closedialog: function (event) {
             this.task_level1_select = "";
             this.task_level2_select = "";
+            this.task_level3_select = "";
             this.process_content = "";
         },
         // TODO 点任务的逻辑重新梳理一下
