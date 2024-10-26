@@ -330,27 +330,40 @@
 
         <!-- 修改 -->
         <el-dialog @close="closedialog" title="确认修改任务？？" :visible.sync="dialoguVisible" width="40%">
-            <el-date-picker :picker-options="{ firstDayOfWeek: 1 }" v-model="duetime" value-format="yyyy-MM-dd"
-                type="date" style="width: 150px"></el-date-picker>
-            <!-- 修改任务面板里面的一级分类 -->
-            <el-select @change="updatelevel2option" clearable default-first-option v-model="task_level1_select"
-                style="width: 120px" placeholder="请选择">
-                <el-option v-for="item in task_level1_option" :key="item.value" :label="item.label"
-                    :value="item.value"></el-option>
-            </el-select>
-            <!-- 修改任务面板里面的二级分类 -->
-            <el-select @change="updatelevel3option" v-model="task_level2_select" filterable clearable allow-create
-                default-first-option style="width: 120px" placeholder="请选择">
-                <el-option v-for="item in task_level2_option" :key="item.value" :label="item.label"
-                    :value="item.value"></el-option>
-            </el-select>
-            <!-- 修改任务面板里面的三级分类 -->
-            <el-select v-model="task_level3_select" filterable clearable allow-create default-first-option
-                style="width: 120px" placeholder="请选择">
-                <el-option v-for="item in task_level3_option" :key="item.value" :label="item.label"
-                    :value="item.value"></el-option>
-            </el-select>
-            <el-input v-model="dutitle" style="width: 300px"></el-input>
+            <el-row>
+                <span class="demonstration">计划结束时间：</span>
+                <el-date-picker :picker-options="{ firstDayOfWeek: 1 }" v-model="duetime" value-format="yyyy-MM-dd"
+                    type="date" style="width: 150px"></el-date-picker>
+                <span class="demonstration" style="margin-left: 15px;">实际结束时间：</span>
+                <el-date-picker :picker-options="{ firstDayOfWeek: 1 }" v-model="dftime"
+                    value-format="yyyy-MM-dd HH:mm:ss" type="datetime" style="width: 250px"></el-date-picker>
+                <el-select v-model="dustatus" placeholder="请选择">
+                    <el-option v-for="item in dustatusoptions" :key="item.value" :label="item.label"
+                        :value="item.value">
+                    </el-option>
+                </el-select>
+            </el-row>
+            <el-row>
+                <!-- 修改任务面板里面的一级分类 -->
+                <el-select @change="updatelevel2option" clearable default-first-option v-model="task_level1_select"
+                    style="width: 120px" placeholder="请选择">
+                    <el-option v-for="item in task_level1_option" :key="item.value" :label="item.label"
+                        :value="item.value"></el-option>
+                </el-select>
+                <!-- 修改任务面板里面的二级分类 -->
+                <el-select @change="updatelevel3option" v-model="task_level2_select" filterable clearable allow-create
+                    default-first-option style="width: 120px" placeholder="请选择">
+                    <el-option v-for="item in task_level2_option" :key="item.value" :label="item.label"
+                        :value="item.value"></el-option>
+                </el-select>
+                <!-- 修改任务面板里面的三级分类 -->
+                <el-select v-model="task_level3_select" filterable clearable allow-create default-first-option
+                    style="width: 120px" placeholder="请选择">
+                    <el-option v-for="item in task_level3_option" :key="item.value" :label="item.label"
+                        :value="item.value"></el-option>
+                </el-select>
+                <el-input v-model="dutitle" style="width: 300px"></el-input>
+            </el-row>
             <span slot="footer" class="dialog-footer">
                 <el-button @click="dialoguVisible = false">取 消</el-button>
                 <el-button type="primary" @click="dialogupdate">确 定</el-button>
@@ -772,7 +785,17 @@ export default {
             dutitle: "",
             duetime: "",
             dustatus: "",
-
+            dftime: '',
+            dustatusoptions: [{
+                value: 2,
+                label: '完成'
+            }, {
+                value: 3,
+                label: '待做逾期'
+            }, {
+                value: 4,
+                label: '逾期完成'
+            }],
             // dialog delete
             dialogcVisible: false,
 
@@ -1195,6 +1218,13 @@ export default {
         },
         // 添加任务
         addtask: function (event) {
+            if (this.task_level3_select == '' && this.task_level1_select == '项目') {
+                this.$message({
+                    message: "选项目时，三级不能为空",
+                    type: "warning",
+                });
+                return
+            }
             if (this.new_edate != "" && this.task_title) {
                 // console.log(this.person);
                 axios
@@ -1332,7 +1362,7 @@ export default {
         // 展示修改任务面板
         updatetask: function (event) {
             this.dialoguVisible = true;
-            // console.log(event);
+            console.log(event);
             this.task_level1_select = event.level1;
             this.task_level2_select = event.level2;
             this.task_level3_select = event.level3;
@@ -1340,6 +1370,7 @@ export default {
             this.s_task_id = event.task_id;
             this.duetime = event.tetime;
             this.dustatus = event.status;
+            this.dftime = event.dftime
         },
 
         // 调用修改任务接口
@@ -1354,6 +1385,7 @@ export default {
                     task_name: this.dutitle,
                     etime: this.duetime,
                     dustatus: this.dustatus,
+                    dftime: this.dftime,
                 })
                 .then((response) => {
                     this.dialoguVisible = false;
@@ -1363,6 +1395,7 @@ export default {
                     this.task_level2_select = "";
                     this.task_level3_select = "";
                     this.dustatus = "";
+                    this.dftime = "";
                     this.freshright();
                 });
         },
