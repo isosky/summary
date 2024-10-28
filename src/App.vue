@@ -17,6 +17,10 @@
               <i class="el-icon-data-board"></i>
               <span slot="title">dft</span>
             </el-menu-item>
+            <el-menu-item index="/transaction">
+              <img src="@/assets/wallet.png">
+              <span slot="title">财务分析</span>
+            </el-menu-item>
             <el-menu-item index="/count">
               <i class="el-icon-s-data"></i>
               <span slot="title">统计</span>

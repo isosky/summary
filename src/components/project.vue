@@ -11,6 +11,7 @@
                 </el-table-column>
                 <el-table-column label="操作" width="50">
                     <template slot-scope="scope">
+                        <!-- TODO 这个地方的update_project没实现 -->
                         <el-button @click="update_project(scope.row)" type="text" size="small">编辑
                         </el-button>
                     </template>
