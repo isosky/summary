@@ -86,7 +86,10 @@
               <i class="el-icon-bicycle"></i>
               <span slot="title">骑行</span>
             </el-menu-item>
-
+            <!-- <el-menu-item index="/cycling_strava">
+              <i class="el-icon-bicycle"></i>
+              <span slot="title">骑行strava</span>
+            </el-menu-item> -->
             <el-submenu>
               <template slot="title">
                 <i class="el-icon-setting"></i>

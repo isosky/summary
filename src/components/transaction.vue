@@ -102,8 +102,12 @@ export default {
             level2_option: [],
             level3: '',
             level3_option: [],
-            level1_level2_option: [],
-            level2_level3_option: [],
+            pay_level1_option: [],
+            pay_level1_level2_option: [],
+            pay_level2_level3_option: [],
+            income_level1_option: [],
+            income_level1_level2_option: [],
+            income_level2_level3_option: [],
             data_status_option: [{
                 value: 0,
                 label: '初始'
@@ -121,6 +125,7 @@ export default {
             d_transaction_id: '',
             d_counterparty: '',
             d_product: '',
+            d_transaction_direction: '',
             merge_data: false,
         };
     },
@@ -145,9 +150,12 @@ export default {
         get_transaction_option: function () {
             axios.get("/get_transaction_option").then((response) => {
                 // console.log(response);
-                this.level1_option = response.data.level1_option;
-                this.level1_level2_option = response.data.level1_level2_option
-                this.level2_level3_option = response.data.level2_level3_option
+                this.pay_level1_option = response.data.pay_level1_option;
+                this.pay_level1_level2_option = response.data.pay_level1_level2_option
+                this.pay_level2_level3_option = response.data.pay_level2_level3_option
+                this.income_level1_option = response.data.income_level1_option;
+                this.income_level1_level2_option = response.data.income_level1_level2_option
+                this.income_level2_level3_option = response.data.income_level2_level3_option
 
             });
         },
@@ -161,6 +169,16 @@ export default {
             this.d_counterparty = event.counterparty;
             this.d_product = event.product;
             this.d_transaction_id = event.transaction_id;
+            this.d_transaction_direction = event.transaction_direction
+            if (event.transaction_direction == '支出') {
+                this.level1_option = this.pay_level1_option;
+                this.pay_level1_level2_option = this.pay_level1_level2_option;
+                this.pay_level2_level3_option = this.pay_level2_level3_option;
+            } else {
+                this.level1_option = this.income_level1_option;
+                this.level1_level2_option = this.income_level1_level2_option;
+                this.level2_level3_option = this.income_level2_level3_option;
+            }
         },
         // 分页大小改变时触发
         handleSizeChange(newSize) {
