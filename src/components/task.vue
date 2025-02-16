@@ -1272,8 +1272,9 @@ export default {
             axios
                 .post("/querytask", {
                     query: this.task_title,
-                    type: this.task_level1_select,
-                    sub_type: this.task_level2_select,
+                    level1: this.task_level1_select,
+                    level2: this.task_level2_select,
+                    level3: this.task_level3_select,
                     ftime: this.new_edate,
                     query_duration: this.query_duration,
                     isstime: this.isstime,
