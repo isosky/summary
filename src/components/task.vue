@@ -897,7 +897,7 @@ export default {
       this.task_level3_select = '';
       this.new_edate = '';
       this.isstime = false;
-      this.query_duration = null;
+      this.query_duration = [];
       this.settasksummary_bar();
       this.isqueryall = false;
       this.querytask('table');
@@ -1004,18 +1004,18 @@ export default {
         this.getfinishtask_data();
       }
     },
-    setdate: function(event) {
-      if (
-        this.isstime === false &&
-        !(this.query_duration === null || this.query_duration === '')
-      ) {
+    setdate: function(value) {
+      if (this.isstime) return;
+      // 使用传入的 value 判断是哪种触发（单日或范围），比读取 this 上的旧值更可靠
+      if (Array.isArray(value)) {
+        // range selected -> clear single date
         this.new_edate = '';
-      }
-      if (
-        this.isstime === false &&
-        !(this.new_edate === null || this.new_edate === '')
-      ) {
-        this.query_duration = '';
+        // ensure stored as array (value-format may provide strings)
+        this.query_duration = value;
+      } else {
+        // single date selected -> clear range
+        this.new_edate = value;
+        this.query_duration = null;
       }
     },
     // 更新二级下拉列表

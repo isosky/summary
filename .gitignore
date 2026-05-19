@@ -23,3 +23,4 @@ yarn-error.log*
 !map-config.json
 main.js
 public/index.html
+src/components/task_old.vue
