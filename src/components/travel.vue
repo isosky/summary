@@ -7,14 +7,14 @@
 </template>
 
 <script>
-import axios from "axios";
-var echarts = require("echarts");
-import "echarts/extension/bmap/bmap";
-import mapConfig from "../data/map-config.json";
+import axios from 'axios';
+import 'echarts/extension/bmap/bmap';
+import mapConfig from '../data/map-config.json';
+var echarts = require('echarts');
 export default {
   data() {
     return {
-      travel_chart: "",
+      travel_chart: '',
       bmap: {},
       travel_chart_option: {
         bmap: {
@@ -22,13 +22,13 @@ export default {
           zoom: 5,
           roam: true,
           mapStyle: {
-            styleJson: mapConfig,
-          },
+            styleJson: mapConfig
+          }
         },
         series: [
           {
-            type: "lines",
-            coordinateSystem: "bmap",
+            type: 'lines',
+            coordinateSystem: 'bmap',
             polyline: false,
             data: [],
             silent: true,
@@ -36,71 +36,69 @@ export default {
               // color: '#c23531',
               // color: 'rgb(200, 35, 45)',
               opacity: 0.7,
-              width: 1,
+              width: 1
             },
             progressiveThreshold: 5000,
-            progressive: 2000,
+            progressive: 2000
           },
           {
-            type: "lines",
-            coordinateSystem: "bmap",
+            type: 'lines',
+            coordinateSystem: 'bmap',
             polyline: false,
             data: [],
             lineStyle: {
-              width: 0,
+              width: 0
             },
             effect: {
               constantSpeed: 20,
               show: true,
               trailLength: 0.2,
-              symbolSize: 2,
+              symbolSize: 2
             },
-            zlevel: 2,
+            zlevel: 2
           },
           {
-            type: "effectScatter",
-            coordinateSystem: "bmap",
+            type: 'effectScatter',
+            coordinateSystem: 'bmap',
             data: [],
             label: {
-              formatter: "{b}",
-              position: "top",
-              show: true,
+              formatter: '{b}',
+              position: 'top',
+              show: true
             },
             symbolSize: 3,
             itemStyle: {
-              color: "#f4e925",
+              color: '#f4e925',
               shadowBlur: 10,
-              shadowColor: "#333",
+              shadowColor: '#333'
             },
-            zlevel: 1,
-          },
-        ],
-      },
+            zlevel: 1
+          }
+        ]
+      }
     };
   },
-  mounted: function () {
+  mounted: function() {
     this.init();
   },
   methods: {
-    init: function () {
-      console.log(this.bmap);
+    init: function() {
       this.travel_chart = echarts.init(
-        document.getElementById("travel_div"),
-        "white",
+        document.getElementById('travel_div'),
+        'white',
         {
-          renderer: "canvas",
+          renderer: 'canvas'
         }
       );
-      axios.get("/gettravel").then((response) => {
-        if (response.status == 200) {
-          console.log(response);
+      axios.get('/gettravel').then((response) => {
+        if (response.status === 200) {
           this.travel_chart_option.series[0].data = response.data.travel_data;
           this.travel_chart_option.series[1].data = response.data.travel_data;
           this.travel_chart_option.series[2].data = response.data.res_city;
           this.travel_chart.setOption(this.travel_chart_option);
         }
       });
-    },
-  },
+    }
+  }
 };
 </script>
