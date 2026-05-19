@@ -17,11 +17,11 @@
             <div id="bar_progress_chart_div" style="height: 920px"></div>
           </el-row>
         </el-tab-pane>
-        <el-tab-pane label="sankey" name="forth" style="height: 940px">
+        <!-- <el-tab-pane label="sankey" name="forth" style="height: 940px">
           <el-row>
             <div id="sankey_chart_div" style="height: 920px"></div>
           </el-row>
-        </el-tab-pane>
+        </el-tab-pane> -->
       </el-tabs>
     </el-col>
     <el-dialog title="提示" :visible.sync="dialogtaskVisible" width="40%" :before-close="handleClose">
