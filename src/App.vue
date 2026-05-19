@@ -13,10 +13,6 @@
               <i class="el-icon-collection"></i>
               <span slot="title">项目分析</span>
             </el-menu-item>
-            <el-menu-item index="/dft">
-              <i class="el-icon-data-board"></i>
-              <span slot="title">dft</span>
-            </el-menu-item>
             <el-menu-item index="/transaction">
               <img src="@/assets/wallet.png">
               <span slot="title">财务分析</span>
@@ -29,47 +25,6 @@
               <i class="el-icon-user"></i>
               <span slot="title">人员信息</span>
             </el-menu-item>
-            <el-submenu index="/fund_estimate">
-              <template slot="title">
-                <i class="el-icon-money"></i>
-                <span>基金</span>
-              </template>
-              <el-menu-item index="/fund_estimate">
-                <i class="el-icon-view"></i>
-                <span>基金估值</span>
-              </el-menu-item>
-              <el-menu-item index="/fund_total">
-                <i class="el-icon-view"></i>
-                <span>基金统计</span>
-              </el-menu-item>
-              <el-menu-item index="/fund_review">
-                <i class="el-icon-view"></i>
-                <span>基金复盘</span>
-              </el-menu-item>
-              <el-menu-item index="/fund_orders"><i class="el-icon-view"></i>
-                <span>基金买卖</span>
-              </el-menu-item>
-              <el-menu-item index="/fund_treemap_label"><i class="el-icon-view"></i>
-                <span>基金分布</span>
-              </el-menu-item>
-              <el-menu-item index="/fund_setting"><i class="el-icon-view"></i>
-                <span>基金设置</span>
-              </el-menu-item>
-            </el-submenu>
-            <!-- <el-submenu index="/nga">
-              <template slot="title">
-                <i class="el-icon-chat-dot-square"></i>
-                <span>NGA</span>
-              </template> -->
-            <el-menu-item index="/nga">
-              <i class="el-icon-chat-dot-square"></i>
-              <span slot="title">NGA</span>
-            </el-menu-item>
-            <!-- <el-menu-item index="/nga_setting">
-                <i class="el-icon-setting"></i>
-                <span slot="title">NGA设置</span>
-              </el-menu-item>
-            </el-submenu> -->
             <el-menu-item index="/schedule">
               <i class="el-icon-time"></i>
               <span slot="title">定时任务</span>
@@ -82,14 +37,6 @@
               <i class="el-icon-s-promotion"></i>
               <span slot="title">出行</span>
             </el-menu-item>
-            <el-menu-item index="/cycling">
-              <i class="el-icon-bicycle"></i>
-              <span slot="title">骑行</span>
-            </el-menu-item>
-            <!-- <el-menu-item index="/cycling_strava">
-              <i class="el-icon-bicycle"></i>
-              <span slot="title">骑行strava</span>
-            </el-menu-item> -->
             <el-submenu>
               <template slot="title">
                 <i class="el-icon-setting"></i>
@@ -99,10 +46,7 @@
                 <i class="el-icon-setting"></i>
                 <span slot="title">系统设置</span>
               </el-menu-item>
-              <el-menu-item index="/nga_setting">
-                <i class="el-icon-setting"></i>
-                <span slot="title">NGA设置</span>
-              </el-menu-item>
+
             </el-submenu>
           </el-menu>
         </div>
