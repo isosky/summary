@@ -16,12 +16,12 @@
 
 <script>
 export default {
-    data() {
-        return {
-            new_nga_special_post_id: "",
-            nga_special_post_data: [],
-        };
-    },
-    mounted: function () { },
+  data() {
+    return {
+      new_nga_special_post_id: '',
+      nga_special_post_data: []
+    };
+  },
+  mounted: function() { }
 };
 </script>

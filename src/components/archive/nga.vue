@@ -18,15 +18,14 @@
 </template>
 
 <script>
-import axios from "axios";
 export default {
-    data() {
-        return {
-            ngatabname: "nga_post_list",
-            nga_post_table: [],
-        };
-    },
-    mounted: function () { },
+  data() {
+    return {
+      ngatabname: 'nga_post_list',
+      nga_post_table: []
+    };
+  },
+  mounted: function() { }
 };
 </script>
 

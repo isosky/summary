@@ -23,18 +23,17 @@
 </template>
 
 <script>
-import axios from "axios";
 export default {
-    data() {
-        return {
-            cyclingdata: [],
-            cycling_type_selected: "",
-        };
-    },
-    mounted: function () { },
-    methods: {
-        init: function () { },
-    },
+  data() {
+    return {
+      cyclingdata: [],
+      cycling_type_selected: ''
+    };
+  },
+  mounted: function() { },
+  methods: {
+    init: function() { }
+  }
 };
 </script>
 

@@ -164,20 +164,20 @@
 </template>
 
 <script>
-import axios from "axios";
+import axios from 'axios';
 export default {
   data() {
     return {
       persondata: [],
-      person_id: "",
-      person_name: "",
-      company: "",
+      person_id: '',
+      person_name: '',
+      company: '',
       company_option: [],
       company_department_options: [],
       department_post_options: [],
-      department: "",
+      department: '',
       department_option: [],
-      post: "",
+      post: '',
       post_option: [],
       person_forceadd: false,
       dialogpersonVisible: false,
@@ -191,81 +191,81 @@ export default {
       person_profile_data: [],
       person_task_data: [],
       person_task_detail_data: [],
-      person_record_data: [],
+      person_record_data: []
     };
   },
-  mounted: function () {
+  mounted: function() {
     this.getoptions();
     this.getperson();
   },
   methods: {
     // person
-    getoptions: function () {
-      axios.get("/getpersonoptions").then((response) => {
+    getoptions: function() {
+      axios.get('/getpersonoptions').then((response) => {
         // console.log(response);
         this.company_option = response.data.company_options;
         this.company_department_options = response.data.company_department_options;
         this.department_post_options = response.data.department_post_options;
       });
     },
-    getperson: function () {
-      axios.get("/getperson").then((response) => {
+    getperson: function() {
+      axios.get('/getperson').then((response) => {
         // console.log(response);
         this.persondata = response.data;
       });
     },
-    addperson: function (event) {
-      if (this.company != "" && this.person_name != "") {
+    addperson: function(event) {
+      if (this.company !== '' && this.person_name !== '') {
         axios
-          .post("/addperson", {
+          .post('/addperson', {
             company: this.company,
             department: this.department,
             person_name: this.person_name,
             post: this.post,
-            force: this.person_forceadd,
+            force: this.person_forceadd
           })
           .then((response) => {
-            if (response.data.msg == true) {
-              this.company = "";
-              this.department = "";
-              this.person_name = "";
-              this.post = "";
+            if (response.data.msg === true) {
+              this.company = '';
+              this.department = '';
+              this.person_name = '';
+              this.post = '';
               this.getperson();
               this.getoptions();
             } else {
-              this.$message.error("有重名的，请确认是否强制添加");
+              this.$message.error('有重名的，请确认是否强制添加');
             }
           });
       }
     },
-    deleteperson: function (event) {
-      let temp = event.person_id;
+    deleteperson: function(event) {
+      const temp = event.person_id;
       // console.log(temp);
       axios
-        .post("/deleteperson", {
-          personid: temp,
+        .post('/deleteperson', {
+          personid: temp
         })
         .then((response) => {
           this.getperson();
           this.getoptions();
         });
     },
-    setdate: function (event) {
+    setdate: function(event) {
       if (
-        this.isstime == false &&
-        !(this.query_duration == null || this.query_duration == "")
+        this.isstime === false &&
+        !(this.query_duration === null || this.query_duration === '')
       ) {
-        this.new_edate = "";
+        this.new_edate = '';
       }
       if (
-        this.isstime == false &&
-        !(this.new_edate == null || this.new_edate == "")
+        this.isstime === false &&
+        !(this.new_edate === null || this.new_edate === '')
       ) {
-        this.query_duration = "";
+        this.query_duration = '';
       }
     },
     // 展示修改任务面板
-    showdialogperson: function (event) {
+    showdialogperson: function(event) {
       this.dialogpersonVisible = true;
       // console.log(event);
       this.company = event.company;
@@ -274,7 +274,7 @@ export default {
       this.person_name = event.person_name;
       this.post = event.post;
     },
-    closedialog: function () {
+    closedialog: function() {
       this.company = '';
       this.department = '';
       this.person_id = '';
@@ -282,9 +282,9 @@ export default {
       this.post = '';
       this.dialogpersonVisible = false;
     },
-    updateperson: function () {
+    updateperson: function() {
       axios
-        .post("/updateperson", {
+        .post('/updateperson', {
           company: this.company,
           department: this.department,
           person_name: this.person_name,
@@ -292,7 +292,7 @@ export default {
           person_id: this.person_id
         })
         .then((response) => {
-          if (response.data.msg == true) {
+          if (response.data.msg === true) {
             this.company = '';
             this.department = '';
             this.person_id = '';
@@ -304,33 +304,33 @@ export default {
           }
         });
     },
-    showpersondetail: function (row, column, cell, event) {
+    showpersondetail: function(row, column, cell, event) {
       this.person_profile_id = row.person_id;
       this.person_profile_name = row.person_name;
       this.showpersonprofile();
       this.showpersontask();
     },
-    showpersonprofile: function () {
+    showpersonprofile: function() {
       axios
-        .post("/getpersonprofile", {
-          person_profile_id: this.person_profile_id,
+        .post('/getpersonprofile', {
+          person_profile_id: this.person_profile_id
         })
         .then((response) => {
-          this.person_profile_data = response.data
+          this.person_profile_data = response.data;
         });
     },
-    showpersontask: function () {
+    showpersontask: function() {
       axios
-        .post("/getpersontask", {
-          person_profile_id: this.person_profile_id,
+        .post('/getpersontask', {
+          person_profile_id: this.person_profile_id
         })
         .then((response) => {
-          this.person_task_data = response.data
+          this.person_task_data = response.data;
         });
     },
-    addpersonprofile: function () {
+    addpersonprofile: function() {
       axios
-        .post("/addpersonprofile", {
+        .post('/addpersonprofile', {
           person_profile_start: this.person_profile_start,
           person_profile_end: this.person_profile_end,
           person_profile_company: this.person_profile_company,
@@ -340,23 +340,23 @@ export default {
           person_profile_name: this.person_profile_name
         })
         .then((response) => {
-          if (response.data.msg == true) {
-            this.clearpersonprofile()
+          if (response.data.msg === true) {
+            this.clearpersonprofile();
           }
         });
     },
-    clearpersonprofile: function () {
+    clearpersonprofile: function() {
       this.person_profile_start = '';
       this.person_profile_end = '';
       this.person_profile_company = '';
       this.person_profile_department = '';
       this.person_profile_post = '';
     },
-    updatepersonprofile: function (row, column, cell, event) { },
-    deletepersonprofile: function (row, column, cell, event) { },
-    showpersonleveltask: function (row, column, cell, event) {
+    updatepersonprofile: function(row, column, cell, event) { },
+    deletepersonprofile: function(row, column, cell, event) { },
+    showpersonleveltask: function(row, column, cell, event) {
       axios
-        .post("/getpersonleveltask", {
+        .post('/getpersonleveltask', {
           person_profile_id: this.person_profile_id,
           level2: row.level2,
           level3: row.level3
@@ -366,73 +366,71 @@ export default {
           // TODO 待实现
         });
     },
-    persontaskdatastyle: function ({
+    persontaskdatastyle: function({
       row,
       column,
       rowIndex,
       columnIndex
     }) {
-      if (columnIndex == 4) {
-        console.log(row, column, rowIndex, columnIndex);
+      if (columnIndex === 4) {
         if (row.score_activity < 5) {
-          return "background-color:red;color:white";
+          return 'background-color:red;color:white';
         }
         if (row.score_activity > 5) {
-          return "background-color:green;color:white";
+          return 'background-color:green;color:white';
         }
-        if (row.score_activity == 5) {
-          return "";
+        if (row.score_activity === 5) {
+          return '';
         }
-        return "";
+        return '';
       }
-      if (columnIndex == 5) {
-        console.log(row, column, rowIndex, columnIndex);
+      if (columnIndex === 5) {
         if (row.score_critical < 5) {
-          return "background-color:red;color:white";
+          return 'background-color:red;color:white';
         }
         if (row.score_critical > 5) {
-          return "background-color:green;color:white";
+          return 'background-color:green;color:white';
         }
-        if (row.score_critical == 5) {
-          return "";
+        if (row.score_critical === 5) {
+          return '';
         }
-        return "";
+        return '';
       }
     },
-    updatelevel2option: function (event) {
+    updatelevel2option: function(event) {
       // console.log('update option');
-      this.department = "";
-      if (this.company != "" && this.department_option != []) {
+      this.department = '';
+      if (this.company !== '' && this.company_department_options && this.company_department_options[this.company]) {
         this.department_option = [];
-        let temp = this.company_department_options[this.company];
+        const temp = this.company_department_options[this.company];
         if (temp) {
           this.department_option = [];
-          for (let i in temp) {
+          for (const i in temp) {
             this.department_option.push({
               value: temp[i],
-              label: temp[i],
+              label: temp[i]
             });
           }
         }
       }
     },
-    updatelevel3option: function (event) {
+    updatelevel3option: function(event) {
       // console.log('update option');
-      this.post = "";
-      if (this.department != "" && this.post_option != []) {
+      this.post = '';
+      if (this.department !== '' && this.department_post_options && this.department_post_options[this.department]) {
         this.post_option = [];
-        let temp = this.department_post_options[this.department];
+        const temp = this.department_post_options[this.department];
         if (temp) {
           this.post_option = [];
-          for (let i in temp) {
+          for (const i in temp) {
             this.post_option.push({
               value: temp[i],
-              label: temp[i],
+              label: temp[i]
             });
           }
         }
       }
-    },
-  },
+    }
+  }
 };
 </script>

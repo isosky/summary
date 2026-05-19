@@ -56,26 +56,25 @@
 </template>
 
 <script>
-import axios from "axios";
 export default {
-    data() {
-        return {
-            dialogdftVisible: false,
-            dialogdftappendixVisible: false,
-            dfttabledata: [],
-            unread_count: "",
-            dftnamesearch: "",
-            dfttagssearch: "",
-        };
-    },
-    mounted: function () {
-        this.init();
-    },
-    methods: {
-        init: function () {
-            // archived: original methods retained in archive copy
-        },
-    },
+  data() {
+    return {
+      dialogdftVisible: false,
+      dialogdftappendixVisible: false,
+      dfttabledata: [],
+      unread_count: '',
+      dftnamesearch: '',
+      dfttagssearch: ''
+    };
+  },
+  mounted: function() {
+    this.init();
+  },
+  methods: {
+    init: function() {
+      // archived: original methods retained in archive copy
+    }
+  }
 };
 </script>
 
