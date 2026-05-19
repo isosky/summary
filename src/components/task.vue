@@ -897,7 +897,7 @@ export default {
       this.task_level3_select = '';
       this.new_edate = '';
       this.isstime = false;
-      this.query_duration = [];
+      this.query_duration = null;
       this.settasksummary_bar();
       this.isqueryall = false;
       this.querytask('table');
