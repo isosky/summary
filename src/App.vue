@@ -4,7 +4,7 @@
       <el-col :span="1" v-if="islogin">
         <div>
           <el-menu :default-active="defaultactive" class="el-menu-vertical-demo" :collapse="isCollapse"
-            @select="moveto">
+            :default-openeds="defaultOpeneds" @select="moveto">
             <el-menu-item index="/task">
               <i class="el-icon-s-claim"></i>
               <span slot="title">任务管理</span>
@@ -37,6 +37,16 @@
               <i class="el-icon-s-promotion"></i>
               <span slot="title">出行</span>
             </el-menu-item>
+            <el-submenu index="/activity_menu">
+              <template slot="title">
+                <i class="el-icon-bicycle"></i>
+                <span>运动分析</span>
+              </template>
+              <el-menu-item index="/activity">运动总览</el-menu-item>
+              <el-menu-item index="/activity_run_segment_analysis">跑步路段分析</el-menu-item>
+              <el-menu-item index="/activity_ride_segment_analysis">骑行路段分析</el-menu-item>
+              <el-menu-item index="/activity_settings">设置</el-menu-item>
+            </el-submenu>
             <el-menu-item index="/syssetting">
               <i class="el-icon-setting"></i>
               <span slot="title">系统设置</span>
@@ -64,7 +74,8 @@ export default {
   data() {
     return {
       // TODO 考虑一下是否将gofirstpage放到这个地方
-      defaultactive: '1',
+      defaultactive: '/task',
+      defaultOpeneds: ['/activity_menu'],
       isCollapse: true,
       islogin: false,
       todo_user_name: '',
@@ -72,17 +83,25 @@ export default {
       // routers: ["/task", "/yysyh", "/yyshero", "/schedule", "/syssetting"]
     };
   },
-  mounted: function() {
+  mounted: function () {
     // console.log(axios.defaults.headers.common["Authorization"]);
     if (typeof axios.defaults.headers.common['Authorization'] === 'undefined') {
       this.islogin = false;
-    } else this.islogin = true;
+    } else {
+      this.islogin = true;
+      this.defaultactive = this.$route.path || '/task';
+    }
+  },
+  watch: {
+    '$route.path': function (val) {
+      this.defaultactive = val || '/task';
+    }
   },
   methods: {
-    moveto: function(index) {
+    moveto: function (index) {
       this.$router.push(index);
     },
-    login: function(event) {
+    login: function (event) {
       axios
         .post('/login', {
           user_name: this.todo_user_name,
@@ -93,6 +112,7 @@ export default {
             axios.defaults.headers.common['Authorization'] =
               response.data.token;
             this.islogin = true;
+            this.defaultactive = '/task';
             this.$router.push('/task');
             // console.log(axios.defaults.headers.common);
           }
