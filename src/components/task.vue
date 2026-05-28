@@ -387,7 +387,7 @@ import axios from 'axios';
 import PinyinMatch from 'pinyin-match';
 var echarts = require('echarts');
 export default {
-  data: function() {
+  data: function () {
     return {
       currentRow: null,
       scoreactivity: [{
@@ -457,7 +457,7 @@ export default {
           }
         },
         tooltip: {
-          formatter: function(params) {
+          formatter: function (params) {
             return '完成任务数量: ' + params.value[1];
           }
         },
@@ -484,7 +484,7 @@ export default {
           coordinateSystem: 'calendar',
           label: {
             show: true,
-            formatter: function(params) {
+            formatter: function (params) {
               var d = echarts.number.parseDate(params.value[0]);
               return d.getDate() + '\n' + params.value[1] + '个';
             },
@@ -528,7 +528,7 @@ export default {
           label: {
             show: true,
             position: 'insideRight',
-            formatter: function(num) {
+            formatter: function (num) {
               if (num.value === 0) {
                 return '';
               }
@@ -543,7 +543,7 @@ export default {
           label: {
             show: true,
             position: 'insideRight',
-            formatter: function(num) {
+            formatter: function (num) {
               if (num.value === 0) {
                 return '';
               }
@@ -558,7 +558,7 @@ export default {
           label: {
             show: true,
             position: 'insideRight',
-            formatter: function(num) {
+            formatter: function (num) {
               if (num.value === 0) {
                 return '';
               }
@@ -573,7 +573,7 @@ export default {
           label: {
             show: true,
             position: 'insideRight',
-            formatter: function(num) {
+            formatter: function (num) {
               if (num.value === 0) {
                 return '';
               }
@@ -588,7 +588,7 @@ export default {
           label: {
             show: true,
             position: 'insideRight',
-            formatter: function(num) {
+            formatter: function (num) {
               if (num.value === 0) {
                 return '';
               }
@@ -812,7 +812,7 @@ export default {
       person_target: ''
     };
   },
-  mounted: function() {
+  mounted: function () {
     // console.log(this);
     const now = new Date();
     const year = now.getFullYear(); // 得到年份
@@ -840,7 +840,7 @@ export default {
     this.task_chart = echarts.init(document.getElementById('b_task'), 'white', {
       renderer: 'canvas'
     });
-    this.task_chart.on('click', function(params) {
+    this.task_chart.on('click', function (params) {
       // console.log(params["data"][0]);
       that.new_edate = params['data'][0];
       that.task_title = '';
@@ -854,10 +854,10 @@ export default {
     this.tasksummary_chart = echarts.init(
       document.getElementById('task_summary'),
       'white', {
-        renderer: 'canvas'
-      }
+      renderer: 'canvas'
+    }
     );
-    this.tasksummary_chart.on('click', function(params) {
+    this.tasksummary_chart.on('click', function (params) {
       // console.log(params["name"]);
       const temp = params['name'];
       // subject: this.task_level1_select,
@@ -876,19 +876,19 @@ export default {
     this.tasktype_pie_chart = echarts.init(
       document.getElementById('task_pie_subject'),
       'white', {
-        renderer: 'canvas'
-      }
+      renderer: 'canvas'
+    }
     );
     this.tasksummary_pie_chart = echarts.init(
       document.getElementById('task_pie_summary'),
       'white', {
-        renderer: 'canvas'
-      }
+      renderer: 'canvas'
+    }
     );
     this.freshright();
   },
   methods: {
-    freshright: function(event) {
+    freshright: function (event) {
       this.initoption();
       this.setbar();
       this.task_title = '';
@@ -903,13 +903,13 @@ export default {
       this.querytask('table');
       this.getperson_option();
     },
-    resetall: function() {
+    resetall: function () {
       this.task_title = '';
       this.tabs_select = 'summary';
       this.freshright();
     },
     // 初始化分类的下拉列表
-    initoption: function(event) {
+    initoption: function (event) {
       axios.get('/initoption').then((response) => {
         if (response.status === 200) {
           // console.log(response);
@@ -928,14 +928,14 @@ export default {
         }
       });
     },
-    getperson_option: function() {
+    getperson_option: function () {
       axios.get('/getperson_option').then((response) => {
         // console.log(response);
         this.person_option = response.data;
         this.copyperson_option = Object.assign(this.person_option);
       });
     },
-    personFilter: function(val) {
+    personFilter: function (val) {
       if (val) {
         this.person_option = this.copyperson_option.filter((item) => {
           // 如果直接包含输入值直接返回true
@@ -951,7 +951,7 @@ export default {
         this.person_option = this.copyperson_option;
       }
     },
-    deletetaskperson: function(event) {
+    deletetaskperson: function (event) {
       axios
         .post('/deletetaskperson', {
           task_id: this.s_task_id,
@@ -961,7 +961,7 @@ export default {
           this.persondata = response.data.arrays;
         });
     },
-    appendtaskperson: function() {
+    appendtaskperson: function () {
       axios
         .post('/appendtaskperson', {
           task_id: this.s_task_id,
@@ -973,7 +973,7 @@ export default {
           this.getperson_data(this.s_task_id);
         });
     },
-    getperson_data: function(task_id) {
+    getperson_data: function (task_id) {
       axios
         .post('/getperson_data', {
           task_id: task_id
@@ -988,7 +988,7 @@ export default {
           }
         });
     },
-    getfinishtask_data: function() {
+    getfinishtask_data: function () {
       axios
         .post('/getfinishtask_data', {
           task_id: this.s_task_id
@@ -997,14 +997,14 @@ export default {
           this.finishtaskdata = response.data;
         });
     },
-    tabclick: function(tab, event) {
+    tabclick: function (tab, event) {
       // console.log(tab);
       // console.log(this.s_task_id);
       if (tab.name === 'finishtask' && this.s_task_id !== '') {
         this.getfinishtask_data();
       }
     },
-    setdate: function(value) {
+    setdate: function (value) {
       if (this.isstime) return;
       // 使用传入的 value 判断是哪种触发（单日或范围），比读取 this 上的旧值更可靠
       if (Array.isArray(value)) {
@@ -1019,7 +1019,7 @@ export default {
       }
     },
     // 更新二级下拉列表
-    updatelevel2option: function(event) {
+    updatelevel2option: function (event) {
       // console.log('update option');
       this.task_level2_select = '';
       if (this.task_level1_select !== '' && this.task_sub_all_option && this.task_sub_all_option[this.task_level1_select]) {
@@ -1038,7 +1038,7 @@ export default {
         }
       }
     },
-    updatelevel3option: function(event) {
+    updatelevel3option: function (event) {
       // console.log('update option');
       this.task_level3_select = '';
       if (this.task_level2_select !== '' && this.level2_level3 && this.level2_level3[this.task_level2_select]) {
@@ -1048,7 +1048,8 @@ export default {
         if (temp) {
           this.task_level3_option = [];
           for (const i in temp) {
-            // console.log(temp[i]);
+            // 过滤掉空值，避免空选项
+            if (temp[i] === null || temp[i] === undefined || temp[i] === '') continue;
             this.task_level3_option.push({
               value: temp[i],
               label: temp[i]
@@ -1057,7 +1058,7 @@ export default {
         }
       }
     },
-    setbar: function(event) {
+    setbar: function (event) {
       // console.log('setbar');
       axios.get('/gettimedata').then((response) => {
         // console.log(response.data.result);
@@ -1073,7 +1074,7 @@ export default {
         }
       });
     },
-    settasksummary_bar: function(event) {
+    settasksummary_bar: function (event) {
       axios.get('/gettasksummary_bar').then((response) => {
         if (response.status === 200) {
           // 柱形图
@@ -1117,7 +1118,7 @@ export default {
     },
 
     // 展示进展面板
-    diashowperson: function(event) {
+    diashowperson: function (event) {
       if (this.task_level1_select !== '' && this.task_level2_select !== '') {
         this.dialogpersonVisible = true;
         axios
@@ -1138,7 +1139,7 @@ export default {
       }
     },
 
-    addrecommendperson: function(person_id) {
+    addrecommendperson: function (person_id) {
       // console.log(this.person.indexOf(person_id));
       if (this.person.indexOf(person_id) !== -1) {
         this.person.splice(this.person.indexOf(person_id), 1);
@@ -1148,14 +1149,14 @@ export default {
     },
 
     // 展示进展面板
-    diashowprocess: function(event) {
+    diashowprocess: function (event) {
       this.dialogpVisible = true;
       this.v_task_content = event.title;
       this.s_task_id = event.task_id;
     },
 
     // 调用进展接口
-    dialogaddprocess: function(event) {
+    dialogaddprocess: function (event) {
       // console.log(this.s_task_id);
       axios
         .post('/addprocess', {
@@ -1175,7 +1176,7 @@ export default {
           this.querytask('table');
         });
     },
-    adddir: function() {
+    adddir: function () {
       this.finishtaskform.dirtable.push({
         dir: this.dir_select,
         sub_dir: this.dir_sub_select,
@@ -1185,8 +1186,8 @@ export default {
       this.dir_sub_select = '';
       this.dir_hours = '';
     },
-    getdiroption: function() { },
-    updatediroption: function(event) {
+    getdiroption: function () { },
+    updatediroption: function (event) {
       // console.log('update option');
       this.dir_sub_select = '';
       if (this.dir_select !== '' && this.dir_sub_all_option && this.dir_sub_all_option[this.dir_select]) {
@@ -1206,7 +1207,7 @@ export default {
       }
     },
     // 添加任务
-    addtask: function(event) {
+    addtask: function (event) {
       if (this.task_level3_select === '' && this.task_level1_select === '项目') {
         this.$message({
           message: '选项目时，三级不能为空',
@@ -1237,7 +1238,7 @@ export default {
           });
       }
     },
-    finishtask: function(event) {
+    finishtask: function (event) {
       // console.log(event.task_id);
 
       axios
@@ -1253,7 +1254,7 @@ export default {
     },
     // 查询任务
     // TODO 是否查询已完成直接放到this的参数里面，query改成只有一个参数
-    querytask: function(mode) {
+    querytask: function (mode) {
       // console.log(this.query_duration);
       if (mode === 'graph') {
         this.isqueryall = true;
@@ -1275,7 +1276,7 @@ export default {
           this.tableData = response.data.arrays;
         });
     },
-    querytask_week: function() {
+    querytask_week: function () {
       axios.get('/querytask_week').then((response) => {
         if (response.status === 200) {
           this.tableData = response.data.arrays;
@@ -1284,7 +1285,7 @@ export default {
       });
     },
 
-    committask: function(event) {
+    committask: function (event) {
       // console.log(this.finishtaskform);
       this.dialogsVisible = false;
       axios
@@ -1350,7 +1351,7 @@ export default {
     },
 
     // 展示修改任务面板
-    updatetask: function(event) {
+    updatetask: function (event) {
       this.dialoguVisible = true;
       this.task_level1_select = event.level1;
       this.task_level2_select = event.level2;
@@ -1363,7 +1364,7 @@ export default {
     },
 
     // 调用修改任务接口
-    dialogupdate: function(event) {
+    dialogupdate: function (event) {
       // console.log(this.s_task_id);
       axios
         .post('/updatetask', {
@@ -1388,24 +1389,24 @@ export default {
           this.freshright();
         });
     },
-    removetask: function(event) {
+    removetask: function (event) {
       axios.get('/removetask').then((response) => {
         // console.log(response);
       });
     },
-    deletetask: function(event) {
+    deletetask: function (event) {
       // console.log(event.task_id);
       this.dialogcVisible = true;
       this.s_task_id = event.task_id;
     },
 
-    dirdeletetask: function(index, rows) {
+    dirdeletetask: function (index, rows) {
       // console.log(rows);
       rows.splice(index, 1);
       // this.finishtaskform.dirtable
     },
 
-    dialogdelete: function(event) {
+    dialogdelete: function (event) {
       // console.log(this.s_task_id);
       this.dialogcVisible = false;
       axios
@@ -1418,7 +1419,7 @@ export default {
         });
     },
     // TODO 增加逾期的黑色显示
-    isoverdate: function({
+    isoverdate: function ({
       row,
       column,
       rowIndex,
@@ -1443,14 +1444,14 @@ export default {
         }
       }
     },
-    closedialog: function(event) {
+    closedialog: function (event) {
       this.task_level1_select = '';
       this.task_level2_select = '';
       this.task_level3_select = '';
       this.process_content = '';
     },
     // TODO 点任务的逻辑重新梳理一下
-    showprocess: function(row, column, cell, event) {
+    showprocess: function (row, column, cell, event) {
       // console.log(column, column.label, row.task_id);
       if (
         column !== undefined &&
@@ -1483,7 +1484,7 @@ export default {
         this.getperson_data(this.s_task_id);
       }
     },
-    getprocess: function(task_id) {
+    getprocess: function (task_id) {
       axios
         .post('/getprocess', {
           task_id: task_id
@@ -1506,7 +1507,7 @@ export default {
           this.s_task_id = '';
         });
     },
-    deleteprocess: function(event) {
+    deleteprocess: function (event) {
       axios
         .post('/deleteprocess', {
           process_id: event.process_id
@@ -1517,7 +1518,7 @@ export default {
           }
         });
     },
-    resetprocess: function(event) {
+    resetprocess: function (event) {
       axios
         .post('/resetprocess', {
           process_id: event.process_id
@@ -1532,7 +1533,7 @@ export default {
           }
         });
     },
-    finishprocess: function(event) {
+    finishprocess: function (event) {
       axios
         .post('/finishprocess', {
           process_id: event.process_id
@@ -1547,14 +1548,14 @@ export default {
           }
         });
     },
-    showupdateprocess: function(event) {
+    showupdateprocess: function (event) {
       this.dialogprocessVisible = true;
       this.process_content = event.process_name;
       // console.log(event);
       this.process_id = event.process_id;
       this.s_task_id = event.task_id;
     },
-    updateprocess: function(event) {
+    updateprocess: function (event) {
       axios
         .post('/updateprocess', {
           process_id: this.process_id,

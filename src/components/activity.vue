@@ -33,6 +33,14 @@
                                         end-placeholder="结束日期"></el-date-picker>
                                 </el-form-item>
                                 <el-form-item>
+                                    <el-input v-model="resyncActivityId" size="mini" placeholder="Activity ID"
+                                        style="width:140px"></el-input>
+                                </el-form-item>
+                                <el-form-item>
+                                    <el-button type="info" size="mini"
+                                        @click="resyncSingleActivity">抓取单个活动路段</el-button>
+                                </el-form-item>
+                                <el-form-item>
                                     <el-button type="primary" size="mini" :loading="syncLoading"
                                         @click="syncStrava('incremental')">增量同步</el-button>
                                     <el-button type="warning" size="mini" :loading="syncLoading"
@@ -75,14 +83,20 @@
                         <span>健康度趋势</span>
                     </div>
                     <el-row :gutter="8" style="margin-bottom: 6px;">
-                        <el-col :span="8"><el-tag size="mini" type="info">今日负荷 {{ healthMetrics.today_load || 0
-                                }}</el-tag></el-col>
-                        <el-col :span="8"><el-tag size="mini" type="success">健康度 {{ healthMetrics.ctl_value || 0
-                        }}</el-tag></el-col>
-                        <el-col :span="8"><el-tag size="mini" type="warning">状态值 {{ healthMetrics.tsb_value || 0
-                        }}</el-tag></el-col>
+                        <el-col :span="2">
+                            <div style="display:flex;flex-direction:column;align-items:flex-start;">
+                                <el-tag size="mini" type="info" style="margin-bottom:8px;display:block;">今日负荷 {{
+                                    healthMetrics.today_load || 0 }}</el-tag>
+                                <el-tag size="mini" type="success" style="margin-bottom:8px;display:block;">健康度 {{
+                                    healthMetrics.ctl_value || 0 }}</el-tag>
+                                <el-tag size="mini" type="warning" style="display:block;">状态值 {{ healthMetrics.tsb_value
+                                    || 0 }}</el-tag>
+                            </div>
+                        </el-col>
+                        <el-col :span="22">
+                            <div ref="healthChart" style="height: 280px;"></div>
+                        </el-col>
                     </el-row>
-                    <div ref="healthChart" style="height: 240px;"></div>
                 </el-card>
             </el-col>
             <el-col :span="12" style="display: flex;">
@@ -98,29 +112,37 @@
                         </el-radio-group>
                     </div>
                     <el-row :gutter="8" style="margin-bottom: 6px;">
-                        <el-col :span="4"><el-tag size="mini">活动 {{ overview.activity_count || 0 }}</el-tag></el-col>
-                        <el-col :span="4"><el-tag size="mini" type="success">跑步 {{ overview.run_count || 0
-                                }}</el-tag></el-col>
-                        <el-col :span="4"><el-tag size="mini" type="primary">骑行 {{ overview.ride_count || 0
-                                }}</el-tag></el-col>
-                        <el-col :span="4"><el-tag size="mini" type="warning">跑步里程 {{ overview.run_distance_km || 0
-                                }}km</el-tag></el-col>
-                        <el-col :span="4"><el-tag size="mini" type="warning">骑行里程 {{ overview.ride_distance_km || 0
-                                }}km</el-tag></el-col>
-                        <el-col :span="4"><el-tag size="mini" type="danger">总负荷 {{ overview.total_exercise_load || 0
-                                }}</el-tag></el-col>
+                        <el-col :span="4">
+                            <div style="display:flex;flex-direction:column;align-items:flex-start;">
+                                <el-tag size="mini" style="margin-bottom:8px;display:block;">活动 {{
+                                    overview.activity_count || 0 }}</el-tag>
+                                <el-tag size="mini" type="success" style="margin-bottom:8px;display:block;">跑步 {{
+                                    overview.run_count || 0 }}</el-tag>
+                                <el-tag size="mini" type="primary" style="margin-bottom:8px;display:block;">骑行 {{
+                                    overview.ride_count || 0 }}</el-tag>
+                                <el-tag size="mini" type="warning" style="margin-bottom:8px;display:block;">跑步里程 {{
+                                    overview.run_distance_km || 0 }}km</el-tag>
+                                <el-tag size="mini" type="warning" style="margin-bottom:8px;display:block;">骑行里程 {{
+                                    overview.ride_distance_km || 0 }}km</el-tag>
+                                <el-tag size="mini" type="danger" style="display:block;">总负荷 {{
+                                    overview.total_exercise_load || 0 }}</el-tag>
+                            </div>
+                        </el-col>
+                        <el-col :span="20">
+                            <el-table :data="summaryRows" stripe size="mini" max-height="320" style="width: 100%">
+                                <el-table-column prop="period_label" label="周期" width="120"></el-table-column>
+                                <el-table-column prop="activity_count" label="活动数" width="90"></el-table-column>
+                                <el-table-column prop="run_count" label="跑步数" width="90"></el-table-column>
+                                <el-table-column prop="ride_count" label="骑行数" width="90"></el-table-column>
+                                <el-table-column prop="run_distance_km" label="跑步距离(km)" width="120"></el-table-column>
+                                <el-table-column prop="ride_distance_km" label="骑行距离(km)" width="120"></el-table-column>
+                                <el-table-column prop="total_duration_second" label="总时长(s)"
+                                    width="120"></el-table-column>
+                                <el-table-column prop="total_elevation_gain" label="总爬升" width="100"></el-table-column>
+                                <el-table-column prop="total_exercise_load" label="总负荷" width="100"></el-table-column>
+                            </el-table>
+                        </el-col>
                     </el-row>
-                    <el-table :data="summaryRows" stripe size="mini" max-height="220" style="width: 100%">
-                        <el-table-column prop="period_label" label="周期" width="120"></el-table-column>
-                        <el-table-column prop="activity_count" label="活动数" width="90"></el-table-column>
-                        <el-table-column prop="run_count" label="跑步数" width="90"></el-table-column>
-                        <el-table-column prop="ride_count" label="骑行数" width="90"></el-table-column>
-                        <el-table-column prop="run_distance_km" label="跑步距离(km)" width="120"></el-table-column>
-                        <el-table-column prop="ride_distance_km" label="骑行距离(km)" width="120"></el-table-column>
-                        <el-table-column prop="total_duration_second" label="总时长(s)" width="120"></el-table-column>
-                        <el-table-column prop="total_elevation_gain" label="总爬升" width="100"></el-table-column>
-                        <el-table-column prop="total_exercise_load" label="总负荷" width="100"></el-table-column>
-                    </el-table>
                 </el-card>
             </el-col>
         </el-row>
@@ -150,7 +172,7 @@
                         </el-form-item>
                     </el-form>
 
-                    <el-table :data="activityRows" stripe size="mini" style="width: 100%">
+                    <el-table :data="activityRows" stripe size="mini" style="width: 100%" max-height="520">
                         <el-table-column prop="start_time" label="开始时间" width="170"></el-table-column>
                         <el-table-column prop="activity_type" label="类型" width="80"></el-table-column>
                         <el-table-column prop="activity_name" label="名称" width="220"></el-table-column>
@@ -185,7 +207,7 @@
                         <div style="margin-bottom: 12px; color: #909399; font-size: 12px;">
                             当前活动ID：{{ selectedActivityId }}
                         </div>
-                        <el-table :data="runSegmentRows" stripe size="mini" style="width: 100%;">
+                        <el-table :data="runSegmentRows" stripe size="mini" style="width: 100%;" max-height="360">
                             <el-table-column prop="segment_name" label="路段名称" min-width="180"></el-table-column>
                             <el-table-column prop="start_time" label="开始时间" width="160"></el-table-column>
                             <el-table-column prop="duration_second" label="时长(s)" width="90"></el-table-column>
@@ -233,6 +255,8 @@ export default {
             pageSize: 10,
             selectedActivityId: null,
             runSegmentRows: []
+            ,
+            resyncActivityId: ''
         };
     },
     mounted: function () {
@@ -268,6 +292,19 @@ export default {
                 });
             });
         },
+        resyncSingleActivity: function () {
+            if (!this.resyncActivityId) {
+                this.$message.error('请先输入 activity_id');
+                return;
+            }
+            axios.post('/resync_activity_segments', {
+                activity_id: this.resyncActivityId
+            }).then(() => {
+                this.$message.success('已开始重抓，可在稍后查看结果');
+            }).catch(() => {
+                this.$message.error('启动重抓失败');
+            });
+        },
         loadExerciseLoadFilled: function () {
             axios.post('/query_activity_list', {
                 page_num: 1,
@@ -300,6 +337,11 @@ export default {
                 },
                 yAxis: {
                     type: 'value'
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%'
                 },
                 series: [
                     {
