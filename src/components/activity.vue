@@ -10,19 +10,19 @@
                         <el-col :span="16">
                             <el-descriptions :column="4" border size="mini">
                                 <el-descriptions-item label="最近同步时间">{{ syncStatus.created_at || '-'
-                                }}</el-descriptions-item>
+                                    }}</el-descriptions-item>
                                 <el-descriptions-item label="同步模式">{{ syncStatus.sync_mode || '-'
-                                }}</el-descriptions-item>
+                                    }}</el-descriptions-item>
                                 <el-descriptions-item label="同步状态">{{ syncStatus.status || '-' }}</el-descriptions-item>
                                 <el-descriptions-item label="活动负荷填充">{{ loadFilledText }}</el-descriptions-item>
                                 <el-descriptions-item label="抓取活动数">{{ syncSummary.fetched_activity_count || 0
-                                }}</el-descriptions-item>
+                                    }}</el-descriptions-item>
                                 <el-descriptions-item label="写入活动数">{{ syncSummary.saved_activity_count || 0
-                                }}</el-descriptions-item>
+                                    }}</el-descriptions-item>
                                 <el-descriptions-item label="跑步路段数">{{ syncSummary.saved_run_segment_count || 0
-                                }}</el-descriptions-item>
+                                    }}</el-descriptions-item>
                                 <el-descriptions-item label="骑行路段数">{{ syncSummary.saved_ride_segment_count || 0
-                                }}</el-descriptions-item>
+                                    }}</el-descriptions-item>
                             </el-descriptions>
                         </el-col>
                         <el-col :span="8">
@@ -60,17 +60,17 @@
                     </div>
                     <el-descriptions :column="2" border size="mini">
                         <el-descriptions-item label="骑行已完成(km)">{{ yearGoal.ride_distance_done_km || 0
-                        }}</el-descriptions-item>
+                            }}</el-descriptions-item>
                         <el-descriptions-item label="骑行完成率">{{ yearGoal.ride_completion_rate || 0
-                        }}%</el-descriptions-item>
+                            }}%</el-descriptions-item>
                         <el-descriptions-item label="骑行每日还需(km)">{{ yearGoal.ride_daily_required_km || 0
-                        }}</el-descriptions-item>
+                            }}</el-descriptions-item>
                         <el-descriptions-item label="跑步已完成(km)">{{ yearGoal.run_distance_done_km || 0
-                        }}</el-descriptions-item>
+                            }}</el-descriptions-item>
                         <el-descriptions-item label="跑步完成率">{{ yearGoal.run_completion_rate || 0
-                        }}%</el-descriptions-item>
+                            }}%</el-descriptions-item>
                         <el-descriptions-item label="跑步每日还需(km)">{{ yearGoal.run_daily_required_km || 0
-                        }}</el-descriptions-item>
+                            }}</el-descriptions-item>
                     </el-descriptions>
                 </el-card>
             </el-col>
@@ -81,6 +81,8 @@
                 <el-card class="compact-overview-card" style="width: 100%;">
                     <div slot="header">
                         <span>健康度趋势</span>
+                        <el-button style="float: right;" type="primary" size="mini" :loading="computingHealth"
+                            @click="computeHealthMetrics">计算健康度</el-button>
                     </div>
                     <el-row :gutter="8" style="margin-bottom: 6px;">
                         <el-col :span="2">
@@ -231,6 +233,7 @@ export default {
     data() {
         return {
             currentYear: new Date().getFullYear(),
+            computingHealth: false,
             syncLoading: false,
             healthChart: null,
             syncStatus: {},
@@ -290,6 +293,21 @@ export default {
                 this.$nextTick(() => {
                     this.renderHealthChart();
                 });
+            });
+        },
+        computeHealthMetrics: function () {
+            this.computingHealth = true;
+            axios.post('/compute_health_metrics', {}).then((response) => {
+                const data = response.data.data || {};
+                this.healthMetrics = data || { trend_list: [] };
+                this.$nextTick(() => {
+                    this.renderHealthChart();
+                });
+                this.$message.success('健康度计算已完成');
+            }).catch(() => {
+                this.$message.error('计算健康度失败');
+            }).finally(() => {
+                this.computingHealth = false;
             });
         },
         resyncSingleActivity: function () {
