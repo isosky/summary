@@ -244,6 +244,11 @@
                                     <el-option v-for="item in displayWatchlistOptions" :key="item.value"
                                         :label="item.label" :value="item.value"></el-option>
                                 </el-select>
+                                <el-date-picker v-model="chartDateRange" size="mini" type="daterange" unlink-panels
+                                    range-separator="至" start-placeholder="图表开始" end-placeholder="图表结束"
+                                    value-format="yyyy-MM-dd" class="chart-range-picker"></el-date-picker>
+                                <el-button size="mini" @click="applyLastHalfYearRange">近半年</el-button>
+                                <el-button size="mini" type="primary" @click="reloadChartsByRange">刷新图表</el-button>
                             </div>
                         </div>
                         <div class="review-chart-stack">
@@ -521,6 +526,7 @@ export default {
             watchlistOptions: [],
             selectedWatchSymbol: '',
             watchlistKeyword: '',
+            chartDateRange: [],
             entryForm: createEmptyEntryForm(),
             reviewForm: createEmptyReviewFormState(),
             emotionOptions: ['平静', '谨慎', '焦虑', '犹豫', '贪婪', '恐惧', '克制'],
@@ -677,6 +683,41 @@ export default {
             if (!this.entryForm.planType) {
                 this.entryForm.planType = '观察计划';
             }
+            this.$nextTick(() => this.initCharts());
+        },
+        formatDate(dateObj) {
+            const year = dateObj.getFullYear();
+            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const day = String(dateObj.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        },
+        applyLastHalfYearRange() {
+            const end = new Date();
+            const start = new Date(end.getTime());
+            start.setDate(start.getDate() - 180);
+            this.chartDateRange = [this.formatDate(start), this.formatDate(end)];
+            this.reloadChartsByRange();
+        },
+        reloadChartsByRange() {
+            this.$nextTick(() => this.initCharts());
+        },
+        getChartQueryDateRange() {
+            if (Array.isArray(this.chartDateRange) && this.chartDateRange.length >= 2) {
+                return {
+                    startDate: this.chartDateRange[0] || null,
+                    endDate: this.chartDateRange[1] || null
+                };
+            }
+            if (Array.isArray(this.entryForm.period) && this.entryForm.period.length >= 2) {
+                return {
+                    startDate: this.entryForm.period[0] || null,
+                    endDate: this.entryForm.period[1] || null
+                };
+            }
+            return {
+                startDate: null,
+                endDate: null
+            };
         },
 
         async loadPlanDetail(planCodeOrId) {
@@ -722,7 +763,10 @@ export default {
             if (!canLeave) {
                 return;
             }
-            this.saveCurrentPlan(false);
+            if (this.currentPlanId && this.planRecords[this.currentPlanId]) {
+                this.planRecords[this.currentPlanId] = this.buildPlanSnapshot();
+                this.updatePlanOptionLabel(this.currentPlanId);
+            }
             const newPlanId = `plan-${Date.now()}`;
             const newPlan = this.createEmptyPlanState();
             this.planRecords[newPlanId] = newPlan;
@@ -1228,6 +1272,9 @@ export default {
                 return;
             }
             this.entryForm = JSON.parse(JSON.stringify(snapshot.entryForm));
+            this.chartDateRange = Array.isArray(this.entryForm.period) && this.entryForm.period.length >= 2
+                ? [this.entryForm.period[0], this.entryForm.period[1]]
+                : [];
             this.reviewForm = JSON.parse(JSON.stringify(snapshot.reviewForm || this.createEmptyReviewForm()));
             this.modifications = JSON.parse(JSON.stringify(snapshot.modifications));
             this.executionRecords = JSON.parse(JSON.stringify(snapshot.executionRecords));
@@ -1589,13 +1636,7 @@ export default {
             if (!stockCode) {
                 return this.getDemoReviewChartData();
             }
-
-            let startDate = null;
-            let endDate = null;
-            if (Array.isArray(this.entryForm.period) && this.entryForm.period.length >= 2) {
-                startDate = this.entryForm.period[0] || null;
-                endDate = this.entryForm.period[1] || null;
-            }
+            const { startDate, endDate } = this.getChartQueryDateRange();
 
             try {
                 const resp = await marketApi.getKlineIndicators({
@@ -1639,6 +1680,12 @@ export default {
             }
         },
         getBaseChartOption(categories) {
+            const totalCount = (categories || []).length;
+            let startPercent = 0;
+            if (totalCount > 0) {
+                const keepCount = Math.min(120, totalCount);
+                startPercent = Math.max(0, Number((((totalCount - keepCount) / totalCount) * 100).toFixed(2)));
+            }
             return {
                 backgroundColor: '#0b1020',
                 animation: false,
@@ -1649,7 +1696,7 @@ export default {
                     left: 48,
                     right: 18,
                     top: 16,
-                    bottom: 30
+                    bottom: 52
                 },
                 xAxis: {
                     type: 'category',
@@ -1666,7 +1713,28 @@ export default {
                     axisLine: { lineStyle: { color: '#42506d' } },
                     axisLabel: { color: '#8b9bbd' },
                     splitLine: { lineStyle: { color: 'rgba(66, 80, 109, 0.25)' } }
-                }
+                },
+                dataZoom: [
+                    {
+                        type: 'inside',
+                        xAxisIndex: 0,
+                        start: startPercent,
+                        end: 100
+                    },
+                    {
+                        type: 'slider',
+                        xAxisIndex: 0,
+                        start: startPercent,
+                        end: 100,
+                        bottom: 10,
+                        height: 16,
+                        borderColor: '#42506d',
+                        backgroundColor: 'rgba(66, 80, 109, 0.2)',
+                        fillerColor: 'rgba(91, 140, 255, 0.28)',
+                        handleStyle: { color: '#94a3b8', borderColor: '#cbd5e1' },
+                        textStyle: { color: '#8b9bbd' }
+                    }
+                ]
             };
         },
         getCandlestickOption(chartData) {
@@ -1860,6 +1928,10 @@ export default {
 
 .watchlist-switcher {
     width: 220px;
+}
+
+.chart-range-picker {
+    width: 250px;
 }
 
 .eyebrow {
