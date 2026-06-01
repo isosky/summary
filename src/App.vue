@@ -96,25 +96,13 @@ export default {
     };
   },
   mounted: function () {
-    window.addEventListener('todo-auth-expired', this.handleAuthExpired);
-    const persistedAuthToken = window.localStorage.getItem('todo_auth_token');
-    if (persistedAuthToken && typeof axios.defaults.headers.common['Authorization'] === 'undefined') {
-      axios.defaults.headers.common['Authorization'] = persistedAuthToken;
-    }
+    // console.log(axios.defaults.headers.common["Authorization"]);
     if (typeof axios.defaults.headers.common['Authorization'] === 'undefined') {
       this.islogin = false;
     } else {
       this.islogin = true;
-      const routePath = this.$route.path || '/task';
-      this.defaultactive = routePath;
-      if (routePath === '/') {
-        this.defaultactive = '/task';
-        this.$router.replace('/task');
-      }
+      this.defaultactive = this.$route.path || '/task';
     }
-  },
-  beforeDestroy: function () {
-    window.removeEventListener('todo-auth-expired', this.handleAuthExpired);
   },
   watch: {
     '$route.path': function (val) {
@@ -122,10 +110,6 @@ export default {
     }
   },
   methods: {
-    handleAuthExpired: function () {
-      this.islogin = false;
-      this.todo_user_pass = '';
-    },
     moveto: function (index) {
       this.$router.push(index);
     },
@@ -139,7 +123,6 @@ export default {
           if (response.data.code === 200) {
             axios.defaults.headers.common['Authorization'] =
               response.data.token;
-            window.localStorage.setItem('todo_auth_token', response.data.token);
             this.islogin = true;
             this.defaultactive = '/task';
             this.$router.push('/task');
