@@ -17,6 +17,18 @@
               <i class="el-icon-data-analysis"></i>
               <span slot="title">财务分析</span>
             </el-menu-item>
+            <el-menu-item index="/investment_review">
+              <i class="el-icon-data-line"></i>
+              <span slot="title">投资复盘</span>
+            </el-menu-item>
+            <el-menu-item index="/market_watchlist">
+              <i class="el-icon-view"></i>
+              <span slot="title">观察池管理</span>
+            </el-menu-item>
+            <el-menu-item index="/market_sync_ops">
+              <i class="el-icon-refresh"></i>
+              <span slot="title">市场同步运维</span>
+            </el-menu-item>
             <el-menu-item index="/count">
               <i class="el-icon-s-data"></i>
               <span slot="title">统计</span>

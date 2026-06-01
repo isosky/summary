@@ -11,8 +11,12 @@
           <span>骑行路段字典维护</span>
         </div>
         <el-form inline size="mini">
+          <el-form-item label="路段ID">
+            <el-input v-model="rideSegmentDictForm.segment_id" placeholder="请输入需要保留的骑行路段ID"
+              style="width: 220px;"></el-input>
+          </el-form-item>
           <el-form-item label="路段名称">
-            <el-input v-model="rideSegmentDictForm.segment_name" placeholder="请输入需要保留的骑行路段名称"
+            <el-input v-model="rideSegmentDictForm.segment_name" placeholder="可选：手工填写名称，后续同步会自动刷新"
               style="width: 320px;"></el-input>
           </el-form-item>
           <el-form-item>
@@ -20,6 +24,7 @@
           </el-form-item>
         </el-form>
         <el-table :data="rideSegmentDictRows" stripe size="mini" style="width: 100%; margin-top: 12px;">
+          <el-table-column prop="segment_id" label="路段ID" min-width="120"></el-table-column>
           <el-table-column prop="segment_name" label="路段名称" min-width="260"></el-table-column>
           <el-table-column label="启用" width="100">
             <template slot-scope="scope">
@@ -88,6 +93,7 @@ export default {
     return {
       rideSegmentDictSaving: false,
       rideSegmentDictForm: {
+        segment_id: '',
         segment_name: ''
       },
       rideSegmentDictRows: [],
@@ -139,16 +145,18 @@ export default {
       });
     },
     saveRideSegmentDict: function () {
-      if (!this.rideSegmentDictForm.segment_name) {
-        this.$message.error('请先输入路段名称');
+      if (!this.rideSegmentDictForm.segment_id) {
+        this.$message.error('请先输入路段ID');
         return;
       }
       this.rideSegmentDictSaving = true;
       axios.post('/save_ride_segment_dict', {
+        segment_id: this.rideSegmentDictForm.segment_id,
         segment_name: this.rideSegmentDictForm.segment_name,
         is_enabled: 1
       }).then(() => {
         this.rideSegmentDictSaving = false;
+        this.rideSegmentDictForm.segment_id = '';
         this.rideSegmentDictForm.segment_name = '';
         this.getRideSegmentDict();
         this.queryAnalysis();
@@ -158,6 +166,7 @@ export default {
     },
     toggleRideSegmentDict: function (row, value) {
       axios.post('/save_ride_segment_dict', {
+        segment_id: row.segment_id,
         segment_name: row.segment_name,
         is_enabled: value ? 1 : 0
       }).then(() => {
