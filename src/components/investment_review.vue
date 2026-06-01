@@ -31,7 +31,7 @@
             </div>
         </section>
 
-        <el-tabs v-model="activeTab" class="workspace-tabs">
+        <el-tabs v-model="activeTab" class="workspace-tabs" :before-leave="handleBeforeTabLeave">
             <el-tab-pane label="录入页面" name="entry">
                 <div class="workspace-grid">
                     <section class="panel panel-main">
@@ -39,6 +39,7 @@
                             <div>
                                 <h2>计划与执行录入</h2>
                                 <p>一页完成计划建立、追加修改、执行记录与结束确认。</p>
+                                <p v-if="getDisplayStockCode()">当前标的：{{ getDisplayStockCode() }}</p>
                             </div>
                             <div class="header-actions">
                                 <el-button size="mini" type="primary" @click="saveCurrentPlan">保存计划</el-button>
@@ -133,7 +134,13 @@
                             <article v-for="item in modifications" :key="item.id" class="timeline-card">
                                 <div class="timeline-head">
                                     <span class="timeline-time">{{ item.time }}</span>
-                                    <el-tag :type="item.tagType" size="mini">{{ item.label }}</el-tag>
+                                    <div class="timeline-actions">
+                                        <el-tag :type="item.tagType" size="mini">{{ item.label }}</el-tag>
+                                        <el-button size="mini" type="text"
+                                            @click="openModificationDialog(item)">修改</el-button>
+                                        <el-button size="mini" type="text" class="danger-text-button"
+                                            @click="deleteModification(item)">删除</el-button>
+                                    </div>
                                 </div>
                                 <h3>{{ item.title }}</h3>
                                 <p>{{ item.reason }}</p>
@@ -164,6 +171,12 @@
                             <el-table-column prop="volume" label="数量" width="100"></el-table-column>
                             <el-table-column prop="position" label="仓位变化" width="120"></el-table-column>
                             <el-table-column prop="note" label="阶段性偏差"></el-table-column>
+                            <el-table-column label="操作" width="90">
+                                <template slot-scope="scope">
+                                    <el-button size="mini" type="text" class="danger-text-button"
+                                        @click="deleteExecution(scope.row)">删除</el-button>
+                                </template>
+                            </el-table-column>
                         </el-table>
                     </section>
 
@@ -220,10 +233,17 @@
                             <div>
                                 <h2>图表复盘区</h2>
                                 <p>按 K 线、成交量、RSI、MACD 四个独立图表自上而下展示，时间范围保持一致。</p>
+                                <p v-if="getDisplayStockCode()">当前标的：{{ getDisplayStockCode() }}</p>
                             </div>
                             <div class="header-actions">
-                                <el-tag type="success">日线</el-tag>
-                                <el-tag type="info">指标演示数据</el-tag>
+                                <el-select v-model="selectedWatchSymbol" size="mini" class="watchlist-switcher"
+                                    filterable clearable default-first-option placeholder="输入代码/名称快速选择"
+                                    :loading="watchlistLoading" :filter-method="handleWatchlistQuery"
+                                    @keyup.enter.native="selectFirstFilteredWatchSymbol"
+                                    @change="handleWatchSymbolChange">
+                                    <el-option v-for="item in displayWatchlistOptions" :key="item.value"
+                                        :label="item.label" :value="item.value"></el-option>
+                                </el-select>
                             </div>
                         </div>
                         <div class="review-chart-stack">
@@ -267,7 +287,7 @@
                                 <p>右侧展示结果摘要、主观反思、情绪记录和后续改进动作。</p>
                             </div>
                             <div class="header-actions">
-                                <el-button size="mini" type="primary" @click="saveCurrentPlan">保存复盘</el-button>
+                                <el-button size="mini" type="primary" @click="submitReview">保存复盘</el-button>
                             </div>
                         </div>
 
@@ -277,7 +297,8 @@
                             <div class="score-button-group">
                                 <el-button v-for="item in scoreOptions" :key="item" size="mini"
                                     :type="reviewSummary.score === item ? 'primary' : 'default'"
-                                    @click="setPlanScore(item)">{{ item }}分</el-button>
+                                    @click="setPlanScore(item)">{{ item
+                                    }}分</el-button>
                             </div>
                             <p>在复盘阶段直接给本轮计划打分，评价计划与执行的一致性。</p>
                         </div>
@@ -350,8 +371,8 @@
             </el-tab-pane>
         </el-tabs>
 
-        <el-dialog title="追加修改" :visible.sync="modificationDialogVisible" width="560px" destroy-on-close
-            :before-close="handleModificationDialogClose">
+        <el-dialog :title="modificationEditingId ? '修改记录' : '追加修改'" :visible.sync="modificationDialogVisible"
+            width="560px" destroy-on-close :before-close="handleModificationDialogClose">
             <el-form ref="modificationFormRef" :model="modificationForm" :rules="modificationRules" label-position="top"
                 size="small" class="dialog-form">
                 <el-form-item label="修改时间" prop="time">
@@ -432,6 +453,51 @@
 <script>
 import * as echarts from 'echarts';
 import api from '@/api/investment_review';
+import marketApi from '@/api/market_data';
+
+const LOCAL_PLAN_ID = 'plan-local';
+
+function createEmptyEntryForm() {
+    return {
+        stockCode: '',
+        stockName: '',
+        industry: '',
+        planType: '',
+        period: [],
+        openStrategy: '',
+        closeStrategy: '',
+        reason: '',
+        entryZone: '',
+        stopLoss: '',
+        targetPrice: '',
+        marketStatus: '',
+        sectorStatus: '',
+        tags: ''
+    };
+}
+
+function createEmptyReviewFormState() {
+    return {
+        didWell: '',
+        didWrong: '',
+        buyEmotion: '',
+        holdEmotion: '',
+        sellEmotion: '',
+        improvementAction: ''
+    };
+}
+
+function createEmptyReviewSummary() {
+    return {
+        status: '未开始执行',
+        score: 0,
+        pnl: '--',
+        pnlClass: '',
+        avgPrice: '--',
+        exitPrice: '--',
+        deviation: '暂无'
+    };
+}
 
 export default {
     data() {
@@ -440,54 +506,23 @@ export default {
             charts: {},
             modificationDialogVisible: false,
             executionDialogVisible: false,
-            currentPlanId: 'plan-a',
-            previousPlanId: 'plan-a',
+            modificationEditingId: null,
+            currentPlanId: LOCAL_PLAN_ID,
+            previousPlanId: LOCAL_PLAN_ID,
             planRecords: {},
-            reviewSummary: {
-                status: '执行中',
-                score: 4,
-                pnl: '+8.47%',
-                pnlClass: 'positive',
-                avgPrice: '18.46',
-                exitPrice: '20.12',
-                deviation: '轻微追价'
-            },
+            reviewDraftBaseline: '',
+            reviewSummary: createEmptyReviewSummary(),
             scoreOptions: [1, 2, 3, 4, 5],
             planTypeOptions: ['执行计划', '观察计划'],
             openStrategyOptions: ['趋势回调', '突破买入', '指标共振', '分批建仓'],
             closeStrategyOptions: ['目标止盈', '移动止盈', '止损卖出', '趋势终结卖出'],
-            planOptions: [
-                { id: 'plan-a', label: '宁德时代 | 2026-05 趋势回调' },
-                { id: 'plan-b', label: '招商银行 | 观察计划' },
-                { id: 'plan-c', label: '沪深300ETF | 模拟计划' }
-            ],
-            entryForm: {
-                stockCode: '300750.SZ',
-                stockName: '宁德时代',
-                industry: '新能源电池',
-                planType: '执行计划',
-                period: ['2026-05-08', '2026-05-29'],
-                openStrategy: '趋势回调',
-                closeStrategy: '目标止盈',
-                reason:
-                    '股价在中期均线上方止跌，回踩后量能收缩，随后两日出现放量反包，符合趋势回调后的再次启动条件。',
-                entryZone: '17.80 - 18.10',
-                stopLoss: '17.20',
-                targetPrice: '20.20',
-                marketStatus:
-                    '指数维持震荡上行，站在关键均线之上，短线情绪偏修复。',
-                sectorStatus:
-                    '新能源赛道回暖，板块成交额进入当日排名前列，龙头股有带动效应。',
-                tags: '短线趋势, 板块修复, 二次启动'
-            },
-            reviewForm: {
-                didWell: '趋势启动后按计划分批建仓，且在放量突破后没有过度追高。',
-                didWrong: '第二次加仓略早，修改计划时仍受“怕踏空”影响，止损上调幅度偏大。',
-                buyEmotion: '谨慎',
-                holdEmotion: '焦虑',
-                sellEmotion: '克制',
-                improvementAction: '下次修改计划前，先检查 RSI 是否已进入高位区，避免在指标钝化时继续抬高止损位。'
-            },
+            planOptions: [],
+            watchlistLoading: false,
+            watchlistOptions: [],
+            selectedWatchSymbol: '',
+            watchlistKeyword: '',
+            entryForm: createEmptyEntryForm(),
+            reviewForm: createEmptyReviewFormState(),
             emotionOptions: ['平静', '谨慎', '焦虑', '犹豫', '贪婪', '恐惧', '克制'],
             modificationForm: {
                 time: '',
@@ -517,66 +552,29 @@ export default {
                 volume: [{ required: true, message: '请填写数量', trigger: 'blur' }],
                 position: [{ required: true, message: '请填写仓位变化', trigger: 'blur' }]
             },
-            modifications: [
-                {
-                    id: 1,
-                    time: '05-13 10:20',
-                    label: '原计划',
-                    tagType: 'info',
-                    title: '回踩 18.00 一线试仓',
-                    reason: '等待回踩 10 日线后缩量企稳，首笔只打 30% 仓位。',
-                    plan: '18.00 附近试仓，止损 17.20，目标 19.80'
-                },
-                {
-                    id: 2,
-                    time: '05-16 14:05',
-                    label: '第 1 次修改',
-                    tagType: 'warning',
-                    title: '突破确认后提高买入区间',
-                    reason: 'MACD 零轴上方金叉，放量突破平台上沿，确认强于原先预期。',
-                    plan: '将加仓区上调到 18.55 - 18.75，目标位提高到 20.20'
-                },
-                {
-                    id: 3,
-                    time: '05-23 09:48',
-                    label: '第 2 次修改',
-                    tagType: 'danger',
-                    title: '收紧止损保护利润',
-                    reason: '股价快速拉升后 RSI 接近高位，改为跟随 5 日线保护浮盈。',
-                    plan: '止损位由 17.20 提高到 18.90，移动止盈'
-                }
-            ],
-            executionRecords: [
-                {
-                    time: '05-14 10:05',
-                    action: '买入',
-                    price: '18.02',
-                    volume: '300 股',
-                    position: '30%',
-                    note: '按原计划首笔试仓'
-                },
-                {
-                    time: '05-16 14:12',
-                    action: '加仓',
-                    price: '18.68',
-                    volume: '500 股',
-                    position: '80%',
-                    note: '比计划略高，属于突破确认后跟随'
-                },
-                {
-                    time: '05-28 10:36',
-                    action: '卖出',
-                    price: '20.12',
-                    volume: '800 股',
-                    position: '0%',
-                    note: '达到目标位，按计划退出'
-                }
-            ]
+            modifications: [],
+            executionRecords: []
         };
+    },
+    computed: {
+        displayWatchlistOptions() {
+            const keyword = String(this.watchlistKeyword || '').trim().toUpperCase();
+            if (!keyword) {
+                return this.watchlistOptions;
+            }
+            return this.watchlistOptions.filter((item) => {
+                const code = String(item.displayCode || '').toUpperCase();
+                const name = String(item.symbolName || '').toUpperCase();
+                const type = String(item.symbolType || '').toUpperCase();
+                return code.includes(keyword) || name.includes(keyword) || type.includes(keyword);
+            });
+        }
     },
     mounted() {
         this.initCharts();
         window.addEventListener('resize', this.handleResize);
+        window.addEventListener('beforeunload', this.handleBeforeUnload);
+        this.loadWatchlistOptions();
         // try to load remote plans; fallback to local store on failure
         this.loadRemotePlans().catch(() => {
             this.initializePlanStore();
@@ -584,6 +582,7 @@ export default {
     },
     beforeDestroy() {
         window.removeEventListener('resize', this.handleResize);
+        window.removeEventListener('beforeunload', this.handleBeforeUnload);
         this.disposeCharts();
     },
     methods: {
@@ -603,9 +602,17 @@ export default {
             this.charts = {};
         },
         initializePlanStore() {
+            if (!this.currentPlanId) {
+                this.currentPlanId = LOCAL_PLAN_ID;
+            }
             this.planRecords = {
-                [this.currentPlanId]: this.buildPlanSnapshot()
+                [this.currentPlanId]: this.createEmptyPlanState()
             };
+            this.planOptions = [{
+                id: this.currentPlanId,
+                label: this.buildPlanLabel(this.planRecords[this.currentPlanId].entryForm)
+            }];
+            this.applyPlanSnapshot(this.planRecords[this.currentPlanId]);
             this.previousPlanId = this.currentPlanId;
             this.updatePlanOptionLabel(this.currentPlanId);
         },
@@ -617,14 +624,59 @@ export default {
             }
             const rows = resp.data.data || [];
             if (!rows || rows.length === 0) {
-                // no remote plans, keep local defaults
+                this.initializePlanStore();
                 return;
             }
-            this.planOptions = rows.map((row) => ({ id: row.plan_code || String(row.id), label: `${row.stock_name || '未命名'} | ${row.stock_code || ''}` }));
+            this.planOptions = rows.map((row) => ({ id: row.plan_code || String(row.id), label: `${row.stock_name || '未命名'} | ${this.stripMarketSuffix(row.stock_code) || ''}` }));
             // choose first plan by default
             this.currentPlanId = this.planOptions[0].id;
             this.previousPlanId = this.currentPlanId;
             await this.loadPlanDetail(this.currentPlanId);
+        },
+        async loadWatchlistOptions() {
+            this.watchlistLoading = true;
+            try {
+                const resp = await marketApi.listWatchlist({ enabled: 1 });
+                if (!resp || !resp.data || resp.data.code !== 200) {
+                    throw new Error((resp && resp.data && resp.data.message) || '加载观察池失败');
+                }
+                const rows = resp.data.data || [];
+                this.watchlistOptions = rows.map((row) => ({
+                    value: row.symbol_code,
+                    displayCode: this.stripMarketSuffix(row.symbol_code),
+                    label: `${this.stripMarketSuffix(row.symbol_code)} | ${row.symbol_name || '未命名'} | ${row.symbol_type || ''}`,
+                    symbolName: row.symbol_name || '',
+                    symbolType: row.symbol_type || ''
+                }));
+            } catch (err) {
+                console.error(err);
+            } finally {
+                this.watchlistLoading = false;
+            }
+        },
+        handleWatchlistQuery(query) {
+            this.watchlistKeyword = query;
+        },
+        selectFirstFilteredWatchSymbol() {
+            if (!this.displayWatchlistOptions.length) {
+                return;
+            }
+            const first = this.displayWatchlistOptions[0];
+            this.selectedWatchSymbol = first.value;
+            this.handleWatchSymbolChange(first.value);
+        },
+        handleWatchSymbolChange(symbolCode) {
+            if (!symbolCode) {
+                return;
+            }
+            const selected = this.watchlistOptions.find((item) => item.value === symbolCode);
+            this.entryForm.stockCode = this.stripMarketSuffix(symbolCode);
+            if (selected && selected.symbolName) {
+                this.entryForm.stockName = selected.symbolName;
+            }
+            if (!this.entryForm.planType) {
+                this.entryForm.planType = '观察计划';
+            }
         },
 
         async loadPlanDetail(planCodeOrId) {
@@ -633,50 +685,43 @@ export default {
                 throw new Error('无法获取计划详情');
             }
             const data = resp.data.data || {};
-            // build a snapshot compatible with applyPlanSnapshot
-            const snapshot = {
-                entryForm: data.plan || {},
-                reviewForm: (data.review && data.review.review_snapshot_json) ? JSON.parse(data.review.review_snapshot_json).reviewForm : this.createEmptyReviewForm(),
-                modifications: (data.modifications || []).map((m) => ({
-                    id: m.id,
-                    time: m.modification_time,
-                    label: m.modification_label || '修改',
-                    tagType: m.tag_type,
-                    title: m.title,
-                    reason: m.reason,
-                    plan: m.updated_plan
-                })),
-                executionRecords: (data.executions || []).map((e) => ({
-                    time: e.execution_time,
-                    action: e.action,
-                    price: e.price,
-                    volume: e.volume,
-                    position: e.position_text || e.position,
-                    note: e.note
-                })),
-                reviewSummary: {
-                    status: (data.review && data.review.review_status) || '未开始',
-                    score: (data.plan && data.plan.plan_score) || 0,
-                    pnl: (data.review && data.review.realized_pnl_ratio) ? String(data.review.realized_pnl_ratio) + '%' : '--',
-                    pnlClass: (data.review && data.review.realized_pnl_amount > 0) ? 'positive' : (data.review && data.review.realized_pnl_amount < 0 ? 'negative' : ''),
-                    avgPrice: (data.review && data.review.avg_entry_price) || '--',
-                    exitPrice: (data.review && data.review.exit_price) || '--',
-                    deviation: (data.review && data.review.execution_deviation) || '暂无'
-                }
-            };
-            this.planRecords[this.currentPlanId] = snapshot;
-            this.applyPlanSnapshot(snapshot);
-            this.updatePlanOptionLabel(this.currentPlanId);
+            const snapshot = this.buildRemoteSnapshot(data);
+            this.planRecords[planCodeOrId] = snapshot;
+            if (this.currentPlanId === planCodeOrId) {
+                this.applyPlanSnapshot(snapshot);
+                this.updatePlanOptionLabel(this.currentPlanId);
+            }
         },
-        handlePlanChange(newPlanId) {
-            if (this.previousPlanId && this.planRecords[this.previousPlanId]) {
+        async handlePlanChange(newPlanId) {
+            if (newPlanId === this.previousPlanId) {
+                return;
+            }
+            const canLeave = await this.confirmDiscardReviewChanges();
+            if (!canLeave) {
+                this.currentPlanId = this.previousPlanId;
+                return;
+            }
+            if (this.previousPlanId && this.planRecords[this.previousPlanId] && !this.hasPendingReviewChanges()) {
                 this.planRecords[this.previousPlanId] = this.buildPlanSnapshot();
                 this.updatePlanOptionLabel(this.previousPlanId);
+            }
+            if (!this.planRecords[newPlanId]) {
+                try {
+                    await this.loadPlanDetail(newPlanId);
+                } catch (err) {
+                    console.error(err);
+                    this.$message({ message: '加载计划详情失败', type: 'error' });
+                    return;
+                }
             }
             this.applyPlanSnapshot(this.planRecords[newPlanId]);
             this.previousPlanId = newPlanId;
         },
-        createNewPlan() {
+        async createNewPlan() {
+            const canLeave = await this.confirmDiscardReviewChanges();
+            if (!canLeave) {
+                return;
+            }
             this.saveCurrentPlan(false);
             const newPlanId = `plan-${Date.now()}`;
             const newPlan = this.createEmptyPlanState();
@@ -694,9 +739,15 @@ export default {
             });
         },
         async saveCurrentPlan(showMessage = true) {
+            try {
+                this.entryForm.stockCode = this.normalizeSymbolCodeForSubmit(this.entryForm.stockCode);
+            } catch (err) {
+                this.$message({ message: err.message || '股票代码格式错误', type: 'error' });
+                return null;
+            }
             this.planRecords[this.currentPlanId] = this.buildPlanSnapshot();
             this.updatePlanOptionLabel(this.currentPlanId);
-            const payload = Object.assign({}, this.planRecords[this.currentPlanId], { currentPlanId: this.currentPlanId });
+            const payload = this.buildPersistPayload(this.planRecords[this.currentPlanId], this.currentPlanId);
             try {
                 const resp = await api.saveBundle(payload);
                 if (resp && resp.data && resp.data.code === 200) {
@@ -711,9 +762,15 @@ export default {
                             this.currentPlanId = newCode;
                         }
                     }
+                    const snapshot = this.buildRemoteSnapshot(data);
+                    this.planRecords[this.currentPlanId] = snapshot;
+                    this.applyPlanSnapshot(snapshot);
+                    this.previousPlanId = this.currentPlanId;
+                    this.updatePlanOptionLabel(this.currentPlanId);
                     if (showMessage) {
                         this.$message({ message: '计划已保存。', type: 'success' });
                     }
+                    return data;
                 } else {
                     this.$message({ message: (resp && resp.data && resp.data.message) || '保存失败', type: 'error' });
                 }
@@ -721,55 +778,191 @@ export default {
                 console.error(err);
                 this.$message({ message: '保存时发生错误', type: 'error' });
             }
+            return null;
         },
-        openModificationDialog() {
-            this.resetModificationForm();
+        openModificationDialog(item = null) {
+            if (item) {
+                this.modificationEditingId = item.id || null;
+                this.modificationForm = {
+                    time: item.time || this.getDefaultTime(),
+                    title: item.title || '',
+                    reason: item.reason || '',
+                    plan: item.plan || '',
+                    tagType: item.tagType || 'warning'
+                };
+                if (this.$refs.modificationFormRef) {
+                    this.$refs.modificationFormRef.clearValidate();
+                }
+            } else {
+                this.resetModificationForm();
+            }
             this.modificationDialogVisible = true;
         },
         setPlanScore(score) {
             this.reviewSummary.score = score;
-            this.saveCurrentPlan(false);
         },
         openExecutionDialog() {
             this.resetExecutionForm();
             this.executionDialogVisible = true;
         },
+        async submitReview(showMessage = true) {
+            const currentReviewForm = JSON.parse(JSON.stringify(this.reviewForm));
+            const currentReviewSummary = JSON.parse(JSON.stringify(this.reviewSummary));
+            const savedPlan = await this.saveCurrentPlan(false);
+            if (!savedPlan) {
+                return;
+            }
+            this.reviewForm = currentReviewForm;
+            this.reviewSummary = currentReviewSummary;
+            try {
+                const resp = await api.saveReview({
+                    currentPlanId: this.currentPlanId,
+                    plan_code: this.currentPlanId,
+                    entryForm: this.entryForm,
+                    reviewForm: this.reviewForm,
+                    reviewSummary: this.reviewSummary,
+                    modifications: this.modifications,
+                    executionRecords: this.executionRecords
+                });
+                if (!resp || !resp.data || resp.data.code !== 200) {
+                    throw new Error((resp && resp.data && resp.data.message) || '保存复盘失败');
+                }
+                const snapshot = this.buildRemoteSnapshot(resp.data.data || {});
+                this.planRecords[this.currentPlanId] = snapshot;
+                this.applyPlanSnapshot(snapshot);
+                this.updatePlanOptionLabel(this.currentPlanId);
+                if (showMessage) {
+                    this.$message({ message: '复盘已保存并完成回读。', type: 'success' });
+                }
+            } catch (err) {
+                console.error(err);
+                this.$message({ message: err.message || '保存复盘失败', type: 'error' });
+            }
+        },
+        async deleteModification(item) {
+            if (!item || !item.id) {
+                return;
+            }
+            try {
+                await this.$confirm('确认删除这条计划修改记录吗？删除后不再参与统计。', '提示', {
+                    type: 'warning'
+                });
+                const resp = await api.deleteModification({
+                    plan_code: this.currentPlanId,
+                    currentPlanId: this.currentPlanId,
+                    modification_id: item.id
+                });
+                if (!resp || !resp.data || resp.data.code !== 200) {
+                    throw new Error((resp && resp.data && resp.data.message) || '删除修改记录失败');
+                }
+                const snapshot = this.buildRemoteSnapshot(resp.data.data || {});
+                this.planRecords[this.currentPlanId] = snapshot;
+                this.applyPlanSnapshot(snapshot);
+                this.$message({ message: '修改记录已删除。', type: 'success' });
+            } catch (err) {
+                if (err === 'cancel') {
+                    return;
+                }
+                console.error(err);
+                this.$message({ message: err.message || '删除修改记录失败', type: 'error' });
+            }
+        },
         submitModification() {
-            this.$refs.modificationFormRef.validate((valid) => {
+            this.$refs.modificationFormRef.validate(async (valid) => {
                 if (!valid) {
                     return;
                 }
-                this.modifications.unshift({
-                    id: Date.now(),
+                const modification = {
+                    id: this.modificationEditingId,
                     time: this.modificationForm.time,
-                    label: '新增修改',
+                    label: this.modificationEditingId ? '修改' : '新增修改',
                     tagType: this.modificationForm.tagType,
                     title: this.modificationForm.title,
                     reason: this.modificationForm.reason,
                     plan: this.modificationForm.plan
-                });
-                this.modificationDialogVisible = false;
-                this.resetModificationForm();
-                this.saveCurrentPlan(false);
+                };
+                try {
+                    const resp = await api.saveModification({
+                        plan_code: this.currentPlanId,
+                        currentPlanId: this.currentPlanId,
+                        modification
+                    });
+                    if (!resp || !resp.data || resp.data.code !== 200) {
+                        throw new Error((resp && resp.data && resp.data.message) || '保存修改失败');
+                    }
+                    const snapshot = this.buildRemoteSnapshot(resp.data.data || {});
+                    this.planRecords[this.currentPlanId] = snapshot;
+                    this.applyPlanSnapshot(snapshot);
+                    this.modificationDialogVisible = false;
+                    const wasEditing = Boolean(this.modificationEditingId);
+                    this.resetModificationForm();
+                    this.$message({ message: wasEditing ? '修改记录已更新。' : '修改已保存。', type: 'success' });
+                } catch (err) {
+                    console.error(err);
+                    this.$message({ message: err.message || '保存修改失败', type: 'error' });
+                }
             });
         },
+        async deleteExecution(item) {
+            if (!item || !item.id) {
+                return;
+            }
+            try {
+                await this.$confirm('确认删除这条执行记录吗？删除后不会参与统计。', '提示', {
+                    type: 'warning'
+                });
+                const resp = await api.deleteExecution({
+                    plan_code: this.currentPlanId,
+                    currentPlanId: this.currentPlanId,
+                    execution_id: item.id
+                });
+                if (!resp || !resp.data || resp.data.code !== 200) {
+                    throw new Error((resp && resp.data && resp.data.message) || '删除执行记录失败');
+                }
+                const snapshot = this.buildRemoteSnapshot(resp.data.data || {});
+                this.planRecords[this.currentPlanId] = snapshot;
+                this.applyPlanSnapshot(snapshot);
+                this.$message({ message: '执行记录已删除。', type: 'success' });
+            } catch (err) {
+                if (err === 'cancel') {
+                    return;
+                }
+                console.error(err);
+                this.$message({ message: err.message || '删除执行记录失败', type: 'error' });
+            }
+        },
         submitExecution() {
-            this.$refs.executionFormRef.validate((valid) => {
+            this.$refs.executionFormRef.validate(async (valid) => {
                 if (!valid) {
                     return;
                 }
-                this.executionRecords.unshift({
+                const execution = {
                     time: this.executionForm.time,
                     action: this.executionForm.action,
                     price: this.executionForm.price,
                     volume: this.executionForm.volume,
                     position: this.executionForm.position,
                     note: this.executionForm.note || '待补充执行说明'
-                });
-                this.reviewSummary.status = '执行中';
-                this.executionDialogVisible = false;
-                this.resetExecutionForm();
-                this.saveCurrentPlan(false);
+                };
+                try {
+                    const resp = await api.saveExecution({
+                        plan_code: this.currentPlanId,
+                        currentPlanId: this.currentPlanId,
+                        execution
+                    });
+                    if (!resp || !resp.data || resp.data.code !== 200) {
+                        throw new Error((resp && resp.data && resp.data.message) || '保存执行失败');
+                    }
+                    const snapshot = this.buildRemoteSnapshot(resp.data.data || {});
+                    this.planRecords[this.currentPlanId] = snapshot;
+                    this.applyPlanSnapshot(snapshot);
+                    this.executionDialogVisible = false;
+                    this.resetExecutionForm();
+                    this.$message({ message: '执行已保存。', type: 'success' });
+                } catch (err) {
+                    console.error(err);
+                    this.$message({ message: err.message || '保存执行失败', type: 'error' });
+                }
             });
         },
         finishExecution() {
@@ -810,6 +1003,51 @@ export default {
                 this.resetExecutionForm();
             }).catch(() => { });
         },
+        handleBeforeUnload(event) {
+            if (!this.hasPendingReviewChanges()) {
+                return undefined;
+            }
+            const message = '复盘内容尚未保存，确认离开吗？';
+            event.preventDefault();
+            event.returnValue = message;
+            return message;
+        },
+        handleBeforeTabLeave(activeName, oldName) {
+            if (activeName === 'review') {
+                this.$nextTick(() => this.initCharts());
+            }
+            if (oldName !== 'review' || !this.hasPendingReviewChanges()) {
+                return true;
+            }
+            return this.$confirm('复盘内容尚未保存，确认离开当前页签吗？', '提示', {
+                type: 'warning'
+            }).then(() => true).catch(() => false);
+        },
+        async confirmDiscardReviewChanges() {
+            if (!this.hasPendingReviewChanges()) {
+                return true;
+            }
+            try {
+                await this.$confirm('复盘内容尚未保存，切换计划后将丢失当前改动，是否继续？', '提示', {
+                    type: 'warning'
+                });
+                return true;
+            } catch (err) {
+                return false;
+            }
+        },
+        buildReviewDraftSignature() {
+            return JSON.stringify({
+                score: this.reviewSummary.score,
+                reviewForm: this.reviewForm,
+            });
+        },
+        syncReviewDraftBaseline() {
+            this.reviewDraftBaseline = this.buildReviewDraftSignature();
+        },
+        hasPendingReviewChanges() {
+            return this.buildReviewDraftSignature() !== this.reviewDraftBaseline;
+        },
         isModificationDirty() {
             return Boolean(
                 this.modificationForm.time ||
@@ -829,6 +1067,7 @@ export default {
             );
         },
         resetModificationForm() {
+            this.modificationEditingId = null;
             this.modificationForm = {
                 time: this.getDefaultTime(),
                 title: '',
@@ -867,6 +1106,123 @@ export default {
                 reviewSummary: this.reviewSummary
             }));
         },
+        buildPersistPayload(snapshot, currentPlanId) {
+            const currentYear = String(new Date().getFullYear());
+            const normalizeDateTime = (value) => {
+                const text = String(value || '').trim();
+                if (!text) {
+                    return '';
+                }
+                if (/^\d{4}-\d{2}-\d{2}( \d{2}:\d{2}(?::\d{2})?)?$/.test(text)) {
+                    return text.length === 16 ? `${text}:00` : text;
+                }
+                if (/^\d{2}-\d{2} \d{2}:\d{2}$/.test(text)) {
+                    return `${currentYear}-${text}:00`;
+                }
+                if (/^\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(text)) {
+                    return `${currentYear}-${text}`;
+                }
+                return text;
+            };
+
+            return {
+                currentPlanId,
+                entryForm: snapshot.entryForm,
+                reviewSummary: {
+                    status: (snapshot.reviewSummary && snapshot.reviewSummary.status) || '未开始执行'
+                },
+                modifications: (snapshot.modifications || []).map((item) => Object.assign({}, item, {
+                    time: normalizeDateTime(item.time)
+                })),
+                executionRecords: (snapshot.executionRecords || []).map((item) => Object.assign({}, item, {
+                    time: normalizeDateTime(item.time)
+                }))
+            };
+        },
+        buildRemoteSnapshot(data) {
+            const plan = data.plan || {};
+            const review = data.review || {};
+            let snapshot = null;
+            let reviewSnapshot = null;
+            if (plan.current_plan_snapshot_json) {
+                try {
+                    snapshot = JSON.parse(plan.current_plan_snapshot_json);
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+            if (review.review_snapshot_json) {
+                try {
+                    reviewSnapshot = JSON.parse(review.review_snapshot_json);
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+
+            const fallbackEntryForm = {
+                stockCode: plan.stock_code || '',
+                stockName: plan.stock_name || '',
+                industry: plan.industry || '',
+                planType: plan.plan_type || '',
+                period: [plan.period_start || '', plan.period_end || ''].filter(Boolean),
+                openStrategy: plan.open_strategy || '',
+                closeStrategy: plan.close_strategy || '',
+                reason: plan.reason || '',
+                entryZone: plan.entry_zone || '',
+                stopLoss: plan.stop_loss || '',
+                targetPrice: plan.target_price || '',
+                marketStatus: plan.market_status || '',
+                sectorStatus: plan.sector_status || '',
+                tags: plan.tags_text || ''
+            };
+
+            const modifications = (data.modifications || []).map((m) => ({
+                id: m.id,
+                time: m.modification_time,
+                label: m.modification_label || '修改',
+                tagType: m.tag_type,
+                title: m.title,
+                reason: m.reason,
+                plan: m.updated_plan
+            }));
+
+            const executionRecords = (data.executions || []).map((e) => ({
+                id: e.id,
+                time: e.execution_time,
+                action: e.action,
+                price: e.price,
+                volume: e.volume,
+                position: e.position_text || '',
+                note: e.note
+            }));
+
+            const reviewSummary = {
+                status: review.review_status || plan.plan_status || '未开始执行',
+                score: plan.plan_score || 0,
+                pnl: review.realized_pnl_ratio ? `${review.realized_pnl_ratio}%` : '--',
+                pnlClass: review.realized_pnl_amount > 0 ? 'positive' : (review.realized_pnl_amount < 0 ? 'negative' : ''),
+                avgPrice: review.avg_entry_price || '--',
+                exitPrice: review.exit_price || '--',
+                deviation: review.execution_deviation || '暂无'
+            };
+
+            const fallbackReviewForm = {
+                didWell: review.did_well || '',
+                didWrong: review.did_wrong || '',
+                buyEmotion: review.buy_emotion || '',
+                holdEmotion: review.hold_emotion || '',
+                sellEmotion: review.sell_emotion || '',
+                improvementAction: review.improvement_action || ''
+            };
+
+            return {
+                entryForm: (snapshot && snapshot.entryForm) || fallbackEntryForm,
+                reviewForm: (reviewSnapshot && reviewSnapshot.reviewForm) || (snapshot && snapshot.reviewForm) || fallbackReviewForm || this.createEmptyReviewForm(),
+                modifications: modifications.length ? modifications : ((snapshot && snapshot.modifications) || []),
+                executionRecords: executionRecords.length ? executionRecords : ((snapshot && snapshot.executionRecords) || []),
+                reviewSummary: Object.assign({}, createEmptyReviewSummary(), (snapshot && snapshot.reviewSummary) || {}, (reviewSnapshot && reviewSnapshot.reviewSummary) || {}, reviewSummary)
+            };
+        },
         applyPlanSnapshot(snapshot) {
             if (!snapshot) {
                 return;
@@ -876,53 +1232,55 @@ export default {
             this.modifications = JSON.parse(JSON.stringify(snapshot.modifications));
             this.executionRecords = JSON.parse(JSON.stringify(snapshot.executionRecords));
             this.reviewSummary = JSON.parse(JSON.stringify(snapshot.reviewSummary));
+            this.syncReviewDraftBaseline();
+            this.$nextTick(() => this.initCharts());
         },
         createEmptyReviewForm() {
-            return {
-                didWell: '',
-                didWrong: '',
-                buyEmotion: '',
-                holdEmotion: '',
-                sellEmotion: '',
-                improvementAction: ''
-            };
+            return createEmptyReviewFormState();
         },
         createEmptyPlanState() {
             return {
-                entryForm: {
-                    stockCode: '',
-                    stockName: '',
-                    industry: '',
-                    planType: '执行计划',
-                    period: [],
-                    openStrategy: this.openStrategyOptions[0],
-                    closeStrategy: this.closeStrategyOptions[0],
-                    reason: '',
-                    entryZone: '',
-                    stopLoss: '',
-                    targetPrice: '',
-                    marketStatus: '',
-                    sectorStatus: '',
-                    tags: ''
-                },
+                entryForm: createEmptyEntryForm(),
                 reviewForm: this.createEmptyReviewForm(),
                 modifications: [],
                 executionRecords: [],
-                reviewSummary: {
-                    status: '未开始执行',
-                    score: 0,
-                    pnl: '--',
-                    pnlClass: '',
-                    avgPrice: '--',
-                    exitPrice: '--',
-                    deviation: '暂无'
-                }
+                reviewSummary: createEmptyReviewSummary()
             };
+        },
+        stripMarketSuffix(code) {
+            const text = String(code || '').trim();
+            if (!text) {
+                return '';
+            }
+            return text.replace(/\.(SH|SZ)$/i, '');
+        },
+        normalizeSymbolCodeForSubmit(symbolCode) {
+            const raw = String(symbolCode || '').trim().toUpperCase();
+            if (!raw) {
+                return '';
+            }
+            if (/^(SH|SZ)\d{6}$/.test(raw)) {
+                return `${raw.slice(2)}.${raw.slice(0, 2)}`;
+            }
+            if (/^\d{6}\.(SH|SZ)$/.test(raw)) {
+                return raw;
+            }
+            if (!/^\d{6}$/.test(raw)) {
+                throw new Error('股票代码格式不正确，请输入 6 位数字，例如 300750');
+            }
+            if (raw.startsWith('6') || raw.startsWith('5') || raw.startsWith('9')) {
+                return `${raw}.SH`;
+            }
+            return `${raw}.SZ`;
+        },
+        getDisplayStockCode() {
+            return this.stripMarketSuffix(this.entryForm.stockCode);
         },
         buildPlanLabel(form) {
             const stockName = form.stockName || '未命名计划';
-            const stockCode = form.stockCode || '未填代码';
-            return `${stockName} | ${stockCode} | ${form.planType}`;
+            const stockCode = this.stripMarketSuffix(form.stockCode) || '未填代码';
+            const planType = form.planType || '未设置类型';
+            return `${stockName} | ${stockCode} | ${planType}`;
         },
         updatePlanOptionLabel(planId) {
             const option = this.planOptions.find((item) => item.id === planId);
@@ -1125,7 +1483,28 @@ export default {
             }
             return (range.min + range.max) / 2;
         },
-        getReviewChartData() {
+        getClosePricesFromCandles(candles) {
+            return (candles || []).map((item) => {
+                if (!Array.isArray(item) || item.length < 2) {
+                    return Number.NaN;
+                }
+                return Number(item[1]);
+            });
+        },
+        buildMovingAverage(closePrices, period) {
+            return closePrices.map((_, index) => {
+                if (index < period - 1) {
+                    return null;
+                }
+                const slice = closePrices.slice(index - period + 1, index + 1);
+                if (slice.some((value) => !Number.isFinite(value))) {
+                    return null;
+                }
+                const sum = slice.reduce((acc, value) => acc + value, 0);
+                return Number((sum / period).toFixed(4));
+            });
+        },
+        getDemoReviewChartData() {
             const categories = [
                 '05-08', '05-09', '05-12', '05-13', '05-14', '05-15', '05-16', '05-19',
                 '05-20', '05-21', '05-22', '05-23', '05-26', '05-27', '05-28', '05-29'
@@ -1156,6 +1535,7 @@ export default {
             const macd = diff.map(function (item, index) {
                 return Number(((item - dea[index]) * 2).toFixed(2));
             });
+            const closePrices = this.getClosePricesFromCandles(candles);
 
             return {
                 categories,
@@ -1164,11 +1544,78 @@ export default {
                 rsi,
                 diff,
                 dea,
-                macd
+                macd,
+                ma5: this.buildMovingAverage(closePrices, 5),
+                ma10: this.buildMovingAverage(closePrices, 10),
+                ma20: this.buildMovingAverage(closePrices, 20),
+                ma60: this.buildMovingAverage(closePrices, 60)
             };
         },
-        initCharts() {
-            const chartData = this.getReviewChartData();
+        buildChartDataFromRemote(remoteData) {
+            const chart = (remoteData && remoteData.chart) || {};
+            const categories = chart.dates || [];
+            const candles = chart.kline || [];
+            const volumes = (chart.volume || []).map((item) => Number(item || 0));
+            const rsi14 = chart.rsi14 || [];
+            const rsi6 = chart.rsi6 || [];
+            const diff = chart.dif || [];
+            const dea = chart.dea || [];
+            const macd = chart.macd_hist || [];
+            const ma5 = chart.ma5 || [];
+            const ma10 = chart.ma10 || [];
+            const ma20 = chart.ma20 || [];
+            const ma60 = chart.ma60 || [];
+
+            if (!categories.length || !candles.length) {
+                return null;
+            }
+
+            return {
+                categories,
+                candles,
+                volumes,
+                rsi: rsi14.length ? rsi14 : rsi6,
+                diff,
+                dea,
+                macd,
+                ma5,
+                ma10,
+                ma20,
+                ma60
+            };
+        },
+        async getReviewChartData() {
+            const stockCode = this.entryForm.stockCode;
+            if (!stockCode) {
+                return this.getDemoReviewChartData();
+            }
+
+            let startDate = null;
+            let endDate = null;
+            if (Array.isArray(this.entryForm.period) && this.entryForm.period.length >= 2) {
+                startDate = this.entryForm.period[0] || null;
+                endDate = this.entryForm.period[1] || null;
+            }
+
+            try {
+                const resp = await marketApi.getKlineIndicators({
+                    symbol_code: stockCode,
+                    start_date: startDate,
+                    end_date: endDate,
+                    limit: 1200
+                });
+                if (!resp || !resp.data || resp.data.code !== 200) {
+                    return this.getDemoReviewChartData();
+                }
+                const parsed = this.buildChartDataFromRemote(resp.data.data || {});
+                return parsed || this.getDemoReviewChartData();
+            } catch (err) {
+                console.error(err);
+                return this.getDemoReviewChartData();
+            }
+        },
+        async initCharts() {
+            const chartData = await this.getReviewChartData();
             this.disposeCharts();
 
             if (this.$refs.candlestickChart) {
@@ -1257,6 +1704,42 @@ export default {
                             { coord: ['05-23', 19.70], value: '改2', itemStyle: { color: '#fb7185' } }
                         ]
                     }
+                },
+                {
+                    name: 'MA5',
+                    type: 'line',
+                    data: chartData.ma5 || [],
+                    smooth: true,
+                    symbol: 'none',
+                    connectNulls: true,
+                    lineStyle: { color: '#22d3ee', width: 1.3 }
+                },
+                {
+                    name: 'MA10',
+                    type: 'line',
+                    data: chartData.ma10 || [],
+                    smooth: true,
+                    symbol: 'none',
+                    connectNulls: true,
+                    lineStyle: { color: '#a78bfa', width: 1.3 }
+                },
+                {
+                    name: 'MA20',
+                    type: 'line',
+                    data: chartData.ma20 || [],
+                    smooth: true,
+                    symbol: 'none',
+                    connectNulls: true,
+                    lineStyle: { color: '#f59e0b', width: 1.3 }
+                },
+                {
+                    name: 'MA60',
+                    type: 'line',
+                    data: chartData.ma60 || [],
+                    smooth: true,
+                    symbol: 'none',
+                    connectNulls: true,
+                    lineStyle: { color: '#34d399', width: 1.3 }
                 }
             ];
             return option;
@@ -1373,6 +1856,10 @@ export default {
 
 .plan-switcher {
     width: 260px;
+}
+
+.watchlist-switcher {
+    width: 220px;
 }
 
 .eyebrow {
@@ -1610,11 +2097,26 @@ export default {
     font-size: 12px;
 }
 
+.timeline-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 .timeline-foot {
     margin-top: 8px;
     color: #1e3a8a;
     font-size: 12px;
     line-height: 1.45;
+}
+
+.danger-text-button {
+    color: #dc2626;
+}
+
+.danger-text-button:hover,
+.danger-text-button:focus {
+    color: #b91c1c;
 }
 
 .execution-table :deep(.el-table__header-wrapper th) {
@@ -1860,7 +2362,8 @@ export default {
         flex-wrap: wrap;
     }
 
-    .plan-switcher {
+    .plan-switcher,
+    .watchlist-switcher {
         width: 100%;
     }
 

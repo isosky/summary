@@ -21,6 +21,14 @@
               <i class="el-icon-data-line"></i>
               <span slot="title">投资复盘</span>
             </el-menu-item>
+            <el-menu-item index="/market_watchlist">
+              <i class="el-icon-view"></i>
+              <span slot="title">观察池管理</span>
+            </el-menu-item>
+            <el-menu-item index="/market_sync_ops">
+              <i class="el-icon-refresh"></i>
+              <span slot="title">市场同步运维</span>
+            </el-menu-item>
             <el-menu-item index="/count">
               <i class="el-icon-s-data"></i>
               <span slot="title">统计</span>
@@ -88,13 +96,25 @@ export default {
     };
   },
   mounted: function () {
-    // console.log(axios.defaults.headers.common["Authorization"]);
+    window.addEventListener('todo-auth-expired', this.handleAuthExpired);
+    const persistedAuthToken = window.localStorage.getItem('todo_auth_token');
+    if (persistedAuthToken && typeof axios.defaults.headers.common['Authorization'] === 'undefined') {
+      axios.defaults.headers.common['Authorization'] = persistedAuthToken;
+    }
     if (typeof axios.defaults.headers.common['Authorization'] === 'undefined') {
       this.islogin = false;
     } else {
       this.islogin = true;
-      this.defaultactive = this.$route.path || '/task';
+      const routePath = this.$route.path || '/task';
+      this.defaultactive = routePath;
+      if (routePath === '/') {
+        this.defaultactive = '/task';
+        this.$router.replace('/task');
+      }
     }
+  },
+  beforeDestroy: function () {
+    window.removeEventListener('todo-auth-expired', this.handleAuthExpired);
   },
   watch: {
     '$route.path': function (val) {
@@ -102,6 +122,10 @@ export default {
     }
   },
   methods: {
+    handleAuthExpired: function () {
+      this.islogin = false;
+      this.todo_user_pass = '';
+    },
     moveto: function (index) {
       this.$router.push(index);
     },
@@ -115,6 +139,7 @@ export default {
           if (response.data.code === 200) {
             axios.defaults.headers.common['Authorization'] =
               response.data.token;
+            window.localStorage.setItem('todo_auth_token', response.data.token);
             this.islogin = true;
             this.defaultactive = '/task';
             this.$router.push('/task');
